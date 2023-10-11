@@ -1,0 +1,261 @@
+﻿<Page
+    x:Class="Mapper_v1.Views.SettingsPage"
+    Style="{DynamicResource MahApps.Styles.Page}"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:help="clr-namespace:Mapper_v1.Helpers"
+    xmlns:converters="clr-namespace:Mapper_v1.Converters"
+    xmlns:models="clr-namespace:Mapper_v1.Models"
+    xmlns:properties="clr-namespace:Mapper_v1.Properties"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    xmlns:fa="http://schemas.fontawesome.io/icons/"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    mc:Ignorable="d"
+    d:DesignHeight="450" d:DesignWidth="800">
+    <Page.Resources>
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" EnumType="models:AppTheme"/>
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConnectionType" EnumType="models:ConnectionType"/>
+    </Page.Resources>
+    <ScrollViewer>
+        <Grid Margin="{StaticResource SmallTopBottomMargin}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="48" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock
+                Style="{StaticResource PageTitleStyle}"
+                Text="{x:Static properties:Resources.SettingsPageTitle}" Grid.ColumnSpan="2" />
+            <StackPanel
+                x:Name="ContentArea"
+                Grid.Row="1"
+                Margin="{StaticResource MediumLeftRightMargin}">
+
+                <TextBlock
+                    Margin="{StaticResource SmallTopMargin}"
+                    Style="{StaticResource SubtitleTextStyle}"
+                    Text="{x:Static properties:Resources.SettingsPagePersonalizationTitle}" />
+                <StackPanel Margin="{StaticResource SmallTopBottomMargin}">
+                    <TextBlock
+                        Style="{StaticResource BodyTextStyle}"
+                        Text="{x:Static properties:Resources.SettingsPageChooseThemeText}" />
+                    <StackPanel Margin="{StaticResource XSmallTopMargin}">
+                        <RadioButton
+                            GroupName="AppTheme"
+                            Content="{x:Static properties:Resources.SettingsPageRadioButtonLightTheme}"
+                            FontSize="{StaticResource MediumFontSize}"
+                            IsChecked="{Binding Theme, Mode=OneWay, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light}">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="Checked">
+                                    <i:InvokeCommandAction Command="{Binding SetThemeCommand}" CommandParameter="Light" />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </RadioButton>
+                        <RadioButton
+                            GroupName="AppTheme"
+                            Content="{x:Static properties:Resources.SettingsPageRadioButtonDarkTheme}"
+                            Margin="{StaticResource XSmallTopMargin}"
+                            FontSize="{StaticResource MediumFontSize}"
+                            IsChecked="{Binding Theme, Mode=OneWay, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark}">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="Checked">
+                                    <i:InvokeCommandAction Command="{Binding SetThemeCommand}" CommandParameter="Dark" />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </RadioButton>
+                        <RadioButton
+                            GroupName="AppTheme"
+                            Content="{x:Static properties:Resources.SettingsPageRadioButtonWindowsDefaultTheme}"
+                            FontSize="{StaticResource MediumFontSize}"
+                            Margin="{StaticResource XSmallTopMargin}"
+                            IsChecked="{Binding Theme, Mode=OneWay, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Default}">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="Checked">
+                                    <i:InvokeCommandAction Command="{Binding SetThemeCommand}" CommandParameter="Default" />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </RadioButton>
+                    </StackPanel>
+                </StackPanel>
+
+                <TextBlock
+                    Margin="{StaticResource SmallTopMargin}"
+                    Style="{StaticResource SubtitleTextStyle}"
+                    Text="{x:Static properties:Resources.SettingsPageAboutTitle}" />
+                <TextBlock
+                    Text="{Binding VersionDescription, Mode=OneWay}"
+                    Margin="{StaticResource XSmallTopMargin}"
+                    Style="{StaticResource BodyTextStyle}" />
+                <TextBlock
+                    Margin="{StaticResource XSmallTopMargin}"
+                    Style="{StaticResource BodyTextStyle}"
+                    Text="{x:Static properties:Resources.SettingsPageAboutText}" />
+
+                <TextBlock
+                    Margin="{StaticResource SmallTopMargin}"
+                    AutomationProperties.Name="{Binding Text, ElementName=settingsPrivacyStatement}">
+                    <Hyperlink
+                        Command="{Binding PrivacyStatementCommand}"
+                        AutomationProperties.Name="{Binding Text, ElementName=settingsPrivacyStatement}">
+                        <TextBlock
+                            x:Name="settingsPrivacyStatement"
+                            Style="{StaticResource BodyTextStyle}"
+                            Text="{x:Static properties:Resources.SettingsPagePrivacyStatementText}" />
+                    </Hyperlink>
+                </TextBlock>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Grid.Row="1"
+                        Orientation="Vertical"
+                        Margin="{StaticResource MediumLeftRightMargin}">
+                <GroupBox Header="Projection">
+                    <ComboBox ItemsSource="{Binding MapSettings.ProjectionList}"
+                              SelectedValue="{Binding MapSettings.CurrentProjection}">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="SelectionChanged">
+                                <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}" CommandParameter="Default" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </ComboBox>
+                </GroupBox>
+                <GroupBox Header="Vessel Shape">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="Path:" VerticalAlignment="Center"
+                                    Grid.Column="0"/>
+                        <TextBlock Text="{Binding MapSettings.BoatShape}"
+                                    Grid.Column="1" Margin="{StaticResource SmallLeftRightMargin}" VerticalAlignment="Center"/>
+                        <Button Command="{Binding BrowseBoatShapeCommand}" 
+                                Grid.Column="2" Padding="0">
+                            <Label fa:Awesome.Content="Ship" FontSize="16"/>
+                        </Button>
+                        <TextBlock Text="Fill Color:"
+                                    Grid.Row="1" Grid.Column="0"/>
+                        <mah:ColorPicker Background="{x:Null}" SelectedColor="{Binding MapSettings.BoatShape.Fill}" MaxWidth="50" 
+                                         Grid.Column="1" Grid.Row="1" 
+                                         Margin="{DynamicResource XSmallLeftMargin}" HorizontalAlignment="Center">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectedColorChanged">
+                                    <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </mah:ColorPicker>
+                        <TextBlock Text="Outline Color:"
+                                    Grid.Row="2" Grid.Column="0"/>
+                        <mah:ColorPicker Background="{x:Null}" SelectedColor="{Binding MapSettings.BoatShape.Outline}" MaxWidth="50" 
+                                         Grid.Column="1" Grid.Row="2" 
+                                         Margin="{DynamicResource XSmallLeftMargin}" HorizontalAlignment="Center">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectedColorChanged">
+                                    <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </mah:ColorPicker>
+
+                    </Grid>
+                </GroupBox>
+                <GroupBox Header="GNSS Input">
+                    <StackPanel Orientation="Vertical">
+                        <ComboBox x:Name="commType" 
+                              ItemsSource="{help:Enum models:ConnectionType}" 
+                              SelectedValue="{Binding CommSettings.CommType}">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectionChanged">
+                                    <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}" CommandParameter="Default"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </ComboBox>
+                        <GroupBox Header="Serial">
+                            <GroupBox.Style>
+                                <Style TargetType="GroupBox">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=commType}" Value="Serial">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </GroupBox.Style>
+                            <StackPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Port:" VerticalAlignment="Center"/>
+                                    <ComboBox ItemsSource="{Binding CommSettings.AvailableComPorts}"
+                                      SelectedItem="{Binding CommSettings.ComPort}"
+                                      Margin="{StaticResource SmallLeftMargin}">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="SelectionChanged">
+                                                <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}" CommandParameter="Default" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </ComboBox>
+                                </DockPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Baud Rate:" VerticalAlignment="Center"/>
+                                    <ComboBox ItemsSource="{Binding CommSettings.AvailableBaudRates}"
+                                      SelectedItem="{Binding CommSettings.BaudRate}"
+                                      Margin="{StaticResource SmallLeftMargin}">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="SelectionChanged">
+                                                <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}" CommandParameter="Default" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </ComboBox>
+                                </DockPanel>
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox Header="Network">
+                            <GroupBox.Style>
+                                <Style TargetType="GroupBox">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=commType}" Value="UDP">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=commType}" Value="TCP">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </GroupBox.Style>
+                            <StackPanel>
+                                <DockPanel>
+                                    <TextBlock Text="IP Address:" VerticalAlignment="Center"/>
+                                    <TextBox Text="{Binding CommSettings.IPAddress}" VerticalAlignment="Center" Margin="{StaticResource SmallLeftMargin}">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="LostFocus">
+                                                <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}" CommandParameter="Default" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </TextBox>
+                                </DockPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Port:" VerticalAlignment="Center"/>
+                                    <TextBox Text="{Binding CommSettings.Port}" VerticalAlignment="Center" Margin="{StaticResource SmallLeftMargin}">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="LostFocus">
+                                                <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}" CommandParameter="Default" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </TextBox>
+                                </DockPanel>
+                            </StackPanel>
+                        </GroupBox>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

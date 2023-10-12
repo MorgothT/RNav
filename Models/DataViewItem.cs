@@ -8,9 +8,9 @@ public partial class DataViewItem : ObservableObject
 	private string name;
 
 	[ObservableProperty]
-	private string value;
+	private object value;
 
-	public DataViewItem(string name, string value)
+	public DataViewItem(string name, object value)
 	{
 		Name = name;
 		Value = value;

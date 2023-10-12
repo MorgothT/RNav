@@ -26,14 +26,16 @@ using System.Windows.Threading;
 using Mapsui.UI.Wpf;
 using Newtonsoft.Json;
 using System.Net;
+using System.Windows.Data;
 
 namespace Mapper_v1.Views;
 
 public partial class MapPage : Page
 {
     public BoatShapeLayer MyBoatLayer;
-    private NmeaReceiver nmeaReceiver;
+    public VesselData VesselData = new();
 
+    private NmeaReceiver nmeaReceiver;
     private ColorConvertor colorConvertor = new();
     private MapSettings mapSettings = new();
     private CommSettings commSettings = new();
@@ -45,69 +47,30 @@ public partial class MapPage : Page
     
     //private Random random = new Random(0);
     private Converter geoConverter;
-    //private BoatShape boatShape;
-
+    private MapViewModel vm;
     public MapPage(MapViewModel viewModel)
     {
         InitializeComponent();
         DataContext = viewModel;
 
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-
-        //DefaultNmeaHandler nmeaHandler = new DefaultNmeaHandler();
-        NmeaHandler nmeaHandler = new NmeaHandler();
-        nmeaHandler.LogNmeaMessage += NmeaMessageReceived;
-        nmeaReceiver = new(nmeaHandler);
-
-
-        // ... Attach handler for NMEA messages that fail NMEA checksum verification
-        nmeaReceiver.NmeaMessageFailedChecksum += (bytes, index, count, expected, actual) => {
-            Trace.TraceError($"Failed Checksum: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray()).Trim()} expected {expected} but got {actual}");
-        };
-        // ... Attach handler for NMEA messages that contain invalid syntax
-        nmeaReceiver.NmeaMessageDropped += (bytes, index, count, reason) => {
-            Trace.WriteLine($"Bad Syntax: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())} reason: {reason}");
-        };
-        // ... Attach handler for NMEA messages that are ignored (unsupported)
-        nmeaReceiver.NmeaMessageIgnored += (bytes, index, count) => {
-            Trace.WriteLine($"Ignored: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())}");
-        };
+        vm = viewModel;
 
         InitMapControl();
         InitUIControls();
-        ZoomActive();
-    }
+        SubscribeToNmea();
 
-    private void NmeaMessageReceived(INmeaMessage msg)
-    {
-        switch (msg.GetType().Name)
-        {
-            case "GGA":
-                Dispatcher.BeginInvoke(UpdateLocation,msg as GGA);
-                break;
-            case "VTG":
-                
-                break;
-            case "HDT":
-                Dispatcher.BeginInvoke(UpdateDirection, msg as HDT);
-                break;
-            default: 
-                break;
-        }
-    }
+        //VesselData.GenrateDefaultDataList();
+        //DataViewList.Items.Clear();
+        //DataViewList.ItemsSource = VesselData.DataViewItems;
 
-    private void InitUIControls()
-    {
-        ColorSelector.SelectedColor = colorConvertor.WMColorFromMapsui(MapControl.Map.BackColor);
-        Rotation.Foreground = colorConvertor.InvertBrushColor(MapControl.Map.BackColor);
-        RotationSlider.Value = MapControl.Map.Navigator.Viewport.Rotation / 3.6;
-        Rotation.Text = MapControl.Map.Navigator.Viewport.Rotation.ToString("F0");
-    }
+        //RefreshDataView();
+        //DataViewList.CanUserAddRows = true;
 
+    }
     private void InitMapControl()
     {
         LoadMapControlState();
-
         MapControl.MouseMove += MapControlOnMouseMove;
         MapControl.FeatureInfo += MapControlFeatureInfo;
 
@@ -135,6 +98,60 @@ public partial class MapPage : Page
             throw;
         }
     }
+    private void InitUIControls()
+    {
+        ColorSelector.SelectedColor = colorConvertor.WMColorFromMapsui(MapControl.Map.BackColor);
+        Rotation.Foreground = colorConvertor.InvertBrushColor(MapControl.Map.BackColor);
+        RotationSlider.Value = MapControl.Map.Navigator.Viewport.Rotation / 3.6;
+        Rotation.Text = MapControl.Map.Navigator.Viewport.Rotation.ToString("F0");
+    }
+    private void SubscribeToNmea()
+    {
+        //DefaultNmeaHandler nmeaHandler = new DefaultNmeaHandler();
+        NmeaHandler nmeaHandler = new NmeaHandler();
+        nmeaHandler.LogNmeaMessage += NmeaMessageReceived;
+        nmeaReceiver = new(nmeaHandler);
+        // ... Attach handler for NMEA messages that fail NMEA checksum verification
+        nmeaReceiver.NmeaMessageFailedChecksum += (bytes, index, count, expected, actual) =>
+        {
+            Trace.TraceError($"Failed Checksum: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray()).Trim()} expected {expected} but got {actual}");
+        };
+        // ... Attach handler for NMEA messages that contain invalid syntax
+        nmeaReceiver.NmeaMessageDropped += (bytes, index, count, reason) =>
+        {
+            Trace.WriteLine($"Bad Syntax: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())} reason: {reason}");
+        };
+        // ... Attach handler for NMEA messages that are ignored (unsupported)
+        nmeaReceiver.NmeaMessageIgnored += (bytes, index, count) =>
+        {
+            Trace.WriteLine($"Ignored: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())}");
+        };
+    }
+
+    private void NmeaMessageReceived(INmeaMessage msg)
+    {
+        VesselData.Update(msg);
+        switch (msg.GetType().Name)
+        {
+            case "GGA":
+                Dispatcher.BeginInvoke(UpdateLocation);
+                break;
+            case "HDT":
+                Dispatcher.BeginInvoke(UpdateDirection);
+                break;
+            default: 
+                break;
+        }
+        //Dispatcher.Invoke(RefreshDataView);
+        vm.UpdateDataView(VesselData);
+    }
+
+    //private void RefreshDataView()
+    //{
+
+    //    DataViewList.Items.Refresh();
+    //    DataViewList.ItemsSource = VesselData.DataViewItems;
+    //}
 
     private void ConnectToGps()
     {
@@ -194,7 +211,6 @@ public partial class MapPage : Page
             MessageBox.Show($"{ex.Message}\n{ex.InnerException}\n{ex.StackTrace}");
         }
     }
-
     private async void ConnectToTcp()
     {
         CancellationToken ct = cancellationTokenSource.Token;
@@ -212,16 +228,13 @@ public partial class MapPage : Page
             throw;
         }
     }
-
     private async Task ReceiveTcpAsync(CancellationToken ct)
     {
         NetworkStream tcpStream = tcpClient.GetStream();
-        //Memory<byte> buffer = new Memory<byte> { };
         byte[] buffer = new byte[tcpClient.ReceiveBufferSize];
         await tcpStream.ReadAsync(buffer,0, tcpClient.ReceiveBufferSize, ct);
         nmeaReceiver.Receive(buffer.ToArray());
     }
-
     private void ConnectToSerial()
     {
         serialPort = new SerialPort(commSettings.ComPort, commSettings.BaudRate);
@@ -236,11 +249,11 @@ public partial class MapPage : Page
         }
     }
     
-    private void UpdateDirection(HDT hdt)
+    private void UpdateDirection()
     {
         // Simulating heading values
         //double heading = random.NextDouble() * 360;
-        double heading = hdt.HeadingTrue;
+        double heading = VesselData.GetHDT.HeadingTrue;
         if (ToggleNoseUp.IsChecked.Value)
         {
             // when bow up
@@ -252,17 +265,17 @@ public partial class MapPage : Page
             MyBoatLayer.UpdateMyDirection(heading, 0);
         }
     }
-    private void UpdateLocation(GGA gga)
+    private void UpdateLocation()
     {
-        double lon = gga.Longitude.Degrees;
-        double lat = gga.Latitude.Degrees;
+        double lon = VesselData.GetGGA.Longitude.Degrees;
+        double lat = VesselData.GetGGA.Latitude.Degrees;
         var p = geoConverter.Convert(new(lon, lat, 0));
         MPoint point = new MPoint(p.X, p.Y);
         MyBoatLayer.UpdateMyLocation(point);
         MyBoatLayer.DataHasChanged();
 
-        PosX.Text = MyBoatLayer.MyLocation.X.ToString("F2");
-        PosY.Text = MyBoatLayer.MyLocation.Y.ToString("F2");
+        //PosX.Text = MyBoatLayer.MyLocation.X.ToString("F2");
+        //PosY.Text = MyBoatLayer.MyLocation.Y.ToString("F2");
         //TODO: Add logic to keep vessel on screen (nose up and in center)
     }
     private void SetCRS()
@@ -468,6 +481,10 @@ public partial class MapPage : Page
 
         nmeaReceiver.Receive(buffer);
     }
+    private void ChangeData_Click(object sender, RoutedEventArgs e)
+    {
+        //TODO: Add UI to add and remove the data types
+    }
     #endregion
 
     #region MapControls
@@ -498,4 +515,6 @@ public partial class MapPage : Page
         SaveMapControlState();
     }
     #endregion
+
+    
 }

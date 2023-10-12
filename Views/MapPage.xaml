@@ -83,11 +83,10 @@
                     </TextBlock>
                 </Expander.Header>
                 <StackPanel>
-                    <Button Name="AddData" Command="{Binding ChangeDataCommand}" Padding="0" Margin="{StaticResource XSmallLeftMargin}">
+                    <Button Name="ChangeData" Padding="0" Margin="{StaticResource XSmallLeftMargin}" Click="ChangeData_Click">
                         <Label fa:Awesome.Content="Exchange" FontSize="16"/>
                     </Button>
-                    <DataGrid x:Name="DataViewList" ItemsSource="{Binding DataView}">
-
+                    <DataGrid Name="DataViewList" ItemsSource="{Binding Data}" IsHitTestVisible="False">
                     </DataGrid>
                 </StackPanel>
             </Expander>

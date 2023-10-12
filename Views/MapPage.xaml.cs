@@ -55,7 +55,6 @@ public partial class MapPage : Page
 
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         vm = viewModel;
-
         InitMapControl();
         InitUIControls();
         SubscribeToNmea();
@@ -143,7 +142,7 @@ public partial class MapPage : Page
                 break;
         }
         //Dispatcher.Invoke(RefreshDataView);
-        vm.UpdateDataView(VesselData);
+        vm.UpdateDataView(VesselData,geoConverter);
     }
 
     //private void RefreshDataView()

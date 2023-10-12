@@ -83,10 +83,21 @@
                     </TextBlock>
                 </Expander.Header>
                 <StackPanel>
-                    <Button Name="ChangeData" Padding="0" Margin="{StaticResource XSmallLeftMargin}" Click="ChangeData_Click">
+                    <!--<Button Name="ChangeData" Padding="0" Margin="1" Click="ChangeData_Click">
                         <Label fa:Awesome.Content="Exchange" FontSize="16"/>
-                    </Button>
-                    <DataGrid Name="DataViewList" ItemsSource="{Binding Data}" IsHitTestVisible="False">
+                    </Button>-->
+                    <DataGrid ItemsSource="{Binding Data}" IsHitTestVisible="False" AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding Key}" Header="Name" FontWeight="Regular"/>
+                            <DataGridTextColumn Binding="{Binding Value}" Header="Value" FontWeight="Bold">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+
+                            </DataGridTextColumn>
+                        </DataGrid.Columns>
                     </DataGrid>
                 </StackPanel>
             </Expander>

@@ -70,7 +70,8 @@ public partial class BoatShape : ObservableObject
                 foreach (var line in File.ReadAllLines(Path))
                 {
                     if (!line.Contains(' ')) continue;
-                    var parts = line.Split(' ');
+                    //line.TrimStart().TrimEnd();
+                    var parts = line.Split(' ',StringSplitOptions.RemoveEmptyEntries);
                     points.Add(new SKPoint(float.Parse(parts[0]), float.Parse(parts[1])));
                 }
                 SKPoints = new(points);

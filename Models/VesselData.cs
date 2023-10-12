@@ -28,18 +28,18 @@ public partial class VesselData : ObservableObject
     [ObservableProperty]
     private VTG getVTG = new();
 
-    [ObservableProperty]
-    private Dictionary<string,object> dataViewItems = new();
+    //[ObservableProperty]
+    //private Dictionary<string,object> dataViewItems = new();
 
-    public void GenrateDefaultDataList()
-    {
-        DataViewItems.Add("Latitude", GetGGA.Latitude.Degrees);
-        DataViewItems.Add("Longitude", GetGGA.Longitude.Degrees);
-        DataViewItems.Add("Heading", GetHDT.HeadingTrue);
-        DataViewItems.Add("Time (UTC)", GetGGA.UTC);
-        DataViewItems.Add("No. of Sats", GetGGA.SatelliteCount);
-        DataViewItems.Add("Quality", GetGGA.FixQuality);
-    }
+    //public void GenrateDefaultDataList()
+    //{
+    //    DataViewItems.Add("Latitude", GetGGA.Latitude.Degrees);
+    //    DataViewItems.Add("Longitude", GetGGA.Longitude.Degrees);
+    //    DataViewItems.Add("Heading", GetHDT.HeadingTrue);
+    //    DataViewItems.Add("Time (UTC)", GetGGA.UTC);
+    //    DataViewItems.Add("No. of Sats", GetGGA.SatelliteCount);
+    //    DataViewItems.Add("Quality", GetGGA.FixQuality);
+    //}
 
     //public string[] GetDataLabels => GetDataLablesFromNmea();
 
@@ -62,17 +62,17 @@ public partial class VesselData : ObservableObject
 
     //    return strings.ToArray();
     //}
-    private void UpdateView()
-    {
+    //private void UpdateView()
+    //{
         
-        DataViewItems["Latitude"] = GetGGA.Latitude.Degrees;
-        DataViewItems["Longitude"] = GetGGA.Longitude.Degrees;
-        DataViewItems["Heading"] = GetHDT.HeadingTrue;
-        DataViewItems["Time (UTC)"] = GetGGA.UTC;
-        DataViewItems["No. of Sats"] = GetGGA.SatelliteCount;
-        DataViewItems["Quality"] = GetGGA.FixQuality;
+    //    DataViewItems["Latitude"] = GetGGA.Latitude.Degrees;
+    //    DataViewItems["Longitude"] = GetGGA.Longitude.Degrees;
+    //    DataViewItems["Heading"] = GetHDT.HeadingTrue;
+    //    DataViewItems["Time (UTC)"] = GetGGA.UTC;
+    //    DataViewItems["No. of Sats"] = GetGGA.SatelliteCount;
+    //    DataViewItems["Quality"] = GetGGA.FixQuality;
 
-    }
+    //}
     public void Update(INmeaMessage msg)
     {
         switch (msg.GetType().Name)
@@ -101,7 +101,7 @@ public partial class VesselData : ObservableObject
             default:
                 break;
         }
-        UpdateView();
+        //UpdateView();
     }
 }
 

@@ -14,6 +14,13 @@
   </ItemGroup>
   
   <ItemGroup>
+    <None Remove="VesselShapes\CraneDimond.shp" />
+    <None Remove="VesselShapes\Marker.shp" />
+    <None Remove="VesselShapes\Rect.shp" />
+    <None Remove="VesselShapes\X.shp" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <PackageReference Include="BitMiracle.LibTiff.NET" Version="2.4.649" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
@@ -78,5 +85,20 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>MapControl.Designer.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="VesselShapes\CraneDimond.shp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="VesselShapes\Marker.shp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="VesselShapes\Rect.shp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="VesselShapes\X.shp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 </Project>

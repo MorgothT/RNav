@@ -82,5 +82,17 @@ namespace Mapper_v1.Properties {
                 this["BtnHeadingState"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DataDisplayState {
+            get {
+                return ((bool)(this["DataDisplayState"]));
+            }
+            set {
+                this["DataDisplayState"] = value;
+            }
+        }
     }
 }

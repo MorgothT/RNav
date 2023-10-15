@@ -27,6 +27,12 @@ using Mapsui.UI.Wpf;
 using Newtonsoft.Json;
 using System.Net;
 using System.Windows.Data;
+using Windows.Media.Streaming.Adaptive;
+using System.Diagnostics.Metrics;
+using NetTopologySuite.Geometries;
+using Mapsui.UI.Objects;
+using NetTopologySuite.IO;
+using Mapsui.Nts;
 
 namespace Mapper_v1.Views;
 
@@ -40,14 +46,19 @@ public partial class MapPage : Page
     private MapSettings mapSettings = new();
     private CommSettings commSettings = new();
     private SerialPort serialPort;
+    // TODO: !!! Another serial or other of heading
     private UdpClient udpClient;
     private TcpClient tcpClient;
     private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+    private bool measureMode = false;
+    private MPoint measureStart;
+    private WritableLayer MyMeasurementLayer;
 
-    
     //private Random random = new Random(0);
     private Converter geoConverter;
     private MapViewModel vm;
+    
+
     public MapPage(MapViewModel viewModel)
     {
         InitializeComponent();
@@ -170,6 +181,7 @@ public partial class MapPage : Page
                 break;
         }
     }
+    #region Communicaton Methods
     private void ConnectToUdp()
     {
         IPEndPoint e = new IPEndPoint(IPAddress.Any, commSettings.Port);
@@ -179,7 +191,7 @@ public partial class MapPage : Page
         s.u = udpClient;
         try
         {
-            udpClient.BeginReceive(new AsyncCallback(ReceiveUdp), s); 
+            udpClient.BeginReceive(new AsyncCallback(ReceiveUdp), s);
         }
         catch (Exception)
         {
@@ -231,7 +243,7 @@ public partial class MapPage : Page
     {
         NetworkStream tcpStream = tcpClient.GetStream();
         byte[] buffer = new byte[tcpClient.ReceiveBufferSize];
-        await tcpStream.ReadAsync(buffer,0, tcpClient.ReceiveBufferSize, ct);
+        await tcpStream.ReadAsync(buffer, 0, tcpClient.ReceiveBufferSize, ct);
         nmeaReceiver.Receive(buffer.ToArray());
     }
     private void ConnectToSerial()
@@ -246,8 +258,9 @@ public partial class MapPage : Page
         {
             MessageBox.Show("Could not open the serial port.\nPlease check the settings tab.");
         }
-    }
-    
+    } 
+    #endregion
+
     private void UpdateDirection()
     {
         // Simulating heading values
@@ -256,6 +269,7 @@ public partial class MapPage : Page
         if (ToggleNoseUp.IsChecked.Value)
         {
             // when bow up
+            //TODO: account for map roataion
             MyBoatLayer.UpdateMyDirection(heading,heading);
             MapControl.Map.Navigator.RotateTo(360-heading);
         }
@@ -310,7 +324,7 @@ public partial class MapPage : Page
         {
             MapControl.Renderer.StyleRenderers.Add(typeof(BoatStyle), new BoatRenderer());
         }
- 
+        MyMeasurementLayer = new WritableLayer() { Name = "Measurement", Opacity = 0.7f };
         foreach (var chart in mapSettings.ChartItems)
         {
             if (File.Exists(chart.Path))
@@ -319,6 +333,7 @@ public partial class MapPage : Page
                 {
                     case ChartType.Shapefile:
                         MapControl.Map.Layers.Add(CreateShpLayer(chart));
+                        //MapControl.Map.Layers.Add(CreateLabelLayer(chart));
                         break;
                     case ChartType.Geotiff:
                         MapControl.Map.Layers.Add(CreateTiffLayer(chart));
@@ -328,8 +343,16 @@ public partial class MapPage : Page
                 }
             }
         }
+        foreach (var layer in MapControl.Map.Layers)
+        {
+            var test = layer.GetFeatures(MapControl.Map.Extent, MapControl.Map.Navigator.Viewport.Resolution);
+        }
+        MapControl.Map.Layers.Add(MyMeasurementLayer);
         MapControl.Map.Layers.Add(MyBoatLayer);
     }
+
+    
+
     private ILayer CreateTiffLayer(ChartItem chart)
     {
         var colorTrans = new List<Color>
@@ -344,25 +367,84 @@ public partial class MapPage : Page
             DataSource = new GeoTiffProvider(chart.Path, colorTrans)
         };
     }
+    private ILayer CreateLabelLayer(ChartItem chart)
+    {
+        //TODO: Add UI to change label visual
+        IProvider shpsource = new ShapeFile(chart.Path, true, readPrjFile: true, projectionCrs: null);
+
+        return new Layer
+        {
+            DataSource = shpsource,
+            Enabled = chart.Enabled,
+            MaxVisible = double.MaxValue,
+            MinVisible = double.MinValue,
+            IsMapInfoLayer = true,
+            Style = new LabelStyle
+            {
+                ForeColor = new Color(0, 0, 0),
+                Font = new Font { FontFamily = "GenericSerif", Size = 11 },
+                HorizontalAlignment = LabelStyle.HorizontalAlignmentEnum.Center,
+                VerticalAlignment = LabelStyle.VerticalAlignmentEnum.Center,
+                Offset = new Offset { X = 0, Y = 0 },
+                Halo = new Pen { Color = Color.Yellow, Width = 2 },
+                CollisionDetection = true,
+                LabelColumn = "NAME"
+            }
+        };
+    }
     private ILayer CreateShpLayer(ChartItem chart)
     {
         IProvider shpsource = new ShapeFile(chart.Path, true, readPrjFile: true, projectionCrs: null);
-        
-        return new Layer
+        var styles = new StyleCollection();
+        styles.Styles.Add(new VectorStyle
+        {
+            Outline = new Pen   // Outline of Areas and Points
+            {
+                Width = chart.LineWidth,
+                Color = new Color(255, 0, 0, 0)//colorConvertor.WMColorToMapsui(chart.Color)
+            },
+            Fill = new Brush { Color = new Color(255, 0, 0, 0) },   // Fill of Areas and Points
+            Line = new Pen  //Polyline Style
+            {
+                Width = chart.LineWidth,
+                Color = colorConvertor.WMColorToMapsui(chart.Color)
+            }
+        });
+        styles.Styles.Add(new LabelStyle
+        {
+            ForeColor = new Color(0, 0, 0),
+            Font = new Font { FontFamily = "GenericSerif", Size = 11 },
+            HorizontalAlignment = LabelStyle.HorizontalAlignmentEnum.Center,
+            VerticalAlignment = LabelStyle.VerticalAlignmentEnum.Center,
+            Offset = new Offset { X = 0, Y = 0 },
+            Halo = new Pen { Color = Color.Yellow, Width = 2 },
+            CollisionDetection = true,
+            LabelColumn = "NAME"
+        });
+        //styles.Styles.Add(new )
+        var layer = new Layer
         {
             Opacity = chart.Opacity,
             Enabled = chart.Enabled,
             Name = chart.Name,
             DataSource = shpsource,
-            Style = new VectorStyle
-            {
-                Line = new Pen
-                {
-                    Width = chart.LineWidth,
-                    Color = colorConvertor.WMColorToMapsui(chart.Color)
-                }
-            }
+            Style = styles
+            //Style = new VectorStyle
+            //{   
+            //    Outline = new Pen
+            //    {
+            //    Width = chart.LineWidth,
+            //    Color = colorConvertor.WMColorToMapsui(chart.Color)
+            //    },
+            //    Fill = new Brush { Color = new Color(255, 0, 0, 0) },
+            //    Line = new Pen
+            //    {
+            //        Width = chart.LineWidth,
+            //        Color = colorConvertor.WMColorToMapsui(chart.Color)
+            //    }
+            //}
         };
+        return layer;
     }
     private void ZoomActive()
     {
@@ -392,6 +474,7 @@ public partial class MapPage : Page
         Properties.MapControl.Default.Rotation = MapControl.Map.Navigator.Viewport.Rotation;
         Properties.MapControl.Default.BtnTrackingState = (bool)ToggleTracking.IsChecked;
         Properties.MapControl.Default.BtnHeadingState = (bool)ToggleNoseUp.IsChecked;
+        Properties.MapControl.Default.DataDisplayState = DataDisplay.IsExpanded;
         Properties.MapControl.Default.Save();
     }
     private void LoadMapControlState()
@@ -402,6 +485,7 @@ public partial class MapPage : Page
             MapControl.Map.Navigator.RotateTo(Properties.MapControl.Default.Rotation);
             ToggleTracking.IsChecked = Properties.MapControl.Default.BtnTrackingState;
             ToggleNoseUp.IsChecked = Properties.MapControl.Default.BtnHeadingState;
+            DataDisplay.IsExpanded = Properties.MapControl.Default.DataDisplayState;
         }
     }
     private void SaveViewport()
@@ -428,6 +512,7 @@ public partial class MapPage : Page
     {
         try
         {
+            SaveMapControlState();
             SaveViewport();
             cancellationTokenSource.Cancel();
             if (serialPort is not null && serialPort.IsOpen)
@@ -471,6 +556,14 @@ public partial class MapPage : Page
         var worldPosition = MapControl.Map.Navigator.Viewport.ScreenToWorld(screenPosition.X, screenPosition.Y);
         MousePosX.Text = $"{worldPosition.X:F2}";
         MousePosY.Text = $"{worldPosition.Y:F2}";
+        if (measureMode && measureStart is not null)
+        {
+            double bearing = CalcBearing(measureStart, worldPosition);
+            double distance = measureStart.Distance(worldPosition);
+            Distance.Text = $"{distance:F2}";
+            Bearing.Text = $"{bearing:F2}";
+            DrawLine(worldPosition);
+        }
     }
     private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
@@ -480,11 +573,20 @@ public partial class MapPage : Page
 
         nmeaReceiver.Receive(buffer);
     }
-    private void ChangeData_Click(object sender, RoutedEventArgs e)
-    {
-        //TODO: Add UI to add and remove the data types
-    }
     #endregion
+    private double CalcBearing(MPoint p1, MPoint p2)
+    {
+        var rad = Math.Atan2((p1.Y - p2.Y), (p1.X - p2.X));
+        var deg = rad * 180 / Math.PI;
+        return (270 - deg) % 360;
+    }
+    private void DrawLine(MPoint to)
+    {
+        MyMeasurementLayer.Clear();
+        var line = new WKTReader().Read($"LINESTRING ({measureStart.X} {measureStart.Y},{to.X} {to.Y})");
+        var feature = new GeometryFeature(line);
+        MyMeasurementLayer.Add(feature);
+    }
 
     #region MapControls
     private void ToggleTracking_Click(object sender, RoutedEventArgs e)
@@ -513,7 +615,34 @@ public partial class MapPage : Page
         Rotation.Text = MapControl.Map.Navigator.Viewport.Rotation.ToString("F0");
         SaveMapControlState();
     }
+
     #endregion
 
-    
+    private void ToggleMeasure_Click(object sender, RoutedEventArgs e)
+    {
+        measureMode = (bool)ToggleMeasure.IsChecked;
+    }
+
+    private void MapControl_StartMeasure(object sender, MouseButtonEventArgs e) //Right button down
+    {
+        if (measureMode)
+        {
+            ToggleTracking.IsChecked = false;
+            MyBoatLayer.IsCentered = false;
+
+            MapControl.Map.Navigator.PanLock = true;
+            var screenPosition = e.GetPosition(MapControl);
+            measureStart = MapControl.Map.Navigator.Viewport.ScreenToWorld(screenPosition.X, screenPosition.Y);
+        }
+    }
+
+    private void MapControl_StopMeasure(object sender, MouseButtonEventArgs e)
+    {
+        if (measureMode)
+        {
+            MyMeasurementLayer.Clear();
+            MapControl.Map.Navigator.PanLock = false;
+            measureStart = null;
+        }
+    }
 }

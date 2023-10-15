@@ -12,3 +12,9 @@ public enum ConnectionType
     UDP,
     TCP
 }
+public enum DegreeFormat
+{
+    Deg,
+    Min,
+    Sec
+}

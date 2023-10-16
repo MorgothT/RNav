@@ -18,21 +18,28 @@ public partial class ChartItem : ObservableObject
     [ObservableProperty]
     public double opacity;
     [ObservableProperty]
-    public Color color;
+    public Color lineColor;
     [ObservableProperty]
-    public int lineWidth;
+    public Color outlineColor;
+    [ObservableProperty]
+    private Color fillColor;
+    [ObservableProperty]
+    private int lineWidth;
+
     public string Name { get; private set; }
     public string Path { get; private set; }
     
     public ChartType ChartType {get;}
 
-    public ChartItem(string path, Color? color = null, int width = 1)
+    public ChartItem(string path, Color? linecolor = null, Color? outlinecolor = null, Color? fillcolor = null, int width = 1)
     {
         Enabled = true;
         Name = System.IO.Path.GetFileNameWithoutExtension(path);
         Path = path;
         Opacity = 1;
-        Color = color is null ? Colors.Black : (Color)(color);
+        LineColor = linecolor ?? Colors.Black;
+        OutlineColor = outlinecolor ?? Colors.Black;
+        FillColor = fillcolor ?? Colors.Orange;
         LineWidth = width;
         switch (System.IO.Path.GetExtension(path).ToLowerInvariant())
         {

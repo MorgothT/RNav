@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapper v1", "Mapper v1.cspr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapper v1.Core", "..\Mapper v1.Core\Mapper v1.Core.csproj", "{4BB0A1C5-FE61-49B3-B3F2-A2B890E3A0A0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CraneMap2", "..\CraneMap2\CraneMap2.csproj", "{9A17D1AC-DA2D-4D08-9961-319938B713E9}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NMEA", "..\InvernessPark.Utilities.NMEA\NMEA.csproj", "{5BF304AD-F38F-43CF-A81B-D28C14AABAF6}"
 EndProject
 Global
@@ -25,10 +23,6 @@ Global
 		{4BB0A1C5-FE61-49B3-B3F2-A2B890E3A0A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BB0A1C5-FE61-49B3-B3F2-A2B890E3A0A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4BB0A1C5-FE61-49B3-B3F2-A2B890E3A0A0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9A17D1AC-DA2D-4D08-9961-319938B713E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9A17D1AC-DA2D-4D08-9961-319938B713E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9A17D1AC-DA2D-4D08-9961-319938B713E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9A17D1AC-DA2D-4D08-9961-319938B713E9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5BF304AD-F38F-43CF-A81B-D28C14AABAF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5BF304AD-F38F-43CF-A81B-D28C14AABAF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5BF304AD-F38F-43CF-A81B-D28C14AABAF6}.Release|Any CPU.ActiveCfg = Release|Any CPU

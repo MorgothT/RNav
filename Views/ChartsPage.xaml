@@ -25,11 +25,44 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
                 <CheckBox x:Name="EnabledCheckbox" IsChecked="{Binding Enabled}" Margin="3,0" Grid.Column="0"/>
                 <TextBlock Text="{Binding Path}" Grid.Column="1" VerticalAlignment="Center"/>
-                <Slider x:Name="OpacitySlider" Value="{Binding Opacity}" Width="100" VerticalAlignment="Center" HorizontalAlignment="Right" Minimum="0" Maximum="1" Grid.Column="2" TickFrequency="0.1" TickPlacement="BottomRight" SmallChange="0.05" LargeChange="0.3" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="2"/>
-                <metro:ColorPicker x:Name="ColorSelector" Background="{x:Null}" SelectedColor="{Binding Color}" MaxWidth="50" Grid.Column="3" Margin="{DynamicResource XSmallLeftMargin}"/>
+
+                <Expander Grid.Column="2" Header="Color">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseLeave">
+                            <i:ChangePropertyAction PropertyName="IsExpanded" Value="false"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                    <StackPanel>
+                        <Slider x:Name="OpacitySlider" Value="{Binding Opacity}" Width="100" VerticalAlignment="Center" HorizontalAlignment="Right" Minimum="0" Maximum="1" TickFrequency="0.1" TickPlacement="BottomRight" SmallChange="0.05" LargeChange="0.3" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="2"
+                                Margin="2"/>
+                        <metro:NumericUpDown Interval="1" Value="{Binding LineWidth}" ButtonsAlignment="Opposite"
+                                             Margin="2" MaxWidth="30" Minimum="1" TextAlignment="Center"/>
+                        <DockPanel>
+                            <TextBlock Text="Line:" Margin="2" VerticalAlignment="Center"/>
+                            <metro:ColorPicker Background="{x:Null}" SelectedColor="{Binding LineColor}" MaxWidth="50" 
+                                   Margin="{DynamicResource XSmallLeftMargin}" HorizontalAlignment="Right"/>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="Outline:" Margin="2" VerticalAlignment="Center"/>
+                            <metro:ColorPicker Background="{x:Null}" SelectedColor="{Binding OutlineColor}" MaxWidth="50" 
+                                   Margin="{DynamicResource XSmallLeftMargin}" HorizontalAlignment="Right"/>
+                        </DockPanel>
+                        <DockPanel>
+                            <TextBlock Text="Fill:" Margin="2" VerticalAlignment="Center"/>
+                            <metro:ColorPicker Background="{x:Null}" SelectedColor="{Binding FillColor}" MaxWidth="50" 
+                                   Margin="{DynamicResource XSmallLeftMargin}" HorizontalAlignment="Right"/>
+                        </DockPanel>
+                    </StackPanel>
+                </Expander>
+                
             </Grid>
         </DataTemplate>
     </Page.Resources>
@@ -93,12 +126,6 @@
                                FontSize="{StaticResource XLargeFontSize}"/>
                     </Button>
                 </StackPanel>
-                <!--<StackPanel Orientation="Vertical" Grid.Column="1" VerticalAlignment="Bottom">
-                    <Button Command="{Binding SaveChartsCommand}" Padding="0,0,0,0" Margin="5">
-                        <Label fa:Awesome.Content="Save"
-                                   FontSize="{StaticResource XLargeFontSize}"/>
-                    </Button>
-                </StackPanel>-->
             </Grid>
         </Grid>
     </Grid>

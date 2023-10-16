@@ -165,7 +165,6 @@ public partial class MapPage : Page
 
     private void ConnectToGps()
     {
-        //TODO: Implament connections !
         switch (commSettings.CommType)
         {
             case ConnectionType.Serial:
@@ -266,16 +265,17 @@ public partial class MapPage : Page
         // Simulating heading values
         //double heading = random.NextDouble() * 360;
         double heading = VesselData.GetHDT.HeadingTrue;
+        double mapRotation = Properties.MapControl.Default.Rotation;
         if (ToggleNoseUp.IsChecked.Value)
         {
             // when bow up
-            //TODO: account for map roataion
             MyBoatLayer.UpdateMyDirection(heading,heading);
             MapControl.Map.Navigator.RotateTo(360-heading);
         }
         else
         {
-            MyBoatLayer.UpdateMyDirection(heading, 0);
+            //MyBoatLayer.UpdateMyDirection(heading, 0);
+            MyBoatLayer.UpdateMyDirection((heading + mapRotation) % 360, 0);
         }
     }
     private void UpdateLocation()
@@ -357,7 +357,7 @@ public partial class MapPage : Page
     {
         var colorTrans = new List<Color>
                         {
-                            colorConvertor.WMColorToMapsui(chart.Color)
+                            colorConvertor.WMColorToMapsui(chart.FillColor)
                         };
         return new Layer
         {
@@ -367,84 +367,53 @@ public partial class MapPage : Page
             DataSource = new GeoTiffProvider(chart.Path, colorTrans)
         };
     }
-    private ILayer CreateLabelLayer(ChartItem chart)
-    {
-        //TODO: Add UI to change label visual
-        IProvider shpsource = new ShapeFile(chart.Path, true, readPrjFile: true, projectionCrs: null);
-
-        return new Layer
-        {
-            DataSource = shpsource,
-            Enabled = chart.Enabled,
-            MaxVisible = double.MaxValue,
-            MinVisible = double.MinValue,
-            IsMapInfoLayer = true,
-            Style = new LabelStyle
-            {
-                ForeColor = new Color(0, 0, 0),
-                Font = new Font { FontFamily = "GenericSerif", Size = 11 },
-                HorizontalAlignment = LabelStyle.HorizontalAlignmentEnum.Center,
-                VerticalAlignment = LabelStyle.VerticalAlignmentEnum.Center,
-                Offset = new Offset { X = 0, Y = 0 },
-                Halo = new Pen { Color = Color.Yellow, Width = 2 },
-                CollisionDetection = true,
-                LabelColumn = "NAME"
-            }
-        };
-    }
     private ILayer CreateShpLayer(ChartItem chart)
     {
         IProvider shpsource = new ShapeFile(chart.Path, true, readPrjFile: true, projectionCrs: null);
-        var styles = new StyleCollection();
-        styles.Styles.Add(new VectorStyle
-        {
-            Outline = new Pen   // Outline of Areas and Points
-            {
-                Width = chart.LineWidth,
-                Color = new Color(255, 0, 0, 0)//colorConvertor.WMColorToMapsui(chart.Color)
-            },
-            Fill = new Brush { Color = new Color(255, 0, 0, 0) },   // Fill of Areas and Points
-            Line = new Pen  //Polyline Style
-            {
-                Width = chart.LineWidth,
-                Color = colorConvertor.WMColorToMapsui(chart.Color)
-            }
-        });
-        styles.Styles.Add(new LabelStyle
-        {
-            ForeColor = new Color(0, 0, 0),
-            Font = new Font { FontFamily = "GenericSerif", Size = 11 },
-            HorizontalAlignment = LabelStyle.HorizontalAlignmentEnum.Center,
-            VerticalAlignment = LabelStyle.VerticalAlignmentEnum.Center,
-            Offset = new Offset { X = 0, Y = 0 },
-            Halo = new Pen { Color = Color.Yellow, Width = 2 },
-            CollisionDetection = true,
-            LabelColumn = "NAME"
-        });
-        //styles.Styles.Add(new )
+        
+
         var layer = new Layer
         {
             Opacity = chart.Opacity,
             Enabled = chart.Enabled,
             Name = chart.Name,
             DataSource = shpsource,
-            Style = styles
-            //Style = new VectorStyle
-            //{   
-            //    Outline = new Pen
-            //    {
-            //    Width = chart.LineWidth,
-            //    Color = colorConvertor.WMColorToMapsui(chart.Color)
-            //    },
-            //    Fill = new Brush { Color = new Color(255, 0, 0, 0) },
-            //    Line = new Pen
-            //    {
-            //        Width = chart.LineWidth,
-            //        Color = colorConvertor.WMColorToMapsui(chart.Color)
-            //    }
-            //}
+            Style = GetShapefileStyles(chart)
         };
         return layer;
+    }
+
+    private StyleCollection GetShapefileStyles(ChartItem chart)
+    {
+        //TODO: Add UI to change label visual; Add Halo?; Add Font Size?
+        var styles = new StyleCollection();
+        styles.Styles.Add(new VectorStyle
+        {
+            Outline = new Pen   // Outline of Areas and Points
+            {
+                Width = chart.LineWidth,
+                Color = colorConvertor.WMColorToMapsui(chart.OutlineColor)//new Color(255, 0, 0, 0)
+            },
+            Fill = new Brush { Color = colorConvertor.WMColorToMapsui(chart.FillColor)},   // Fill of Areas and Points
+            Line = new Pen  //Polyline Style
+            {
+                Width = chart.LineWidth,
+                Color = colorConvertor.WMColorToMapsui(chart.LineColor)
+            }
+        }); ;
+        styles.Styles.Add(new LabelStyle
+        {
+            ForeColor = colorConvertor.WMColorToMapsui(chart.LineColor),
+            BackColor = new Brush(Color.Transparent),
+            Font = new Font { FontFamily = "GenericSerif", Size = 11 },
+            HorizontalAlignment = LabelStyle.HorizontalAlignmentEnum.Center,
+            VerticalAlignment = LabelStyle.VerticalAlignmentEnum.Center,
+            Offset = new Offset { X = 0, Y = 0 },
+            Halo = new Pen { Color = colorConvertor.WMColorToMapsui(chart.LineColor), Width = chart.LineWidth-1 },
+            CollisionDetection = true,
+            LabelColumn = "NAME"
+        });
+        return styles;
     }
     private void ZoomActive()
     {
@@ -497,6 +466,7 @@ public partial class MapPage : Page
         try
         {
             MapControl.Map.Navigator.SetViewport(JsonConvert.DeserializeObject<Viewport>(Properties.MapControl.Default.Viewport));
+            MapControl.Map.Navigator.RotateTo(Properties.MapControl.Default.Rotation);
         }
         catch (Exception)
         {

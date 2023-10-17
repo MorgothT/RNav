@@ -5,9 +5,9 @@ VisualStudioVersion = 17.6.33829.357
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NMEA", "..\InvernessPark.Utilities.NMEA\NMEA.csproj", "{5BF304AD-F38F-43CF-A81B-D28C14AABAF6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNav", "RNav.csproj", "{8847EDC3-ED2C-47DE-8137-63235E78DFB8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapper_v1", "Mapper_v1.csproj", "{8847EDC3-ED2C-47DE-8137-63235E78DFB8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RNav.Core", "..\Mapper v1.Core\RNav.Core.csproj", "{810E1EB0-2BC8-41DE-B56F-63DE9BF000FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapper_v1.Core", "..\Mapper v1.Core\Mapper_v1.Core.csproj", "{810E1EB0-2BC8-41DE-B56F-63DE9BF000FC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

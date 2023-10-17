@@ -38,7 +38,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\InvernessPark.Utilities.NMEA\NMEA.csproj" />
-    <ProjectReference Include="..\Mapper v1.Core\RNav.Core.csproj" />
+    <ProjectReference Include="..\Mapper v1.Core\Mapper_v1.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

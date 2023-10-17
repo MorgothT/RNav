@@ -7,7 +7,8 @@
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ImplicitUsings>enable</ImplicitUsings>
-    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+    <StartupObject>Mapper_v1.App</StartupObject>
   </PropertyGroup>
   
   <ItemGroup>
@@ -37,7 +38,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\InvernessPark.Utilities.NMEA\NMEA.csproj" />
-    <ProjectReference Include="..\Mapper v1.Core\Mapper v1.Core.csproj" />
+    <ProjectReference Include="..\Mapper v1.Core\RNav.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -90,16 +91,16 @@
 
   <ItemGroup>
     <Resource Include="VesselShapes\CraneDimond.shp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="VesselShapes\Marker.shp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="VesselShapes\Rect.shp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="VesselShapes\X.shp">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
 </Project>

@@ -385,7 +385,6 @@ public partial class MapPage : Page
 
     private StyleCollection GetShapefileStyles(ChartItem chart)
     {
-        //TODO: Add UI to change label visual; Add Halo?; Add Font Size?
         var styles = new StyleCollection();
         styles.Styles.Add(new VectorStyle
         {
@@ -403,16 +402,16 @@ public partial class MapPage : Page
         }); ;
         styles.Styles.Add(new LabelStyle
         {
-            ForeColor = colorConvertor.WMColorToMapsui(chart.LineColor),
-            BackColor = new Brush(Color.Transparent),
-            Font = new Font { FontFamily = "GenericSerif", Size = 11 },
-            HorizontalAlignment = LabelStyle.HorizontalAlignmentEnum.Center,
-            VerticalAlignment = LabelStyle.VerticalAlignmentEnum.Center,
+            ForeColor = colorConvertor.WMColorToMapsui(chart.LabelColor),
+            BackColor = new Brush(colorConvertor.WMColorToMapsui(chart.BackroundColor)),
+            Font = new Font { FontFamily = "GenericSerif", Size = (double)chart.LabelFontSize },
+            HorizontalAlignment = (LabelStyle.HorizontalAlignmentEnum)chart.HorizontalAlignment, //LabelStyle.HorizontalAlignmentEnum.Center,
+            VerticalAlignment = (LabelStyle.VerticalAlignmentEnum)chart.VerticalAlignment, //LabelStyle.VerticalAlignmentEnum.Center,
             Offset = new Offset { X = 0, Y = 0 },
-            Halo = new Pen { Color = colorConvertor.WMColorToMapsui(chart.LineColor), Width = chart.LineWidth-1 },
+            Halo = new Pen { Color = colorConvertor.WMColorToMapsui(chart.HaloColor), Width = 1 },
             CollisionDetection = true,
-            LabelColumn = "NAME"
-        });
+            LabelColumn = chart.LabelAttributeName
+        }) ;
         return styles;
     }
     private void ZoomActive()

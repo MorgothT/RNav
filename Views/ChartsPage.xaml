@@ -8,6 +8,7 @@
     xmlns:model="clr-namespace:Mapper_v1.Models"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:properties="clr-namespace:Mapper_v1.Properties"
+    xmlns:help="clr-namespace:Mapper_v1.Helpers"
     xmlns:fa="http://schemas.fontawesome.io/icons/"
     xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
     mc:Ignorable="d"
@@ -33,16 +34,62 @@
                 </Grid.ColumnDefinitions>
                 <CheckBox x:Name="EnabledCheckbox" IsChecked="{Binding Enabled}" Margin="3,0" Grid.Column="0"/>
                 <TextBlock Text="{Binding Path}" Grid.Column="1" VerticalAlignment="Center"/>
-
-                <Expander Grid.Column="2" Header="Color">
+                <Expander x:Name="LabelExp" Grid.Column="2" Header="Label">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="MouseLeave">
                             <i:ChangePropertyAction PropertyName="IsExpanded" Value="false"/>
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                     <StackPanel>
-                        <Slider x:Name="OpacitySlider" Value="{Binding Opacity}" Width="100" VerticalAlignment="Center" HorizontalAlignment="Right" Minimum="0" Maximum="1" TickFrequency="0.1" TickPlacement="BottomRight" SmallChange="0.05" LargeChange="0.3" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="2"
+                            <DockPanel Name="AttributeName">
+                                <TextBlock Text="Attribute:" Margin="2"/>
+                                <TextBox Text="{Binding LabelAttributeName}" MinWidth="80" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                            <DockPanel Name="FontSize">
+                                <TextBlock Text="Font Size:" Margin="{StaticResource SmallRightMargin}" VerticalAlignment="Center"/>
+                                <metro:NumericUpDown Interval="1" Value="{Binding LabelFontSize}" ButtonsAlignment="Opposite"
+                                             Width="80" Minimum="1" Maximum="100" TextAlignment="Center" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                            <DockPanel Name="HorizontalAlignment">
+                                <TextBlock Text="Horizontal:" Margin="{StaticResource SmallRightMargin}" VerticalAlignment="Center"/>
+                                <ComboBox ItemsSource="{help:Enum model:HorizontalAlignmentEnum}" SelectedItem="{Binding HorizontalAlignment}" 
+                                      VerticalAlignment="Center" Width="80" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                            <DockPanel Name="VerticalAlignment">
+                                <TextBlock Text="Vertical:" Margin="{StaticResource SmallRightMargin}" VerticalAlignment="Center"/>
+                                <ComboBox ItemsSource="{help:Enum model:VerticalAlignmentEnum}" SelectedItem="{Binding VerticalAlignment}" 
+                                      VerticalAlignment="Center" Width="80" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                            <DockPanel Name="LabelColor">
+                                <TextBlock Text="Text:" Margin="{StaticResource SmallRightMargin}" VerticalAlignment="Center"/>
+                                <metro:ColorPicker Background="{x:Null}" SelectedColor="{Binding LabelColor}" MaxWidth="50" 
+                                   Margin="{DynamicResource XSmallLeftMargin}" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                            <DockPanel Name="BackroundColor">
+                                <TextBlock Text="Backround:" Margin="{StaticResource SmallRightMargin}" VerticalAlignment="Center"/>
+                                <metro:ColorPicker Background="{x:Null}" SelectedColor="{Binding BackroundColor}" MaxWidth="50" 
+                                   Margin="{DynamicResource XSmallLeftMargin}" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                            <DockPanel Name="HaloColor">
+                                <TextBlock Text="Halo:" Margin="{StaticResource SmallRightMargin}" VerticalAlignment="Center"/>
+                                <metro:ColorPicker Background="{x:Null}" SelectedColor="{Binding HaloColor}" MaxWidth="50" 
+                                   Margin="{DynamicResource XSmallLeftMargin}" HorizontalAlignment="Right"/>
+                            </DockPanel>
+                        </StackPanel>
+                </Expander>
+                <Expander Grid.Column="3" Header="Vector">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="MouseLeave">
+                            <i:ChangePropertyAction PropertyName="IsExpanded" Value="false"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                    <StackPanel>
+
+                        <DockPanel Name="Opacity">
+                            <TextBlock Text="Opacity:" Margin="2"/>
+                            <Slider x:Name="OpacitySlider" Value="{Binding Opacity}" Width="100" VerticalAlignment="Center" HorizontalAlignment="Right" Minimum="0" Maximum="1" TickFrequency="0.1" TickPlacement="BottomRight" SmallChange="0.05" LargeChange="0.3" AutoToolTipPlacement="TopLeft" AutoToolTipPrecision="2"
                                 Margin="2"/>
+                        </DockPanel>
                         <metro:NumericUpDown Interval="1" Value="{Binding LineWidth}" ButtonsAlignment="Opposite"
                                              Margin="2" MaxWidth="30" Minimum="1" TextAlignment="Center"/>
                         <DockPanel>

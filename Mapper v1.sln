@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapper_v1", "Mapper_v1.cspr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mapper_v1.Core", "..\Mapper v1.Core\Mapper_v1.Core.csproj", "{810E1EB0-2BC8-41DE-B56F-63DE9BF000FC}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "RNavInstaller", "..\RNavInstaller\RNavInstaller.vdproj", "{002C67EF-6066-4CA9-B888-00B54683D748}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,8 @@ Global
 		{810E1EB0-2BC8-41DE-B56F-63DE9BF000FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{810E1EB0-2BC8-41DE-B56F-63DE9BF000FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{810E1EB0-2BC8-41DE-B56F-63DE9BF000FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{002C67EF-6066-4CA9-B888-00B54683D748}.Debug|Any CPU.ActiveCfg = Debug
+		{002C67EF-6066-4CA9-B888-00B54683D748}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

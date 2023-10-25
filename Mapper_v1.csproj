@@ -9,6 +9,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
     <StartupObject>Mapper_v1.App</StartupObject>
+    <ApplicationIcon>RNav.ico</ApplicationIcon>
+    <PackageIcon>RNav.jpg</PackageIcon>
   </PropertyGroup>
   
   <ItemGroup>
@@ -20,6 +22,10 @@
     <None Remove="VesselShapes\Marker.shp" />
     <None Remove="VesselShapes\Rect.shp" />
     <None Remove="VesselShapes\X.shp" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="RNav.ico" />
   </ItemGroup>
   
   <ItemGroup>
@@ -86,6 +92,14 @@
     <None Update="Properties\MapControl.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>MapControl.Designer.cs</LastGenOutput>
+    </None>
+    <None Update="RNav.ico">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Update="RNav.jpg">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
 

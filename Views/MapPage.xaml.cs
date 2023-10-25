@@ -69,14 +69,6 @@ public partial class MapPage : Page
         InitMapControl();
         InitUIControls();
         SubscribeToNmea();
-
-        //VesselData.GenrateDefaultDataList();
-        //DataViewList.Items.Clear();
-        //DataViewList.ItemsSource = VesselData.DataViewItems;
-
-        //RefreshDataView();
-        //DataViewList.CanUserAddRows = true;
-
     }
     private void InitMapControl()
     {

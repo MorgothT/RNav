@@ -54,7 +54,9 @@ public partial class MapPage : Page
     private static Converter geoConverter;
     private static ColorConvertor colorConvertor = new();
     private readonly MapViewModel vm;
-
+    //TODO: Squirl Installer
+    //TODO: Add Targets
+    //TODO: Change devices apearence
 
     public MapPage(MapViewModel viewModel)
     {

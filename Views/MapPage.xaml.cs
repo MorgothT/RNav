@@ -33,6 +33,7 @@ using NetTopologySuite.Geometries;
 using Mapsui.UI.Objects;
 using NetTopologySuite.IO;
 using Mapsui.Nts;
+using System.Collections.ObjectModel;
 
 namespace Mapper_v1.Views;
 
@@ -41,23 +42,20 @@ public partial class MapPage : Page
     public BoatShapeLayer MyBoatLayer;
     public VesselData VesselData = new();
 
-    private NmeaReceiver nmeaReceiver;
-    private ColorConvertor colorConvertor = new();
     private MapSettings mapSettings = new();
     private CommSettings commSettings = new();
-    private SerialPort serialPort;
-    // TODO: !!! Another serial or other of heading
-    private UdpClient udpClient;
-    private TcpClient tcpClient;
-    private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+    private ObservableCollection<NmeaDevice> devices = new();
+
     private bool measureMode = false;
     private MPoint measureStart;
     private WritableLayer MyMeasurementLayer;
 
-    //private Random random = new Random(0);
-    private Converter geoConverter;
-    private MapViewModel vm;
-    
+    private static Converter geoConverter;
+    private static ColorConvertor colorConvertor = new();
+    private readonly MapViewModel vm;
+    //TODO: Add Targets
+    //TODO: Squirl installer
 
     public MapPage(MapViewModel viewModel)
     {
@@ -66,9 +64,11 @@ public partial class MapPage : Page
 
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         vm = viewModel;
+        
+        SubscribeToNmea();
         InitMapControl();
         InitUIControls();
-        SubscribeToNmea();
+        ConnectToGps();
     }
     private void InitMapControl()
     {
@@ -93,7 +93,6 @@ public partial class MapPage : Page
         {
             SetCRS();
             LoadLayers();
-            ConnectToGps();
         }
         catch (Exception)
         {
@@ -106,182 +105,6 @@ public partial class MapPage : Page
         Rotation.Foreground = colorConvertor.InvertBrushColor(MapControl.Map.BackColor);
         RotationSlider.Value = MapControl.Map.Navigator.Viewport.Rotation / 3.6;
         Rotation.Text = MapControl.Map.Navigator.Viewport.Rotation.ToString("F0");
-    }
-    private void SubscribeToNmea()
-    {
-        //DefaultNmeaHandler nmeaHandler = new DefaultNmeaHandler();
-        NmeaHandler nmeaHandler = new NmeaHandler();
-        nmeaHandler.LogNmeaMessage += NmeaMessageReceived;
-        nmeaReceiver = new(nmeaHandler);
-        // ... Attach handler for NMEA messages that fail NMEA checksum verification
-        nmeaReceiver.NmeaMessageFailedChecksum += (bytes, index, count, expected, actual) =>
-        {
-            Trace.TraceError($"Failed Checksum: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray()).Trim()} expected {expected} but got {actual}");
-        };
-        // ... Attach handler for NMEA messages that contain invalid syntax
-        nmeaReceiver.NmeaMessageDropped += (bytes, index, count, reason) =>
-        {
-            Trace.WriteLine($"Bad Syntax: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())} reason: {reason}");
-        };
-        // ... Attach handler for NMEA messages that are ignored (unsupported)
-        nmeaReceiver.NmeaMessageIgnored += (bytes, index, count) =>
-        {
-            Trace.WriteLine($"Ignored: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())}");
-        };
-    }
-
-    private void NmeaMessageReceived(INmeaMessage msg)
-    {
-        VesselData.Update(msg);
-        switch (msg.GetType().Name)
-        {
-            case "GGA":
-                Dispatcher.BeginInvoke(UpdateLocation);
-                break;
-            case "HDT":
-                Dispatcher.BeginInvoke(UpdateDirection);
-                break;
-            default: 
-                break;
-        }
-        //Dispatcher.Invoke(RefreshDataView);
-        vm.UpdateDataView(VesselData,geoConverter);
-    }
-
-    //private void RefreshDataView()
-    //{
-
-    //    DataViewList.Items.Refresh();
-    //    DataViewList.ItemsSource = VesselData.DataViewItems;
-    //}
-
-    private void ConnectToGps()
-    {
-        switch (commSettings.CommType)
-        {
-            case ConnectionType.Serial:
-                ConnectToSerial();
-                break;
-            case ConnectionType.UDP:
-                ConnectToUdp();
-                break;
-            case ConnectionType.TCP:
-                ConnectToTcp();
-                break;
-            default:
-                break;
-        }
-    }
-    #region Communicaton Methods
-    private void ConnectToUdp()
-    {
-        IPEndPoint e = new IPEndPoint(IPAddress.Any, commSettings.Port);
-        udpClient = new UdpClient(e);
-        UdpState s = new UdpState();
-        s.e = e;
-        s.u = udpClient;
-        try
-        {
-            udpClient.BeginReceive(new AsyncCallback(ReceiveUdp), s);
-        }
-        catch (Exception)
-        {
-            MessageBox.Show("Could not open the Udp port.\nPlease check the settings tab.");
-        }
-    }
-    private void ReceiveUdp(IAsyncResult ar)
-    {
-        try
-        {
-            UdpClient u = ((UdpState)(ar.AsyncState)).u;
-            IPEndPoint e = ((UdpState)(ar.AsyncState)).e;
-            byte[] received = udpClient.EndReceive(ar, ref e);
-            nmeaReceiver.Receive(received);
-            udpClient.BeginReceive(new AsyncCallback(ReceiveUdp), ((UdpState)(ar.AsyncState)));
-        }
-        catch (ObjectDisposedException)
-        {
-            //this will terminate BeginReceive
-        }
-        catch (FormatException ex)
-        {   //Broken NMEA sentences
-            MessageBox.Show($"{ex.Message}\n{ex.InnerException}\n{ex.StackTrace}");
-            udpClient.BeginReceive(new AsyncCallback(ReceiveUdp), ((UdpState)(ar.AsyncState)));
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"{ex.Message}\n{ex.InnerException}\n{ex.StackTrace}");
-        }
-    }
-    private async void ConnectToTcp()
-    {
-        CancellationToken ct = cancellationTokenSource.Token;
-        tcpClient = new();
-        try
-        {
-            await tcpClient.ConnectAsync(commSettings.IPEndPoint, ct);
-            while (!ct.IsCancellationRequested)
-            {
-                await ReceiveTcpAsync(ct);
-            }
-        }
-        catch (Exception)
-        {
-            throw;
-        }
-    }
-    private async Task ReceiveTcpAsync(CancellationToken ct)
-    {
-        NetworkStream tcpStream = tcpClient.GetStream();
-        byte[] buffer = new byte[tcpClient.ReceiveBufferSize];
-        await tcpStream.ReadAsync(buffer, 0, tcpClient.ReceiveBufferSize, ct);
-        nmeaReceiver.Receive(buffer.ToArray());
-    }
-    private void ConnectToSerial()
-    {
-        serialPort = new SerialPort(commSettings.ComPort, commSettings.BaudRate);
-        try
-        {
-            serialPort.Open();
-            serialPort.DataReceived += SerialPort_DataReceived;
-        }
-        catch (Exception)
-        {
-            MessageBox.Show("Could not open the serial port.\nPlease check the settings tab.");
-        }
-    } 
-    #endregion
-
-    private void UpdateDirection()
-    {
-        // Simulating heading values
-        //double heading = random.NextDouble() * 360;
-        double heading = VesselData.GetHDT.HeadingTrue;
-        double mapRotation = Properties.MapControl.Default.Rotation;
-        if (ToggleNoseUp.IsChecked.Value)
-        {
-            // when bow up
-            MyBoatLayer.UpdateMyDirection(heading,heading);
-            MapControl.Map.Navigator.RotateTo(360-heading);
-        }
-        else
-        {
-            //MyBoatLayer.UpdateMyDirection(heading, 0);
-            MyBoatLayer.UpdateMyDirection((heading + mapRotation) % 360, 0);
-        }
-    }
-    private void UpdateLocation()
-    {
-        double lon = VesselData.GetGGA.Longitude.Degrees;
-        double lat = VesselData.GetGGA.Latitude.Degrees;
-        var p = geoConverter.Convert(new(lon, lat, 0));
-        MPoint point = new MPoint(p.X, p.Y);
-        MyBoatLayer.UpdateMyLocation(point);
-        MyBoatLayer.DataHasChanged();
-
-        //PosX.Text = MyBoatLayer.MyLocation.X.ToString("F2");
-        //PosY.Text = MyBoatLayer.MyLocation.Y.ToString("F2");
-        //TODO: Add logic to keep vessel on screen (nose up and in center)
     }
     private void SetCRS()
     {
@@ -306,7 +129,7 @@ public partial class MapPage : Page
     }
     private void LoadLayers()
     {
-        MyBoatLayer = new BoatShapeLayer(MapControl.Map,mapSettings.BoatShape)
+        MyBoatLayer = new BoatShapeLayer(MapControl.Map, mapSettings.BoatShape)
         {
             Name = "Location",
             Enabled = true,
@@ -343,91 +166,6 @@ public partial class MapPage : Page
         MapControl.Map.Layers.Add(MyBoatLayer);
     }
 
-    
-
-    private ILayer CreateTiffLayer(ChartItem chart)
-    {
-        var colorTrans = new List<Color>
-                        {
-                            colorConvertor.WMColorToMapsui(chart.FillColor)
-                        };
-        return new Layer
-        {
-            Opacity = chart.Opacity,
-            Enabled = chart.Enabled,
-            Name = chart.Name,
-            DataSource = new GeoTiffProvider(chart.Path, colorTrans)
-        };
-    }
-    private ILayer CreateShpLayer(ChartItem chart)
-    {
-        IProvider shpsource = new ShapeFile(chart.Path, true, readPrjFile: true, projectionCrs: null);
-        
-
-        var layer = new Layer
-        {
-            Opacity = chart.Opacity,
-            Enabled = chart.Enabled,
-            Name = chart.Name,
-            DataSource = shpsource,
-            Style = GetShapefileStyles(chart)
-        };
-        return layer;
-    }
-
-    private StyleCollection GetShapefileStyles(ChartItem chart)
-    {
-        var styles = new StyleCollection();
-        styles.Styles.Add(new VectorStyle
-        {
-            Outline = new Pen   // Outline of Areas and Points
-            {
-                Width = chart.LineWidth,
-                Color = colorConvertor.WMColorToMapsui(chart.OutlineColor)//new Color(255, 0, 0, 0)
-            },
-            Fill = new Brush { Color = colorConvertor.WMColorToMapsui(chart.FillColor)},   // Fill of Areas and Points
-            Line = new Pen  //Polyline Style
-            {
-                Width = chart.LineWidth,
-                Color = colorConvertor.WMColorToMapsui(chart.LineColor)
-            }
-        }); ;
-        styles.Styles.Add(new LabelStyle
-        {
-            ForeColor = colorConvertor.WMColorToMapsui(chart.LabelColor),
-            BackColor = new Brush(colorConvertor.WMColorToMapsui(chart.BackroundColor)),
-            Font = new Font { FontFamily = "GenericSerif", Size = (double)chart.LabelFontSize },
-            HorizontalAlignment = (LabelStyle.HorizontalAlignmentEnum)chart.HorizontalAlignment, //LabelStyle.HorizontalAlignmentEnum.Center,
-            VerticalAlignment = (LabelStyle.VerticalAlignmentEnum)chart.VerticalAlignment, //LabelStyle.VerticalAlignmentEnum.Center,
-            Offset = new Offset { X = 0, Y = 0 },
-            Halo = new Pen { Color = colorConvertor.WMColorToMapsui(chart.HaloColor), Width = 1 },
-            CollisionDetection = true,
-            LabelColumn = chart.LabelAttributeName
-        }) ;
-        return styles;
-    }
-    private void ZoomActive()
-    {
-        MyBoatLayer.MyLocation.X.ToString();
-        MRect ext = null;
-        foreach (var layer in MapControl.Map.Layers)
-        {
-            if (layer.Enabled)
-            {
-                if (ext is null)
-                {
-                    ext = layer.Extent;
-                }
-                else
-                {
-                    ext = ext.Join(layer.Extent);
-                }
-            }
-        }
-        if (ext is not null)
-            MapControl.Map.Navigator.ZoomToBox(ext);
-        
-    }
     private void SaveMapControlState()
     {
         Properties.MapControl.Default.BackColor = colorConvertor.Mapsui2String(MapControl.Map.BackColor);
@@ -464,6 +202,186 @@ public partial class MapPage : Page
         }
     }
 
+    #region GNSS_Methods
+    private void SubscribeToNmea()
+    {
+        NmeaHandler nmeaHandler = new NmeaHandler();
+        nmeaHandler.LogNmeaMessage += NmeaMessageReceived;
+        foreach (DeviceSettings settings in commSettings.Devices)
+        {
+            var dev = new NmeaDevice(nmeaHandler, settings);
+            dev.NmeaReceiver.NmeaMessageFailedChecksum += (bytes, index, count, expected, actual) =>
+                {
+                    Trace.TraceError($"Failed Checksum: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray()).Trim()} expected {expected} but got {actual}");
+                };
+            dev.NmeaReceiver.NmeaMessageDropped += (bytes, index, count, reason) =>
+                {
+                    Trace.WriteLine($"Bad Syntax: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())} reason: {reason}");
+                };
+            dev.NmeaReceiver.NmeaMessageIgnored += (bytes, index, count) =>
+                {
+                    Trace.WriteLine($"Ignored: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())}");
+                };
+            devices.Add(dev);
+        }
+    }
+    private void NmeaMessageReceived(INmeaMessage msg)
+    {
+        VesselData.Update(msg);
+        switch (msg.GetType().Name)
+        {
+            case "GGA":
+                Dispatcher.BeginInvoke(UpdateLocation);
+                break;
+            case "HDT":
+                Dispatcher.BeginInvoke(UpdateDirection);
+                break;
+            default:
+                break;
+        }
+        vm.UpdateDataView(VesselData, geoConverter);
+    }
+    private void ConnectToGps()
+    {
+        foreach (NmeaDevice dev in devices)
+        {
+            try
+            {
+                dev.Connect();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+    }
+    private void UpdateDirection()
+    {
+        double heading = VesselData.GetHDT.HeadingTrue;
+        double mapRotation = Properties.MapControl.Default.Rotation;
+        if (ToggleNoseUp.IsChecked.Value)
+        {
+            // when bow up
+            MyBoatLayer.UpdateMyDirection(heading, heading);
+            MapControl.Map.Navigator.RotateTo(360 - heading);
+        }
+        else
+        {
+            //MyBoatLayer.UpdateMyDirection(heading, 0);
+            MyBoatLayer.UpdateMyDirection((heading + mapRotation) % 360, 0);
+        }
+    }
+    private void UpdateLocation()
+    {
+        double lon = VesselData.GetGGA.Longitude.Degrees;
+        double lat = VesselData.GetGGA.Latitude.Degrees;
+        var p = geoConverter.Convert(new(lon, lat, 0));
+        MPoint point = new MPoint(p.X, p.Y);
+        MyBoatLayer.UpdateMyLocation(point);
+        MyBoatLayer.DataHasChanged();
+
+        //PosX.Text = MyBoatLayer.MyLocation.X.ToString("F2");
+        //PosY.Text = MyBoatLayer.MyLocation.Y.ToString("F2");
+        //TODO: Add logic to keep vessel on screen (nose up and in center)
+    } 
+    #endregion
+
+    #region Helpers
+    private void ZoomActive()
+    {
+        MyBoatLayer.MyLocation.X.ToString();
+        MRect ext = null;
+        foreach (var layer in MapControl.Map.Layers)
+        {
+            if (layer.Enabled)
+            {
+                if (ext is null)
+                {
+                    ext = layer.Extent;
+                }
+                else
+                {
+                    ext = ext.Join(layer.Extent);
+                }
+            }
+        }
+        if (ext is not null)
+            MapControl.Map.Navigator.ZoomToBox(ext);
+
+    }
+    private ILayer CreateTiffLayer(ChartItem chart)
+    {
+        var colorTrans = new List<Color>
+                        {
+                            colorConvertor.WMColorToMapsui(chart.FillColor)
+                        };
+        return new Layer
+        {
+            Opacity = chart.Opacity,
+            Enabled = chart.Enabled,
+            Name = chart.Name,
+            DataSource = new GeoTiffProvider(chart.Path, colorTrans)
+        };
+    }
+    private ILayer CreateShpLayer(ChartItem chart)
+    {
+        IProvider shpsource = new ShapeFile(chart.Path, true, readPrjFile: true, projectionCrs: null);
+        var layer = new Layer
+        {
+            Opacity = chart.Opacity,
+            Enabled = chart.Enabled,
+            Name = chart.Name,
+            DataSource = shpsource,
+            Style = GetShapefileStyles(chart)
+        };
+        return layer;
+    }
+    private StyleCollection GetShapefileStyles(ChartItem chart)
+    {
+        var styles = new StyleCollection();
+        styles.Styles.Add(new VectorStyle
+        {
+            Outline = new Pen   // Outline of Areas and Points
+            {
+                Width = chart.LineWidth,
+                Color = colorConvertor.WMColorToMapsui(chart.OutlineColor)//new Color(255, 0, 0, 0)
+            },
+            Fill = new Brush { Color = colorConvertor.WMColorToMapsui(chart.FillColor) },   // Fill of Areas and Points
+            Line = new Pen  //Polyline Style
+            {
+                Width = chart.LineWidth,
+                Color = colorConvertor.WMColorToMapsui(chart.LineColor)
+            }
+        }); ;
+        styles.Styles.Add(new LabelStyle
+        {
+            ForeColor = colorConvertor.WMColorToMapsui(chart.LabelColor),
+            BackColor = new Brush(colorConvertor.WMColorToMapsui(chart.BackroundColor)),
+            Font = new Font { FontFamily = "GenericSerif", Size = (double)chart.LabelFontSize },
+            HorizontalAlignment = (LabelStyle.HorizontalAlignmentEnum)chart.HorizontalAlignment, //LabelStyle.HorizontalAlignmentEnum.Center,
+            VerticalAlignment = (LabelStyle.VerticalAlignmentEnum)chart.VerticalAlignment, //LabelStyle.VerticalAlignmentEnum.Center,
+            Offset = new Offset { X = 0, Y = 0 },
+            Halo = new Pen { Color = colorConvertor.WMColorToMapsui(chart.HaloColor), Width = 1 },
+            CollisionDetection = true,
+            LabelColumn = chart.LabelAttributeName
+        });
+        return styles;
+    }
+    private double CalcBearing(MPoint p1, MPoint p2)
+    {
+        var rad = Math.Atan2((p1.Y - p2.Y), (p1.X - p2.X));
+        var deg = rad * 180 / Math.PI;
+        return (270 - deg) % 360;
+    }
+    private void DrawLine(MPoint to)
+    {
+        MyMeasurementLayer.Clear();
+        var line = new WKTReader().Read($"LINESTRING ({measureStart.X} {measureStart.Y},{to.X} {to.Y})");
+        var feature = new GeometryFeature(line);
+        MyMeasurementLayer.Add(feature);
+    }
+    #endregion
+
     #region Events
     private void Page_Loaded(object sender, RoutedEventArgs e)
     {
@@ -475,20 +393,30 @@ public partial class MapPage : Page
         {
             SaveMapControlState();
             SaveViewport();
-            cancellationTokenSource.Cancel();
-            if (serialPort is not null && serialPort.IsOpen)
+            //cancellationTokenSource.Cancel();
+            //if (serialPort is not null && serialPort.IsOpen)
+            //{
+            //    //serialPort.DataReceived -= SerialPort_DataReceived;
+            //    serialPort.Close();
+            //}
+            //if (udpClient is not null)
+            //{
+            //    udpClient.Close();
+            //}
+
+            //foreach (NmeaDevice device in devices)
+            //{
+            //    device.Dispose();
+            //}
+            //devices = new();
+            foreach (var device in devices)
             {
-                serialPort.DataReceived -= SerialPort_DataReceived;
-                serialPort.Close();
-            }
-            if (udpClient is not null)
-            { 
-                udpClient.Close();
+                device.Dispose();
             }
         }
         catch (Exception)
         {
-            MessageBox.Show("Couldn't close the serial port.\nPlease check settings page.");
+            //MessageBox.Show("Couldn't close the port.\nPlease check settings page.");
         }
     }
     private void ZoomExtent_Click(object sender, RoutedEventArgs e)
@@ -526,28 +454,28 @@ public partial class MapPage : Page
             DrawLine(worldPosition);
         }
     }
-    private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+    private void MapControl_StartMeasure(object sender, MouseButtonEventArgs e) //Right button down
     {
-        int bytesToRead = serialPort.BytesToRead;
-        byte[] buffer = new byte[bytesToRead];
-        serialPort.Read(buffer, 0, bytesToRead);
+        if (measureMode)
+        {
+            ToggleTracking.IsChecked = false;
+            MyBoatLayer.IsCentered = false;
 
-        nmeaReceiver.Receive(buffer);
+            MapControl.Map.Navigator.PanLock = true;
+            var screenPosition = e.GetPosition(MapControl);
+            measureStart = MapControl.Map.Navigator.Viewport.ScreenToWorld(screenPosition.X, screenPosition.Y);
+        }
+    }
+    private void MapControl_StopMeasure(object sender, MouseButtonEventArgs e)
+    {
+        if (measureMode)
+        {
+            MyMeasurementLayer.Clear();
+            MapControl.Map.Navigator.PanLock = false;
+            measureStart = null;
+        }
     }
     #endregion
-    private double CalcBearing(MPoint p1, MPoint p2)
-    {
-        var rad = Math.Atan2((p1.Y - p2.Y), (p1.X - p2.X));
-        var deg = rad * 180 / Math.PI;
-        return (270 - deg) % 360;
-    }
-    private void DrawLine(MPoint to)
-    {
-        MyMeasurementLayer.Clear();
-        var line = new WKTReader().Read($"LINESTRING ({measureStart.X} {measureStart.Y},{to.X} {to.Y})");
-        var feature = new GeometryFeature(line);
-        MyMeasurementLayer.Add(feature);
-    }
 
     #region MapControls
     private void ToggleTracking_Click(object sender, RoutedEventArgs e)
@@ -559,6 +487,10 @@ public partial class MapPage : Page
     {
         MapControl.Map.Navigator.RotateTo(Properties.MapControl.Default.Rotation);
         SaveMapControlState();
+    }
+    private void ToggleMeasure_Click(object sender, RoutedEventArgs e)
+    {
+        measureMode = (bool)ToggleMeasure.IsChecked;
     }
     private void SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<System.Windows.Media.Color?> e)
     {
@@ -576,34 +508,7 @@ public partial class MapPage : Page
         Rotation.Text = MapControl.Map.Navigator.Viewport.Rotation.ToString("F0");
         SaveMapControlState();
     }
-
     #endregion
 
-    private void ToggleMeasure_Click(object sender, RoutedEventArgs e)
-    {
-        measureMode = (bool)ToggleMeasure.IsChecked;
-    }
-
-    private void MapControl_StartMeasure(object sender, MouseButtonEventArgs e) //Right button down
-    {
-        if (measureMode)
-        {
-            ToggleTracking.IsChecked = false;
-            MyBoatLayer.IsCentered = false;
-
-            MapControl.Map.Navigator.PanLock = true;
-            var screenPosition = e.GetPosition(MapControl);
-            measureStart = MapControl.Map.Navigator.Viewport.ScreenToWorld(screenPosition.X, screenPosition.Y);
-        }
-    }
-
-    private void MapControl_StopMeasure(object sender, MouseButtonEventArgs e)
-    {
-        if (measureMode)
-        {
-            MyMeasurementLayer.Clear();
-            MapControl.Map.Navigator.PanLock = false;
-            measureStart = null;
-        }
-    }
 }
+    

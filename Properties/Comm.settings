@@ -1,5 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Mapper_v1.Properties" GeneratedClassName="Comm">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="CraneMap2.Properties" GeneratedClassName="Comm">
   <Profiles />
   <Settings>
     <Setting Name="ComPort" Type="System.String" Scope="User">
@@ -19,9 +19,6 @@
     </Setting>
     <Setting Name="ConnectionType" Type="System.String" Scope="User">
       <Value Profile="(Default)">Serial</Value>
-    </Setting>
-    <Setting Name="Devices" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

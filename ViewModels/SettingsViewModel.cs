@@ -45,30 +45,6 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     [ObservableProperty]
     private CommSettings commSettings = new();
 
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(RemoveDeviceCommand))]
-    private DeviceSettings selectedDevice;
-
-
-    [RelayCommand]
-    private void AddDevice()
-    {
-        CommSettings.Devices.Add(new DeviceSettings());
-        CommSettings.SaveSettings();
-    }
-
-    [RelayCommand(CanExecute = nameof(CanRemoveDevice))]
-    private void RemoveDevice()
-    {
-        //int idx = CommSettings.Devices.IndexOf(SelectedDevice);
-        CommSettings.Devices.Remove(SelectedDevice);
-        CommSettings.SaveSettings();
-    }
-    private bool CanRemoveDevice()
-    {
-        return SelectedDevice is not null;
-    }
-
     [RelayCommand]
     private void SaveSettings()
     {

@@ -17,13 +17,13 @@ namespace Mapper_v1.Models;
 public partial class ChartItem : ObservableObject
 {
     [ObservableProperty]
-    private bool enabled;
+    public bool enabled;
     [ObservableProperty]
-    private double opacity;
+    public double opacity;
     [ObservableProperty]
-    private Color lineColor;
+    public Color lineColor;
     [ObservableProperty]
-    private Color outlineColor;
+    public Color outlineColor;
     [ObservableProperty]
     private Color fillColor;
     [ObservableProperty]

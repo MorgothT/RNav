@@ -17,94 +17,6 @@
     <Page.Resources>
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" EnumType="models:AppTheme"/>
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConnectionType" EnumType="models:ConnectionType"/>
-        <DataTemplate DataType="{x:Type models:DeviceSettings}">
-                <StackPanel Orientation="Vertical">
-                    <ComboBox x:Name="commType" 
-                              ItemsSource="{help:Enum models:ConnectionType}" 
-                              SelectedValue="{Binding CommType}">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="SelectionChanged">
-                                <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Page}, Path=DataContext.SaveSettingsCommand}" CommandParameter="Default"/>
-                        </i:EventTrigger>
-                        </i:Interaction.Triggers>
-                    </ComboBox>
-                    <GroupBox Header="Serial">
-                        <GroupBox.Style>
-                            <Style TargetType="GroupBox">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=commType}" Value="Serial">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </GroupBox.Style>
-                        <StackPanel>
-                            <DockPanel>
-                                <TextBlock Text="Port:" VerticalAlignment="Center"/>
-                                <ComboBox ItemsSource="{Binding AvailableComPorts}"
-                                      SelectedItem="{Binding ComPort}"
-                                      Margin="{StaticResource SmallLeftMargin}">
-                                    <i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="SelectionChanged">
-                                        <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Page}, Path=DataContext.SaveSettingsCommand}" CommandParameter="Default" />
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>
-                                </ComboBox>
-                            </DockPanel>
-                            <DockPanel>
-                                <TextBlock Text="Baud Rate:" VerticalAlignment="Center"/>
-                                <ComboBox ItemsSource="{Binding AvailableBaudRates}"
-                                      SelectedItem="{Binding BaudRate}"
-                                      Margin="{StaticResource SmallLeftMargin}">
-                                    <i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="SelectionChanged">
-                                        <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Page}, Path=DataContext.SaveSettingsCommand}" CommandParameter="Default" />
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>
-                                </ComboBox>
-                            </DockPanel>
-                        </StackPanel>
-                    </GroupBox>
-                    <GroupBox Header="Network">
-                        <GroupBox.Style>
-                            <Style TargetType="GroupBox">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=commType}" Value="UDP">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=commType}" Value="TCP">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </GroupBox.Style>
-                        <StackPanel>
-                            <DockPanel>
-                                <TextBlock Text="IP Address:" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding IPAddress}" VerticalAlignment="Center" Margin="{StaticResource SmallLeftMargin}">
-                                    <i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="LostFocus">
-                                            <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Page}, Path=DataContext.SaveSettingsCommand}" CommandParameter="Default" />
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>
-                                </TextBox>
-                            </DockPanel>
-                            <DockPanel>
-                                <TextBlock Text="Port:" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding Port}" VerticalAlignment="Center" Margin="{StaticResource SmallLeftMargin}">
-                                    <i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="LostFocus">
-                                        <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Page}, Path=DataContext.SaveSettingsCommand}" CommandParameter="Default" />
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>
-                                </TextBox>
-                            </DockPanel>
-                        </StackPanel>
-                    </GroupBox>
-                </StackPanel>
-        </DataTemplate>
     </Page.Resources>
     <ScrollViewer>
         <Grid Margin="{StaticResource SmallTopBottomMargin}">
@@ -210,7 +122,7 @@
                         </i:Interaction.Triggers>
                     </ComboBox>
                 </GroupBox>
-                <GroupBox Header="Vessel">
+                <GroupBox Header="Display Settings">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto"/>
@@ -218,6 +130,8 @@
                             <ColumnDefinition Width="auto"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
@@ -252,30 +166,17 @@
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                         </mah:ColorPicker>
-                    </Grid>
-                </GroupBox>
-                <GroupBox Header="Data Display">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto"/>
-                            <RowDefinition Height="auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock Text="Font Size:" Grid.Row="0"/>
+                        <TextBlock Text="Font Size:" Grid.Row="3"/>
                         <ComboBox ItemsSource="{Binding MapSettings.GetFontSizes}" SelectedItem="{Binding MapSettings.FontSize}" 
-                                  Grid.Row="0" Grid.Column="2">
+                                  Grid.Row="3" Grid.Column="2">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="SelectionChanged">
                                     <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}"/>
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                         </ComboBox>
-                        <TextBlock Text="Degrees Format:" Grid.Column="0" Grid.Row="1"/>
-                        <ComboBox  Grid.Column="3" Grid.Row="1"
+                        <TextBlock Text="Degrees Format:" Grid.Column="0" Grid.Row="4"/>
+                        <ComboBox  Grid.Column="3" Grid.Row="4"
                               ItemsSource="{help:Enum models:DegreeFormat}" 
                               SelectedValue="{Binding MapSettings.DegreeFormat}">
                             <i:Interaction.Triggers>
@@ -284,34 +185,95 @@
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                         </ComboBox>
+
                     </Grid>
                 </GroupBox>
-                <!-- TODO: Change to list of devices-->
                 <GroupBox Header="GNSS Input">
-                    <StackPanel>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Button Command="{Binding AddDeviceCommand}" 
-                                    Grid.Column="0"
-                                    Height="32" Padding="0" >
-                                <Label fa:Awesome.Content="Plus" Foreground="{DynamicResource MahApps.Brushes.AccentBase}" 
-                                       Padding="0" FontSize="24" FontWeight="Bold"/>
-                            </Button>
-                            <Button Command="{Binding RemoveDeviceCommand}" 
-                                    Grid.Column="2"
-                                    Height="32" Padding="0">
-                                <Label fa:Awesome.Content="Minus" Foreground="{DynamicResource MahApps.Brushes.Button.CleanWindow.Close.Background.MouseOver}" 
-                                       Padding="0" FontSize="24" FontWeight="Bold"/>
-                            </Button>
-                        </Grid>
-                        <ListView x:Name="DeviceList" 
-                                  IsSynchronizedWithCurrentItem="True"
-                                  ItemsSource="{Binding CommSettings.Devices}" 
-                                  SelectedItem="{Binding SelectedDevice}"/>
+                    <StackPanel Orientation="Vertical">
+                        <ComboBox x:Name="commType" 
+                              ItemsSource="{help:Enum models:ConnectionType}" 
+                              SelectedValue="{Binding CommSettings.CommType}">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectionChanged">
+                                    <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}" CommandParameter="Default"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </ComboBox>
+                        <GroupBox Header="Serial">
+                            <GroupBox.Style>
+                                <Style TargetType="GroupBox">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=commType}" Value="Serial">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </GroupBox.Style>
+                            <StackPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Port:" VerticalAlignment="Center"/>
+                                    <ComboBox ItemsSource="{Binding CommSettings.AvailableComPorts}"
+                                      SelectedItem="{Binding CommSettings.ComPort}"
+                                      Margin="{StaticResource SmallLeftMargin}">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="SelectionChanged">
+                                                <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}" CommandParameter="Default" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </ComboBox>
+                                </DockPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Baud Rate:" VerticalAlignment="Center"/>
+                                    <ComboBox ItemsSource="{Binding CommSettings.AvailableBaudRates}"
+                                      SelectedItem="{Binding CommSettings.BaudRate}"
+                                      Margin="{StaticResource SmallLeftMargin}">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="SelectionChanged">
+                                                <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}" CommandParameter="Default" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </ComboBox>
+                                </DockPanel>
+                            </StackPanel>
+                        </GroupBox>
+                        <GroupBox Header="Network">
+                            <GroupBox.Style>
+                                <Style TargetType="GroupBox">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=commType}" Value="UDP">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=commType}" Value="TCP">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </GroupBox.Style>
+                            <StackPanel>
+                                <DockPanel>
+                                    <TextBlock Text="IP Address:" VerticalAlignment="Center"/>
+                                    <TextBox Text="{Binding CommSettings.IPAddress}" VerticalAlignment="Center" Margin="{StaticResource SmallLeftMargin}">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="LostFocus">
+                                                <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}" CommandParameter="Default" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </TextBox>
+                                </DockPanel>
+                                <DockPanel>
+                                    <TextBlock Text="Port:" VerticalAlignment="Center"/>
+                                    <TextBox Text="{Binding CommSettings.Port}" VerticalAlignment="Center" Margin="{StaticResource SmallLeftMargin}">
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="LostFocus">
+                                                <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}" CommandParameter="Default" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                    </TextBox>
+                                </DockPanel>
+                            </StackPanel>
+                        </GroupBox>
                     </StackPanel>
                 </GroupBox>
             </StackPanel>

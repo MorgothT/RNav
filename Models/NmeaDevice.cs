@@ -1,15 +1,8 @@
 ﻿using InvernessPark.Utilities.NMEA;
-using System;
-using System.Collections.Generic;
 using System.IO.Ports;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
-using WinRT;
 
 namespace Mapper_v1.Models;
 
@@ -137,6 +130,11 @@ public class NmeaDevice
         {
             await (Port as TcpClient).ConnectAsync(endPoint, TokenSource.Token);
             _ = Task.Run(ReceiveTCP, TokenSource.Token);
+        }
+        catch (SocketException se)
+        {
+            MessageBox.Show($"Couldn't open TCP connection {DeviceSettings.IPAddress}:{DeviceSettings.Port}. Error Code: {se.ErrorCode}");
+            //throw;
         }
         catch (Exception ex)
         {

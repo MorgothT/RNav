@@ -71,6 +71,7 @@ public partial class MapPage : Page
         InitUIControls();
         ConnectToGps();
     }
+
     private void InitMapControl()
     {
         LoadMapControlState();

@@ -5,12 +5,14 @@
     <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <RootNamespace>Mapper_v1</RootNamespace>
     <UseWPF>true</UseWPF>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
     <ImplicitUsings>enable</ImplicitUsings>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
     <StartupObject>Mapper_v1.App</StartupObject>
     <ApplicationIcon>RNav.ico</ApplicationIcon>
-    <PackageIcon>RNav.jpg</PackageIcon>
+    <PackageIcon>RNav.ico</PackageIcon>
+    <Platforms>AnyCPU;x64;x86</Platforms>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>RNav</AssemblyName>
   </PropertyGroup>
   
   <ItemGroup>
@@ -18,6 +20,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <None Remove="app__.manifest__" />
     <None Remove="VesselShapes\CraneDimond.shp" />
     <None Remove="VesselShapes\Marker.shp" />
     <None Remove="VesselShapes\Rect.shp" />
@@ -25,18 +28,21 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Content Include="RNav.ico" />
+    <Resource Include="RNav.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="BitMiracle.LibTiff.NET" Version="2.4.649" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
+    <PackageReference Include="Clowd.Squirrel" Version="2.9.42" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
     <PackageReference Include="MahApps.Metro" Version="2.4.10" />
-    <PackageReference Include="Mapsui" Version="4.1.0" />
-    <PackageReference Include="Mapsui.Extensions" Version="4.1.0" />
-    <PackageReference Include="Mapsui.Nts" Version="4.1.0" />
-    <PackageReference Include="Mapsui.Wpf" Version="4.1.0" />
+    <PackageReference Include="Mapsui" Version="4.1.1" />
+    <PackageReference Include="Mapsui.Extensions" Version="4.1.1" />
+    <PackageReference Include="Mapsui.Nts" Version="4.1.1" />
+    <PackageReference Include="Mapsui.Wpf" Version="4.1.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="System.IO.Ports" Version="7.0.0" />
     <PackageReference Include="System.Net.Sockets" Version="4.3.0" />
@@ -94,10 +100,6 @@
       <LastGenOutput>MapControl.Designer.cs</LastGenOutput>
     </None>
     <None Update="RNav.ico">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Update="RNav.jpg">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

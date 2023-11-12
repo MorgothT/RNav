@@ -3,9 +3,18 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Diagnostics;
+using System.Windows.Threading;
+using System.Collections.ObjectModel;
 using Mapper_v1.Converters;
 using Mapper_v1.Models;
 using Mapper_v1.ViewModels;
+using Mapper_v1.Properties;
+using GeoConverter;
+using InvernessPark.Utilities.NMEA;
+using Newtonsoft.Json;
+using NetTopologySuite.IO;
+using NetTopologySuite.Geometries;
 using Mapsui;
 using Mapsui.Extensions;
 using Mapsui.Extensions.Provider;
@@ -15,25 +24,13 @@ using Mapsui.Providers;
 using Mapsui.Samples.CustomWidget;
 using Mapsui.Styles;
 using Mapsui.Widgets.ScaleBar;
-using System.IO.Ports;
-using System.Net.Sockets;
-using InvernessPark.Utilities.NMEA;
-using Mapper_v1.Properties;
-using GeoConverter;
-using System.Diagnostics;
-using InvernessPark.Utilities.NMEA.Sentences;
-using System.Windows.Threading;
 using Mapsui.UI.Wpf;
-using Newtonsoft.Json;
-using System.Net;
-using System.Windows.Data;
-using Windows.Media.Streaming.Adaptive;
-using System.Diagnostics.Metrics;
-using NetTopologySuite.Geometries;
-using Mapsui.UI.Objects;
-using NetTopologySuite.IO;
 using Mapsui.Nts;
-using System.Collections.ObjectModel;
+using Point = NetTopologySuite.Geometries.Point;
+using SkiaSharp;
+using Windows.Graphics.DirectX;
+using Mapsui.Nts.Extensions;
+using System.Data;
 
 namespace Mapper_v1.Views;
 
@@ -50,6 +47,8 @@ public partial class MapPage : Page
     private bool measureMode = false;
     private MPoint measureStart;
     private WritableLayer MyMeasurementLayer;
+    private bool targetMode = false;
+    private GenericCollectionLayer<List<IFeature>> MyTargets = new();
 
     private static Converter geoConverter;
     private static ColorConvertor colorConvertor = new();
@@ -77,6 +76,7 @@ public partial class MapPage : Page
         LoadMapControlState();
         MapControl.MouseMove += MapControlOnMouseMove;
         MapControl.FeatureInfo += MapControlFeatureInfo;
+        MapControl.Info += MapControl_Click;
 
         MapControl.Map.Navigator.RotationLock = false;
         MapControl.UnSnapRotationDegrees = 30;
@@ -101,6 +101,76 @@ public partial class MapPage : Page
             throw;
         }
     }
+
+    private void MapControl_Click(object sender, MapInfoEventArgs e)
+    {
+        if (targetMode)
+        {
+            if (e.MapInfo?.WorldPosition is null) return;
+            MyTargets?.Features.Add(new GeometryFeature
+            {
+                Geometry = new Point(e.MapInfo.WorldPosition.X, e.MapInfo.WorldPosition.Y)
+            });
+            AddTarget(e.MapInfo.WorldPosition);
+            MyTargets?.DataHasChanged();
+            return;
+        }
+        else
+        {
+            if (e.MapInfo?.WorldPosition is null) return;
+            if (MyTargets?.Features is null) return;
+            foreach (GeometryFeature feature in MyTargets?.Features) 
+            {
+                double dist = feature.Geometry.Coordinate.Distance(e.MapInfo.WorldPosition.ToCoordinate());
+                
+                if (dist < 0.1)
+                {
+                    MyTargets.Features.Remove(feature);
+                    //TODO: Remove from target list
+                    RemoveTarget(feature.Geometry);
+                    MyTargets?.DataHasChanged();
+                    return;
+                }
+            }
+        }
+    }
+
+    private void RemoveTarget(Geometry geometry)
+    {
+        foreach (Target target in mapSettings.TargetList)
+        {
+            if (geometry.Coordinate.X == target.X &&  geometry.Coordinate.Y == target.Y)
+            {
+                mapSettings.TargetList.Remove(target);
+                mapSettings.SaveMapSettings();
+                return;
+            }
+        }
+        
+    }
+
+    private void AddTarget(MPoint worldPosition)
+    {
+        int id;
+        if (mapSettings.TargetList is null)
+        {
+            mapSettings.TargetList = new();
+        }
+        id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
+        Converter.Point3d latlon = Converter.ToDeg(new Converter.Point3d(worldPosition.X, worldPosition.Y, 0));
+        Target target = new()
+        {
+            Id = id,
+            Name = $"Target no.{id}",
+            X = worldPosition.X,
+            Y = worldPosition.Y,
+            Lat = latlon.Y,
+            Lon = latlon.X
+        };
+        mapSettings.TargetList.Add(target);
+        mapSettings.SaveMapSettings();
+    }
+
     private void InitUIControls()
     {
         ColorSelector.SelectedColor = colorConvertor.WMColorFromMapsui(MapControl.Map.BackColor);
@@ -141,7 +211,28 @@ public partial class MapPage : Page
         {
             MapControl.Renderer.StyleRenderers.Add(typeof(BoatStyle), new BoatRenderer());
         }
+        if (MapControl.Renderer is Mapsui.Rendering.Skia.MapRenderer && !MapControl.Renderer.StyleRenderers.ContainsKey(typeof(TargetStyle)))
+        {
+            MapControl.Renderer.StyleRenderers.Add(typeof(TargetStyle), new TargetRenderer());
+        }
         MyMeasurementLayer = new WritableLayer() { Name = "Measurement", Opacity = 0.7f };
+        MyTargets = new GenericCollectionLayer<List<IFeature>>
+        {
+            Style = new TargetStyle()
+            {
+                Color = SKColors.DarkRed,
+                Opacity = 0.1f,
+                Radius = 5
+
+            }
+        };
+        foreach (Target target in mapSettings.TargetList) 
+        {
+            MyTargets?.Features.Add(new GeometryFeature
+            {
+                Geometry = new Point(target.X,target.Y)
+            });
+        }
         foreach (var chart in mapSettings.ChartItems)
         {
             if (File.Exists(chart.Path))
@@ -164,6 +255,7 @@ public partial class MapPage : Page
         {
             var test = layer.GetFeatures(MapControl.Map.Extent, MapControl.Map.Navigator.Viewport.Resolution);
         }
+        MapControl.Map.Layers.Add(MyTargets);
         MapControl.Map.Layers.Add(MyMeasurementLayer);
         MapControl.Map.Layers.Add(MyBoatLayer);
     }
@@ -281,10 +373,6 @@ public partial class MapPage : Page
         MPoint point = new MPoint(p.X, p.Y);
         MyBoatLayer.UpdateMyLocation(point);
         MyBoatLayer.DataHasChanged();
-
-        //PosX.Text = MyBoatLayer.MyLocation.X.ToString("F2");
-        //PosY.Text = MyBoatLayer.MyLocation.Y.ToString("F2");
-        //TODO: Add logic to keep vessel on screen (nose up and in center)
     } 
     #endregion
 
@@ -395,22 +483,6 @@ public partial class MapPage : Page
         {
             SaveMapControlState();
             SaveViewport();
-            //cancellationTokenSource.Cancel();
-            //if (serialPort is not null && serialPort.IsOpen)
-            //{
-            //    //serialPort.DataReceived -= SerialPort_DataReceived;
-            //    serialPort.Close();
-            //}
-            //if (udpClient is not null)
-            //{
-            //    udpClient.Close();
-            //}
-
-            //foreach (NmeaDevice device in devices)
-            //{
-            //    device.Dispose();
-            //}
-            //devices = new();
             foreach (var device in devices)
             {
                 device.Dispose();
@@ -418,7 +490,7 @@ public partial class MapPage : Page
         }
         catch (Exception)
         {
-            //MessageBox.Show("Couldn't close the port.\nPlease check settings page.");
+            MessageBox.Show("Failed to close map properly.");
         }
     }
     private void ZoomExtent_Click(object sender, RoutedEventArgs e)
@@ -467,7 +539,7 @@ public partial class MapPage : Page
             var screenPosition = e.GetPosition(MapControl);
             measureStart = MapControl.Map.Navigator.Viewport.ScreenToWorld(screenPosition.X, screenPosition.Y);
         }
-    }
+     }
     private void MapControl_StopMeasure(object sender, MouseButtonEventArgs e)
     {
         if (measureMode)
@@ -494,6 +566,10 @@ public partial class MapPage : Page
     {
         measureMode = (bool)ToggleMeasure.IsChecked;
     }
+    private void ToggleTarget_Click(object sender, RoutedEventArgs e)
+    {
+        targetMode = (bool)ToggleTarget.IsChecked;
+    }
     private void SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<System.Windows.Media.Color?> e)
     {
         if (e.NewValue.HasValue)
@@ -511,6 +587,5 @@ public partial class MapPage : Page
         SaveMapControlState();
     }
     #endregion
-
 }
-    
+

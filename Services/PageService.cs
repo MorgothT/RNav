@@ -19,6 +19,7 @@ public class PageService : IPageService
         Configure<MapViewModel, MapPage>();
         Configure<ChartsViewModel, ChartsPage>();
         Configure<SettingsViewModel, SettingsPage>();
+        Configure<TargetsViewModel, TargetsPage>();
     }
 
     public Type GetPageType(string key)

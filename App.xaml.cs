@@ -84,6 +84,9 @@ public partial class App : Application
         services.AddTransient<ChartsViewModel>();
         services.AddTransient<ChartsPage>();
 
+        services.AddTransient<TargetsViewModel>();
+        services.AddTransient<TargetsPage>();
+
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<SettingsPage>();
 

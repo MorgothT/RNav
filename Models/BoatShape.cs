@@ -88,8 +88,21 @@ public partial class BoatShape : ObservableObject
     }
     public List<SKPoint> CreateMarker()
     {
-        //TODO: implament Boat Symbol fully
-        return new List<SKPoint>() { new SKPoint(-1, 1), new SKPoint(1, -1), new SKPoint(0, 0), new SKPoint(-1, -1), new SKPoint(1, 1) };
+        //Default shape "ECDIS"
+        return new List<SKPoint>()
+        {
+            new SKPoint(-1, 0),
+            new SKPoint(1, 0),
+            new SKPoint(0, 0),
+            new SKPoint(0, -1),
+            new SKPoint(0, 2),
+            new SKPoint(0, 0.5f),
+            new SKPoint(0.5f,0),
+            new SKPoint(0, -0.5f),
+            new SKPoint(-0.5f,0),
+            new SKPoint(0, 0.5f),
+            new SKPoint(0, 0)
+        };
     }
     public void Refresh()
     {

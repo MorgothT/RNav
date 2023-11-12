@@ -212,5 +212,23 @@ namespace Mapper_v1.Properties {
                 return ResourceManager.GetString("ShellSettingsPage", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Targets.
+        /// </summary>
+        public static string ShellTargetsPage {
+            get {
+                return ResourceManager.GetString("ShellTargetsPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Targets.
+        /// </summary>
+        public static string TargetsPageTitle {
+            get {
+                return ResourceManager.GetString("TargetsPageTitle", resourceCulture);
+            }
+        }
     }
 }

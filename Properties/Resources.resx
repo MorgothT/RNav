@@ -168,4 +168,10 @@
   <data name="AppDisplayName" xml:space="preserve">
     <value>RNav</value>
   </data>
+  <data name="ShellTargetsPage" xml:space="preserve">
+    <value>Targets</value>
+  </data>
+  <data name="TargetsPageTitle" xml:space="preserve">
+    <value>Targets</value>
+  </data>
 </root>

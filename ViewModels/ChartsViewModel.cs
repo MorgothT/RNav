@@ -1,11 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MahApps.Metro.Converters;
 using Mapper_v1.Models;
 using Microsoft.Win32;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Windows.Navigation;
 
 namespace Mapper_v1.ViewModels;
 

@@ -1,12 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using ControlzEx.Standard;
-using InvernessPark.Utilities.NMEA.Sentences;
 using Mapper_v1.Models;
-using Mapper_v1.Views;
-using Mapsui.Tiling;
-using System.Collections.ObjectModel;
-using System.Drawing;
 
 namespace Mapper_v1.ViewModels;
 
@@ -77,9 +70,3 @@ public partial class MapViewModel : ObservableObject
         }
     }
 }
-//double coord = 59.345235;
-//int sec = (int)Math.Round(coord * 3600);
-//int deg = sec / 3600;
-//sec = Math.Abs(sec % 3600);
-//int min = sec / 60;
-//sec %= 60;

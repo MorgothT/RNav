@@ -35,6 +35,9 @@ public partial class MapSettings : ObservableObject
     [ObservableProperty]
     private DegreeFormat degreeFormat;
 
+    [ObservableProperty]
+    private ObservableCollection<Target> targetList;
+
 
     public MapSettings() => GetMapSettings();
     
@@ -63,6 +66,7 @@ public partial class MapSettings : ObservableObject
             BoatShape = JsonConvert.DeserializeObject<BoatShape>(Properties.Map.Default.BoatShape);
             FontSize = Properties.Map.Default.FontSize;
             DegreeFormat = JsonConvert.DeserializeObject<DegreeFormat>(Properties.Map.Default.DegreeFormat);
+            TargetList = JsonConvert.DeserializeObject<ObservableCollection<Target>>(Properties.Map.Default.TargetList);
             if (ProjectionList is null) InitializeMapSettings();
         }
         catch (Exception)
@@ -79,6 +83,7 @@ public partial class MapSettings : ObservableObject
         Properties.Map.Default.BoatShape = JsonConvert.SerializeObject(BoatShape);
         Properties.Map.Default.FontSize = FontSize;
         Properties.Map.Default.DegreeFormat = JsonConvert.SerializeObject(DegreeFormat);
+        Properties.Map.Default.TargetList = JsonConvert.SerializeObject(TargetList);
         Properties.Map.Default.Save();
     }
 }

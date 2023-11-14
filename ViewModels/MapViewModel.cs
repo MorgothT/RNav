@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Mapper_v1.Models;
 
 namespace Mapper_v1.ViewModels;
@@ -10,11 +11,46 @@ public partial class MapViewModel : ObservableObject
     private MapSettings mapSettings = new();
     [ObservableProperty]
     private Dictionary<string,object> data = new();
+    [ObservableProperty]
+    private bool measurementMode = false;
+    [ObservableProperty]
+    private bool targetMode = false;
+    [ObservableProperty]
+    private MapMode currentMapMode;
 
     public MapViewModel()
     {
         InitDataView();
     }
+    #region Commands
+
+
+    [RelayCommand]
+    private void Measure()
+    {
+        if (MeasurementMode)
+        {
+            CurrentMapMode = MapMode.Measure;
+            TargetMode = false;
+        }
+        else if (!TargetMode) { CurrentMapMode = MapMode.Navigate; }
+    }
+
+    [RelayCommand]
+    private void Target()
+    {
+        if (TargetMode) 
+        {
+            CurrentMapMode = MapMode.Target;
+            MeasurementMode = false; 
+        }
+        else if (!MeasurementMode) { CurrentMapMode = MapMode.Navigate; }
+    }
+
+
+
+    #endregion
+
 
     private void InitDataView()
     {

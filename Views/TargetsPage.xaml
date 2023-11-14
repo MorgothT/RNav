@@ -85,6 +85,13 @@
                 <Button Content="Clear" Command="{Binding ClearTargetsCommand}" Margin="{StaticResource MediumLeftRightMargin}"/>
                 <Button Content="Import" Command="{Binding ImportTargetsCommand}" Margin="{StaticResource MediumLeftRightMargin}"/>
                 <Button Content="Export" Command="{Binding ExportTargetsCommand}" Margin="{StaticResource MediumLeftRightMargin}"/>
+                <TextBlock Text="Target Radius:" VerticalAlignment="Center"/>
+                <TextBox Text="{Binding MapSettings.TargetRadius}" InputScope="Number"/>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="LostFocus">
+                        <i:InvokeCommandAction Command="{Binding SaveTargetsCommand}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
             </StackPanel>
             <ListView ItemsSource="{Binding MapSettings.TargetList}"
                   SelectedItem="{Binding SelectedTarget}"

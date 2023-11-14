@@ -38,6 +38,9 @@ public partial class MapSettings : ObservableObject
     [ObservableProperty]
     private ObservableCollection<Target> targetList;
 
+    [ObservableProperty]
+    private float targetRadius;
+
 
     public MapSettings() => GetMapSettings();
     
@@ -67,6 +70,15 @@ public partial class MapSettings : ObservableObject
             FontSize = Properties.Map.Default.FontSize;
             DegreeFormat = JsonConvert.DeserializeObject<DegreeFormat>(Properties.Map.Default.DegreeFormat);
             TargetList = JsonConvert.DeserializeObject<ObservableCollection<Target>>(Properties.Map.Default.TargetList);
+            try
+            {
+                TargetRadius = float.Parse(Properties.Map.Default.TargetRadius);
+            }
+            catch (Exception)
+            {
+                TargetRadius = 5f;
+            }
+            
             if (ProjectionList is null) InitializeMapSettings();
         }
         catch (Exception)
@@ -84,6 +96,7 @@ public partial class MapSettings : ObservableObject
         Properties.Map.Default.FontSize = FontSize;
         Properties.Map.Default.DegreeFormat = JsonConvert.SerializeObject(DegreeFormat);
         Properties.Map.Default.TargetList = JsonConvert.SerializeObject(TargetList);
+        Properties.Map.Default.TargetRadius = TargetRadius.ToString();
         Properties.Map.Default.Save();
     }
 }

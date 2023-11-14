@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Mapsui.Extensions;
 using NetTopologySuite.Geometries;
 using Mapsui.Nts;
+using System.Windows.Documents;
 
 namespace Mapper_v1.Models;
 
@@ -22,7 +23,7 @@ public class TargetStyle : IStyle
     public bool Enabled { get; set; } = true;
     public float Opacity { get; set; } = 0.5f;
     //public float Scale { get; set; }
-    public double Radius { get; set; }
+    public double Radius { get; set; } = 5;
     public SKColor Color { get; set; }
 }
 
@@ -30,8 +31,19 @@ public class TargetRenderer : ISkiaStyleRenderer
 {
     public bool Draw(SKCanvas canvas, Viewport viewport, ILayer layer, IFeature feature, IStyle style, IRenderCache renderCache, long iteration)
     {
-        if (feature is not GeometryFeature pointFeature) return false;
-        MPoint worldPoint = new MPoint(pointFeature.Geometry.InteriorPoint.X, pointFeature.Geometry.InteriorPoint.Y);
+        MPoint worldPoint;
+        //if (feature is GeometryFeature geometryFeature)
+        //{
+        //    worldPoint = new MPoint(geometryFeature.Geometry.InteriorPoint.X, geometryFeature.Geometry.InteriorPoint.Y);
+        //}
+        if (feature is PointFeature pointFeature)
+        {
+            worldPoint = new MPoint(pointFeature.Point.X, pointFeature.Point.Y);
+        }
+        else
+        {
+            return false;
+        }
 
         var screenPoint = viewport.WorldToScreen(worldPoint);
         TargetStyle targetStyle = (TargetStyle)style;
@@ -45,4 +57,5 @@ public class TargetRenderer : ISkiaStyleRenderer
         return true;
     }
 }
+
 

@@ -45,6 +45,7 @@ public partial class TargetsViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanExportTargets))]
     private void ClearTargets()
     {
+        //TODO: Are you sure (clear target)
         MapSettings.TargetList.Clear();
         SaveTargets();
     }

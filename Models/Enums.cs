@@ -18,3 +18,10 @@ public enum DegreeFormat
     Min,
     Sec
 }
+
+public enum MapMode
+{
+    Navigate,
+    Measure,
+    Target
+}

@@ -35,7 +35,7 @@
   
   <ItemGroup>
     <PackageReference Include="BitMiracle.LibTiff.NET" Version="2.4.649" />
-    <PackageReference Include="Clowd.Squirrel" Version="2.9.42" />
+    <PackageReference Include="Clowd.Squirrel" Version="2.10.2" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
     <PackageReference Include="MahApps.Metro" Version="2.4.10" />

@@ -106,5 +106,17 @@ namespace Mapper_v1.Properties {
                 this["TargetList"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TargetRadius {
+            get {
+                return ((string)(this["TargetRadius"]));
+            }
+            set {
+                this["TargetRadius"] = value;
+            }
+        }
     }
 }

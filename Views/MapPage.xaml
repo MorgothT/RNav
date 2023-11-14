@@ -38,9 +38,7 @@
             
             <Grid Grid.Column="0">
                 <mapsui:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
-                                   Background="{StaticResource MahApps.Brushes.Gray10}"
-                                   MouseRightButtonDown="MapControl_StartMeasure"
-                                   MouseRightButtonUp="MapControl_StopMeasure"/>
+                                   Background="{StaticResource MahApps.Brushes.Gray10}" MouseRightButtonDown="MapControl_MouseRightButtonDown"/>
                 <Border VerticalAlignment="Top" HorizontalAlignment="Left">
                     <StackPanel Orientation="Vertical">
                         <Button x:Name="ZoomExtent" Margin="1" Padding="0" Click="ZoomExtent_Click">
@@ -52,10 +50,10 @@
                         <ToggleButton x:Name="ToggleNoseUp" Margin="1" Padding="0" Unchecked="ToggleNoseUp_Unchecked" >
                             <Label fa:Awesome.Content="Compass" FontSize="32"/>
                         </ToggleButton>
-                        <ToggleButton x:Name="ToggleMeasure" Margin="1" Padding="0" Click="ToggleMeasure_Click">
+                        <ToggleButton x:Name="ToggleMeasure" Margin="1" Padding="0" IsChecked="{Binding MeasurementMode}" Command="{Binding MeasureCommand}">
                             <Label fa:Awesome.Content="Expand" FontSize="32"/>
                         </ToggleButton>
-                        <ToggleButton x:Name="ToggleTarget" Margin="1" Padding="0" Click="ToggleTarget_Click">
+                        <ToggleButton x:Name="ToggleTarget" Margin="1" Padding="0" IsChecked="{Binding TargetMode}" Command="{Binding TargetCommand}">
                             <Label fa:Awesome.Content="MapPin" FontSize="32"/>
                         </ToggleButton>
                     </StackPanel>

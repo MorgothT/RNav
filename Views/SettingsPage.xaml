@@ -10,27 +10,29 @@
     xmlns:models="clr-namespace:Mapper_v1.Models"
     xmlns:properties="clr-namespace:Mapper_v1.Properties"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-    xmlns:fa="http://schemas.fontawesome.io/icons/"
+    
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     mc:Ignorable="d"
-    d:DesignHeight="450" d:DesignWidth="800">
+    d:DesignHeight="450" d:DesignWidth="1000">
     <Page.Resources>
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" EnumType="models:AppTheme"/>
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConnectionType" EnumType="models:ConnectionType"/>
         <DataTemplate DataType="{x:Type models:DeviceSettings}">
-                <StackPanel Orientation="Vertical">
+
+            <GroupBox BorderThickness="3,0,3,3" UseLayoutRounding="True" >
+                <StackPanel Name="Device" Orientation="Horizontal">
                     <ComboBox x:Name="commType" 
                               ItemsSource="{help:Enum models:ConnectionType}" 
-                              SelectedValue="{Binding CommType}">
+                              SelectedValue="{Binding CommType}" MinWidth="65" VerticalAlignment="Center" HorizontalAlignment="Left">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="SelectionChanged">
                                 <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Page}, Path=DataContext.SaveSettingsCommand}" CommandParameter="Default"/>
-                        </i:EventTrigger>
+                            </i:EventTrigger>
                         </i:Interaction.Triggers>
                     </ComboBox>
-                    <GroupBox Header="Serial">
-                        <GroupBox.Style>
-                            <Style TargetType="GroupBox">
+                    <StackPanel Name="Serial">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=commType}" Value="Serial">
@@ -38,37 +40,37 @@
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </GroupBox.Style>
-                        <StackPanel>
+                        </StackPanel.Style>
+                        <StackPanel Margin="{StaticResource SmallLeftMargin}" Orientation="Horizontal">
                             <DockPanel>
-                                <TextBlock Text="Port:" VerticalAlignment="Center"/>
+                                <TextBlock Text="Port:" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Left"/>
                                 <ComboBox ItemsSource="{Binding AvailableComPorts}"
-                                      SelectedItem="{Binding ComPort}"
-                                      Margin="{StaticResource SmallLeftMargin}">
+                                          SelectedItem="{Binding ComPort}"
+                                          Margin="{StaticResource SmallLeftMargin}">
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="SelectionChanged">
-                                        <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Page}, Path=DataContext.SaveSettingsCommand}" CommandParameter="Default" />
+                                            <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Page}, Path=DataContext.SaveSettingsCommand}" CommandParameter="Default" />
                                         </i:EventTrigger>
                                     </i:Interaction.Triggers>
                                 </ComboBox>
                             </DockPanel>
                             <DockPanel>
-                                <TextBlock Text="Baud Rate:" VerticalAlignment="Center"/>
+                                <TextBlock Text="Baud Rate:" FontSize="16" VerticalAlignment="Center" Margin="{StaticResource SmallLeftMargin}"/>
                                 <ComboBox ItemsSource="{Binding AvailableBaudRates}"
                                       SelectedItem="{Binding BaudRate}"
                                       Margin="{StaticResource SmallLeftMargin}">
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="SelectionChanged">
-                                        <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Page}, Path=DataContext.SaveSettingsCommand}" CommandParameter="Default" />
+                                            <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Page}, Path=DataContext.SaveSettingsCommand}" CommandParameter="Default" />
                                         </i:EventTrigger>
                                     </i:Interaction.Triggers>
                                 </ComboBox>
                             </DockPanel>
                         </StackPanel>
-                    </GroupBox>
-                    <GroupBox Header="Network">
-                        <GroupBox.Style>
-                            <Style TargetType="GroupBox">
+                    </StackPanel>
+                    <StackPanel Name="Network">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Path=SelectedItem, ElementName=commType}" Value="UDP">
@@ -79,11 +81,11 @@
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </GroupBox.Style>
-                        <StackPanel>
+                        </StackPanel.Style>
+                        <StackPanel Margin="{StaticResource SmallLeftMargin}" Orientation="Horizontal">
                             <DockPanel>
-                                <TextBlock Text="IP Address:" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding IPAddress}" VerticalAlignment="Center" Margin="{StaticResource SmallLeftMargin}">
+                                <TextBlock Text="IP Address:" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                <TextBox Text="{Binding IPAddress}" MinWidth="100" VerticalAlignment="Center" Margin="{StaticResource SmallLeftMargin}">
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="LostFocus">
                                             <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Page}, Path=DataContext.SaveSettingsCommand}" CommandParameter="Default" />
@@ -92,18 +94,20 @@
                                 </TextBox>
                             </DockPanel>
                             <DockPanel>
-                                <TextBlock Text="Port:" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding Port}" VerticalAlignment="Center" Margin="{StaticResource SmallLeftMargin}">
+                                <TextBlock Text="Port:" FontSize="16" VerticalAlignment="Center" Margin="{StaticResource SmallLeftMargin}"/>
+                                <TextBox Text="{Binding Port}" MinWidth="48" VerticalAlignment="Center" Margin="{StaticResource SmallLeftMargin}">
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="LostFocus">
-                                        <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Page}, Path=DataContext.SaveSettingsCommand}" CommandParameter="Default" />
+                                            <i:InvokeCommandAction Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Page}, Path=DataContext.SaveSettingsCommand}" CommandParameter="Default" />
                                         </i:EventTrigger>
                                     </i:Interaction.Triggers>
                                 </TextBox>
                             </DockPanel>
                         </StackPanel>
-                    </GroupBox>
+                    </StackPanel>
                 </StackPanel>
+            </GroupBox>
+
         </DataTemplate>
     </Page.Resources>
     <ScrollViewer>
@@ -215,7 +219,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="auto"/>
+                            <ColumnDefinition Width="50"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto"/>
@@ -226,15 +230,15 @@
                                     Grid.Column="0"/>
                         <TextBlock Text="{Binding MapSettings.BoatShape}"
                                     Grid.Column="1" Margin="{StaticResource SmallLeftRightMargin}" VerticalAlignment="Center"/>
-                        <Button Command="{Binding BrowseBoatShapeCommand}" 
-                                Grid.Column="2" Padding="0">
-                            <Label fa:Awesome.Content="Ship" FontSize="16"/>
+                        <Button Command="{Binding BrowseBoatShapeCommand}" Style="{StaticResource MahApps.Styles.Button.ToolBar}"
+                                Grid.Column="2" Padding="0" Width="48">
+                            <Label FontFamily="RNav" Content="&#xE704;" FontSize="24" FontWeight="Light" Padding="0"/>
                         </Button>
                         <TextBlock Text="Fill Color:"
-                                    Grid.Row="1" Grid.Column="0"/>
+                                    Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
                         <mah:ColorPicker Background="{x:Null}" SelectedColor="{Binding MapSettings.BoatShape.Fill}" MaxWidth="50" 
                                          Grid.Column="2" Grid.Row="1" 
-                                         Margin="{DynamicResource XSmallLeftMargin}" HorizontalAlignment="Center">
+                                         HorizontalAlignment="Center">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="SelectedColorChanged">
                                     <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}"/>
@@ -242,10 +246,10 @@
                             </i:Interaction.Triggers>
                         </mah:ColorPicker>
                         <TextBlock Text="Outline Color:"
-                                    Grid.Row="2" Grid.Column="0"/>
+                                    Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
                         <mah:ColorPicker Background="{x:Null}" SelectedColor="{Binding MapSettings.BoatShape.Outline}" MaxWidth="50" 
                                          Grid.Column="2" Grid.Row="2" 
-                                         Margin="{DynamicResource XSmallLeftMargin}" HorizontalAlignment="Center">
+                                         HorizontalAlignment="Center">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="SelectedColorChanged">
                                     <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}"/>
@@ -288,31 +292,32 @@
                 </GroupBox>
                 <!-- TODO: Change to list of devices-->
                 <GroupBox Header="GNSS Input">
-                    <StackPanel>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Button Command="{Binding AddDeviceCommand}" 
-                                    Grid.Column="0"
-                                    Height="32" Padding="0" >
-                                <Label fa:Awesome.Content="Plus" Foreground="{DynamicResource MahApps.Brushes.AccentBase}" 
-                                       Padding="0" FontSize="24" FontWeight="Bold"/>
+                    <DockPanel LastChildFill="True">
+                        <StackPanel DockPanel.Dock="Right" Margin="{StaticResource XSmallLeftMargin}">
+                            <Button Command="{Binding AddDeviceCommand}"
+                                    BorderThickness="0"
+                                    Padding="0"
+                                    Height="24" Width="24">
+                                <Label FontFamily="RNav" Content="&#xE713;" 
+                                       Foreground="{DynamicResource MahApps.Brushes.AccentBase}"
+                                       Padding="0" FontSize="16" FontWeight="Light"/>
                             </Button>
                             <Button Command="{Binding RemoveDeviceCommand}" 
-                                    Grid.Column="2"
-                                    Height="32" Padding="0">
-                                <Label fa:Awesome.Content="Minus" Foreground="{DynamicResource MahApps.Brushes.Button.CleanWindow.Close.Background.MouseOver}" 
-                                       Padding="0" FontSize="24" FontWeight="Bold"/>
+                                    BorderThickness="0"
+                                    Height="24" Width="24"
+                                    Padding="0"
+                                    Margin="{StaticResource XSmallTopMargin}">
+                                <Label FontFamily="RNav" Content="&#xE70D;" 
+                                       Foreground="red" 
+                                       Padding="0" 
+                                       FontSize="16" FontWeight="Light"/>
                             </Button>
-                        </Grid>
+                        </StackPanel>
                         <ListView x:Name="DeviceList" 
                                   IsSynchronizedWithCurrentItem="True"
                                   ItemsSource="{Binding CommSettings.Devices}" 
                                   SelectedItem="{Binding SelectedDevice}"/>
-                    </StackPanel>
+                    </DockPanel>
                 </GroupBox>
             </StackPanel>
         </Grid>

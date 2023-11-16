@@ -9,7 +9,6 @@
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     xmlns:properties="clr-namespace:Mapper_v1.Properties"
     xmlns:help="clr-namespace:Mapper_v1.Helpers"
-    xmlns:fa="http://schemas.fontawesome.io/icons/"
     xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800">
@@ -125,8 +124,7 @@
             Text="{x:Static properties:Resources.ChartsPageTitle}" />
         <Grid
             Grid.Row="1"
-            Margin="{StaticResource MediumLeftRightMargin}"
-            Background="{DynamicResource MahApps.Brushes.Gray10}">
+            Margin="{StaticResource MediumLeftRightMargin}">
             <!--
             The Mahapps Gray10 color represents where you should place your content.
             Place your content here.
@@ -146,31 +144,52 @@
                 </ListView>
                 <StackPanel Orientation="Vertical"
                             Grid.Column="1">
-                    <Button Command="{Binding AddChartCommand}" Padding="0,0,0,0" Margin="5">
-                        <Label fa:Awesome.Content="PlusSquare"
+                    <Button Command="{Binding AddChartCommand}" BorderThickness="0"
+                            Padding="0" Margin="5">
+                        <Label FontFamily="RNav" Content="&#xE71D;"
                                FontSize="{StaticResource XLargeFontSize}" 
-                               Foreground="Green"/>
+                               Foreground="{DynamicResource MahApps.Brushes.AccentBase}" 
+                               FontWeight="Normal"/>
                     </Button>
-                    <Button Command="{Binding RemoveChartCommand}" Padding="0,0,0,0" Margin="5">
-                        <Label fa:Awesome.Content="MinusSquare"
+                    <Button Command="{Binding RemoveChartCommand}" BorderThickness="0"
+                            Padding="0" Margin="5">
+                        <Label FontFamily="RNav" Content="&#xE71e;"
                                FontSize="{StaticResource XLargeFontSize}" 
-                               Foreground="Red"/>
+                               Foreground="Red" FontWeight="Normal"/>
                     </Button>
-                    <Button Command="{Binding MoveTopCommand}" Padding="0,0,0,0" Margin="5">
-                        <Label fa:Awesome.Content="AngleDoubleUp"
-                               FontSize="{StaticResource XLargeFontSize}"/>
+                    <Button Command="{Binding MoveTopCommand}" BorderThickness="0"
+                            Padding="0" Margin="5">
+                        <Label FontFamily="RNav" Content="&#xE732;"
+                               FontSize="{StaticResource XLargeFontSize}" 
+                               FontWeight="Normal" 
+                               RenderTransformOrigin="0.5,0.5">
+                            <Label.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform ScaleY="-1"/>
+                                    <SkewTransform/>
+                                    <RotateTransform/>
+                                    <TranslateTransform/>
+                                </TransformGroup>
+                            </Label.RenderTransform>
+                        </Label>
                     </Button>
-                    <Button Command="{Binding MoveUpCommand}" Padding="0,0,0,0" Margin="5">
-                        <Label fa:Awesome.Content="AngleUp"
-                               FontSize="{StaticResource XLargeFontSize}"/>
+                    <Button Command="{Binding MoveUpCommand}" BorderThickness="0"
+                            Padding="0" Margin="5" Height="32">
+                        <Label FontFamily="RNav" Content="&#xE730;"
+                               FontSize="{StaticResource LargeFontSize}" 
+                               FontWeight="Normal"/>
                     </Button>
-                    <Button Command="{Binding MoveDownCommand}" Padding="0,0,0,0" Margin="5">
-                        <Label fa:Awesome.Content="AngleDown"
-                               FontSize="{StaticResource XLargeFontSize}"/>
+                    <Button Command="{Binding MoveDownCommand}" BorderThickness="0"
+                            Padding="0" Margin="5" Height="32">
+                        <Label FontFamily="RNav" Content="&#xE731;"
+                               FontSize="{StaticResource LargeFontSize}" 
+                               FontWeight="Normal"/>
                     </Button>
-                    <Button Command="{Binding MoveButtomCommand}" Padding="0,0,0,0" Margin="5">
-                        <Label fa:Awesome.Content="AngleDoubleDown"
-                               FontSize="{StaticResource XLargeFontSize}"/>
+                    <Button Command="{Binding MoveButtomCommand}" BorderThickness="0"
+                            Padding="0" Margin="5">
+                        <Label FontFamily="RNav" Content="&#xE732;"
+                               FontSize="{StaticResource XLargeFontSize}" 
+                               FontWeight="Normal"/>
                     </Button>
                 </StackPanel>
             </Grid>

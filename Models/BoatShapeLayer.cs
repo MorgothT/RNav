@@ -4,6 +4,7 @@ using Mapsui.Extensions;
 using Mapsui.Layers;
 using Mapsui.Styles;
 using Mapsui.Utilities;
+#nullable enable
 
 namespace Mapper_v1.Models;
 
@@ -20,7 +21,6 @@ public class BoatShapeLayer : BaseLayer, IModifyFeatureLayer, IDisposable
     private readonly ConcurrentHashSet<AnimationEntry<Map>> _animations = new();
     private readonly List<IFeature> _features;
     private AnimationEntry<Map>? _animationMyDirection;
-    private AnimationEntry<Map>? _animationMyViewDirection;
     private AnimationEntry<Map>? _animationMyLocation;
     
     private BoatShape _boatShape;
@@ -71,7 +71,6 @@ public class BoatShapeLayer : BaseLayer, IModifyFeatureLayer, IDisposable
     /// </summary>
     /// <value>Direction at location</value>
 
-    //TODO: scale = -1/viewport.resulotion
     /// <summary>
     /// Scale of symbol
     /// </summary>

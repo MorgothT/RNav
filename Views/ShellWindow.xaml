@@ -10,7 +10,7 @@
     xmlns:templateSelectors="clr-namespace:Mapper_v1.TemplateSelectors"
     Style="{StaticResource CustomMetroWindow}"
     mc:Ignorable="d"
-    MinWidth="800"
+    MinWidth="850"
     MinHeight="600"
     Title="{x:Static properties:Resources.AppDisplayName}">
     <i:Interaction.Triggers>
@@ -51,7 +51,7 @@
                             FontSize="16"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                            FontFamily="Segoe MDL2 Assets"
+                            FontFamily="RNav"
                             Text="{Binding Glyph}"
                             ToolTip="{Binding Label}" />
                         <TextBlock

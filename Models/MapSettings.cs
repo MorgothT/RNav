@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WinRT;
-using Windows.Media.Playback;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
-using System.Windows.Navigation;
 
 namespace Mapper_v1.Models;
 
@@ -56,6 +48,8 @@ public partial class MapSettings : ObservableObject
         BoatShape = new BoatShape();
         FontSize = 12;
         DegreeFormat = DegreeFormat.Deg;
+        TargetList = new ObservableCollection<Target>();
+        TargetRadius = 10;
         SaveMapSettings();
     }
     public MapSettings GetMapSettings()
@@ -70,6 +64,7 @@ public partial class MapSettings : ObservableObject
             FontSize = Properties.Map.Default.FontSize;
             DegreeFormat = JsonConvert.DeserializeObject<DegreeFormat>(Properties.Map.Default.DegreeFormat);
             TargetList = JsonConvert.DeserializeObject<ObservableCollection<Target>>(Properties.Map.Default.TargetList);
+            if (TargetList is null) TargetList = new ObservableCollection<Target>();
             try
             {
                 TargetRadius = float.Parse(Properties.Map.Default.TargetRadius);

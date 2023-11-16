@@ -99,7 +99,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
 
     public void OnNavigatedTo(object parameter)
     {
-        VersionDescription = $"{Properties.Resources.AppDisplayName} - {_applicationInfoService.GetVersion()}";
+        VersionDescription = $"{Properties.Resources.AppDisplayName} - {_applicationInfoService.GetVersion().ToString(3)}";
         Theme = _themeSelectorService.GetCurrentTheme();
     }
 

@@ -57,6 +57,7 @@ public class NmeaDevice
         {
             MessageBox.Show($"Couldn't open {(Port as SerialPort).PortName}.{Environment.NewLine}Please check Settings page.");
         }
+        catch { }
     }
     private void DataReceived_Serial(object sender, SerialDataReceivedEventArgs e)
     {
@@ -123,11 +124,11 @@ public class NmeaDevice
 
     private async void ConnectTCP()
     {
-        IPAddress.TryParse(DeviceSettings.IPAddress, out IPAddress address);
-        IPEndPoint endPoint = new IPEndPoint(address, DeviceSettings.Port);
-        Port = new TcpClient();
         try
         {
+            IPAddress.TryParse(DeviceSettings.IPAddress, out IPAddress address);
+            IPEndPoint endPoint = new IPEndPoint(address, DeviceSettings.Port);
+            Port = new TcpClient();
             await (Port as TcpClient).ConnectAsync(endPoint, TokenSource.Token);
             _ = Task.Run(ReceiveTCP, TokenSource.Token);
         }

@@ -34,7 +34,7 @@ public class ColorConvertor
         }
         catch (Exception)
         {
-            return Color.Black; //default
+            return Color.FromArgb(255,180,200,220); //default
         }
         
         

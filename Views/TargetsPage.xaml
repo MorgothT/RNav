@@ -11,11 +11,11 @@
       xmlns:model="clr-namespace:Mapper_v1.Models"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800">
-    <!--<i:Interaction.Triggers>
+    <i:Interaction.Triggers>
         <i:EventTrigger EventName="MouseLeave">
             <i:InvokeCommandAction Command="{Binding SaveTargetsCommand}"/>
         </i:EventTrigger>
-    </i:Interaction.Triggers>-->
+    </i:Interaction.Triggers>
     <Page.Resources>
         <DataTemplate DataType="{x:Type model:Target}">
             <Grid>
@@ -26,29 +26,34 @@
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="{Binding Id}" 
                            Grid.Column="0"        
                            Margin="5,0" 
                            HorizontalAlignment="Center" 
                            VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding Name}" 
-                           Grid.Column="1"        
-                           Margin="5,0" 
-                           HorizontalAlignment="Left" 
-                           VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding X, StringFormat=F2}" 
+                <TextBox Text="{Binding Name}" 
+                         Style="{StaticResource MahApps.Styles.TextBox.DataGrid.Editing}"
+                         Grid.Column="1"
+                         Margin="5,0" 
+                         HorizontalAlignment="Left" 
+                         VerticalAlignment="Center" SelectionBrush="{x:Null}"/>
+                <TextBox Text="{Binding X, StringFormat=F2}"
+                         Style="{StaticResource MahApps.Styles.TextBox.ComboBox.Editable}"
                            Grid.Column="2"        
                            Margin="5,0" 
                            HorizontalAlignment="Left" 
                            VerticalAlignment="Center"
-                           Width="100"/>
-                <TextBlock Text="{Binding Y, StringFormat=F2}" 
+                           Width="80">
+                </TextBox>
+                <TextBox Text="{Binding Y, StringFormat=F2}" 
+                         Style="{StaticResource MahApps.Styles.TextBox.ComboBox.Editable}"
                            Grid.Column="3"        
                            Margin="5,0" 
                            HorizontalAlignment="Left" 
                            VerticalAlignment="Center"
-                           Width="100"/>
+                           Width="80"/>
                 <TextBlock Text="{Binding Lat, StringFormat=F8}" 
                            Grid.Column="4"        
                            Margin="5,0" 
@@ -61,6 +66,7 @@
                            HorizontalAlignment="Left" 
                            VerticalAlignment="Center"
                            Width="100"/>
+                
             </Grid>
         </DataTemplate>
     </Page.Resources>
@@ -75,9 +81,10 @@
             Margin="{StaticResource MediumLeftMargin}"
             Text="{x:Static properties:Resources.TargetsPageTitle}" />
         <Grid Grid.Row="1"
-              Margin="{StaticResource MediumLeftRightMargin}"
-              Background="{DynamicResource MahApps.Brushes.Gray10}">
+              Margin="{StaticResource MediumLeftRightMargin}">
             <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
@@ -94,9 +101,35 @@
                 </i:Interaction.Triggers>
             </StackPanel>
             <ListView ItemsSource="{Binding MapSettings.TargetList}"
-                  SelectedItem="{Binding SelectedTarget}"
-                  Grid.Row="1"
-                  IsSynchronizedWithCurrentItem="True"/>
+                      SelectedItem="{Binding SelectedTarget}" 
+                      Style="{StaticResource MahApps.Styles.ListBox}"
+                      Grid.Row="1"
+                      IsSynchronizedWithCurrentItem="True">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="LostFocus">
+                        <i:InvokeCommandAction Command="{Binding RecalculateCommand}" PassEventArgsToCommand="True"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </ListView>
+            <DockPanel Grid.Row="2" LastChildFill="False">
+                <Button Command="{Binding RemoveTargetCommand}"
+                        Style="{StaticResource MahApps.Styles.Button.Reveal}"
+                        VerticalAlignment="Center"
+                        Width="24">
+                    <Label FontFamily="RNav" Content="&#xE70D;" 
+                           Foreground="red" 
+                           Padding="0" 
+                           FontSize="16" FontWeight="Light"/>
+                </Button>
+                <Button DockPanel.Dock="Right" Command="{Binding AddTargetCommand}"
+                        Style="{StaticResource MahApps.Styles.Button.Reveal}"
+                        Padding="0"
+                        Height="24" Width="32">
+                    <Label FontFamily="RNav" Content="&#xE713;" 
+                           Foreground="{DynamicResource MahApps.Brushes.AccentBase}"
+                           Padding="0" FontSize="16" FontWeight="Light"/>
+                </Button>
+            </DockPanel>
         </Grid>
     </Grid>
 </Page>

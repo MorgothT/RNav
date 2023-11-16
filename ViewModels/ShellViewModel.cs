@@ -37,14 +37,14 @@ public class ShellViewModel : ObservableObject
     // TODO: Change the icons and titles for all HamburgerMenuItems here.
     public ObservableCollection<HamburgerMenuItem> MenuItems { get; } = new ObservableCollection<HamburgerMenuItem>()
     {
-        new HamburgerMenuGlyphItem() { Label = Resources.ShellMapPage, Glyph = "\uE707", TargetPageType = typeof(MapViewModel) },
-        new HamburgerMenuGlyphItem() { Label = Resources.ShellChartsPage, Glyph = "\ue81e", TargetPageType = typeof(ChartsViewModel) },
-        new HamburgerMenuGlyphItem() { Label = Resources.ShellTargetsPage, Glyph = "\uF272", TargetPageType = typeof(TargetsViewModel) },
+        new HamburgerMenuGlyphItem() { Label = Resources.ShellMapPage, Glyph = "\uE722", TargetPageType = typeof(MapViewModel) },
+        new HamburgerMenuGlyphItem() { Label = Resources.ShellChartsPage, Glyph = "\ue71c", TargetPageType = typeof(ChartsViewModel) },
+        new HamburgerMenuGlyphItem() { Label = Resources.ShellTargetsPage, Glyph = "\ue701", TargetPageType = typeof(TargetsViewModel) },
     };
 
     public ObservableCollection<HamburgerMenuItem> OptionMenuItems { get; } = new ObservableCollection<HamburgerMenuItem>()
     {
-        new HamburgerMenuGlyphItem() { Label = Resources.ShellSettingsPage, Glyph = "\uE713", TargetPageType = typeof(SettingsViewModel) }
+        new HamburgerMenuGlyphItem() { Label = Resources.ShellSettingsPage, Glyph = "\uE720", TargetPageType = typeof(SettingsViewModel) }
     };
 
     public RelayCommand GoBackCommand => _goBackCommand ?? (_goBackCommand = new RelayCommand(OnGoBack, CanGoBack));

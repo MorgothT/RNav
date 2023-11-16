@@ -3,7 +3,9 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
-    <RootNamespace>Mapper_v1</RootNamespace>
+	<Version>1.0.3</Version>
+	<!--TODO: Change Version here-->
+	<RootNamespace>Mapper_v1</RootNamespace>
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
@@ -15,16 +17,59 @@
     <AssemblyName>RNav</AssemblyName>
   </PropertyGroup>
   
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+  </PropertyGroup>
+  
   <ItemGroup>
     <Compile Remove="Models\NMEAParser.cs" />
+    <Compile Remove="Views\LayerList.xaml.cs" />
+    <Compile Remove="Views\LayerListItem.xaml.cs" />
   </ItemGroup>
   
   <ItemGroup>
     <None Remove="app__.manifest__" />
+    <None Remove="RNav.bmp" />
+    <None Remove="RNav.svg" />
+    <None Remove="RNav.ttf" />
+    <None Remove="RNavFont.ttf" />
+    <None Remove="RNav_Orange_1.png" />
+    <None Remove="RNav_Orange_2.png" />
     <None Remove="VesselShapes\CraneDimond.shp" />
     <None Remove="VesselShapes\Marker.shp" />
     <None Remove="VesselShapes\Rect.shp" />
     <None Remove="VesselShapes\X.shp" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Page Remove="Views\LayerList.xaml" />
+    <Page Remove="Views\LayerListItem.xaml" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Resource Include="RNav.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
   
   <ItemGroup>
@@ -37,7 +82,6 @@
     <PackageReference Include="BitMiracle.LibTiff.NET" Version="2.4.649" />
     <PackageReference Include="Clowd.Squirrel" Version="2.10.2" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
     <PackageReference Include="MahApps.Metro" Version="2.4.10" />
     <PackageReference Include="Mapsui" Version="4.1.1" />
     <PackageReference Include="Mapsui.Extensions" Version="4.1.1" />

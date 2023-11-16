@@ -47,18 +47,16 @@ public partial class MapPage : Page
     //private bool targetMode = false;
     private GenericCollectionLayer<List<IFeature>> MyTargets = new();
 
-    private static Converter geoConverter;
+    private static Converter fromWGS84;
+    private static Converter toWGS84;
     private static ColorConvertor colorConvertor = new();
     private readonly MapViewModel vm;
-    //TODO: Squirl Installer
-    //TODO: Add Targets
-    //TODO: Change devices apearence
 
     public MapPage(MapViewModel viewModel)
     {
         InitializeComponent();
         DataContext = viewModel;
-
+        
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         vm = viewModel;
         
@@ -72,8 +70,8 @@ public partial class MapPage : Page
     {
         LoadMapControlState();
         MapControl.MouseMove += MapControlOnMouseMove;
-        MapControl.FeatureInfo += MapControlFeatureInfo;
         MapControl.Info += MapControl_Click;
+        MapControl.MouseRightButtonDown += MapControl_MouseRightButtonDown;
 
         MapControl.Map.Navigator.RotationLock = false;
         MapControl.UnSnapRotationDegrees = 30;
@@ -99,80 +97,6 @@ public partial class MapPage : Page
         }
     }
 
-    private void MapControl_Click(object sender, MapInfoEventArgs e)
-    {
-        if (e.MapInfo?.WorldPosition is null)
-        {
-            return;
-        }
-        if (vm.MeasurementMode)
-        {
-            switch (measureStart is null)
-            {
-                case true:
-                    StartMeasurement(e.MapInfo.ScreenPosition);
-                    break;
-                case false:
-                    StopMeasurement();
-                    break;
-             }
-        }
-        if (vm.TargetMode)
-        {
-            Target target = AddTarget(e.MapInfo.WorldPosition);
-            var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius);
-            MyTargets?.Features.Add(feature);
-            e.MapInfo.Layer?.DataHasChanged();
-            MapControl.Refresh();
-        }
-        if (!vm.MeasurementMode && !vm.TargetMode)
-        {
-            var calloutStyle = e.MapInfo?.Feature?.Styles.Where(s => s is CalloutStyle).Cast<CalloutStyle>().FirstOrDefault();
-            TurnCalloutOff(calloutStyle);
-            if (calloutStyle is not null)
-            {
-                calloutStyle.Enabled = !calloutStyle.Enabled;
-                e.MapInfo?.Layer?.DataHasChanged(); // To trigger a refresh of graphics.
-            }
-            MapControl.Refresh();
-        }
-    }
-    private void MapControl_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (vm.TargetMode)
-        {
-            if (MyTargets?.Features is null) return;
-            var screenPosition = e.GetPosition(MapControl).ToMapsui();
-            MapInfo info = MapControl.GetMapInfo(screenPosition);
-            MyTargets.Features.Remove(info.Feature);
-            RemoveTarget(info.Feature);
-            MapControl.Refresh();
-        }
-    }
-    private void TurnCalloutOff(CalloutStyle currentCallout = null)
-    {
-        foreach (var feature in MyTargets?.Features)
-        {
-            var callout = feature.Styles.Where(s => s is CalloutStyle).Cast<CalloutStyle>().FirstOrDefault();
-            if (callout == currentCallout) continue;
-            callout.Enabled = false;
-        }
-    }
-
-    private void RemoveTarget(IFeature feature)
-    {
-        PointFeature pointFeature = (PointFeature)feature;
-        foreach (Target target in mapSettings.TargetList)
-        {
-            if (target.X == pointFeature.Point.X && target.Y == pointFeature.Point.Y)
-            {
-                mapSettings.TargetList.Remove(target);
-                mapSettings.SaveMapSettings();
-                return;
-            }
-        }
-    }
-
     private Target AddTarget(MPoint worldPosition)
     {
         int id;
@@ -195,11 +119,46 @@ public partial class MapPage : Page
         mapSettings.SaveMapSettings();
         return target;
     }
+
+    private void RemoveTarget(IFeature feature)
+    {
+        if (feature is null ) { return; }
+        PointFeature pointFeature = (PointFeature)feature;
+        foreach (Target target in mapSettings.TargetList)
+        {
+            if (target.X == pointFeature.Point.X && target.Y == pointFeature.Point.Y)
+            {
+                mapSettings.TargetList.Remove(target);
+                mapSettings.SaveMapSettings();
+                return;
+            }
+        }
+    }
+    private void AddCharts()
+    {
+        foreach (var chart in mapSettings.ChartItems)
+        {
+            if (File.Exists(chart.Path))
+            {
+                switch (chart.ChartType)
+                {
+                    case ChartType.Shapefile:
+                        MapControl.Map.Layers.Add(CreateShpLayer(chart));
+                        break;
+                    case ChartType.Geotiff:
+                        MapControl.Map.Layers.Add(CreateTiffLayer(chart));
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
     private void AddSavedTargets()
     {
         foreach (Target target in mapSettings.TargetList)
         {
-            var feature = Target.CreateTargetFeature(target,mapSettings.TargetRadius);
+            var feature = Target.CreateTargetFeature(target,mapSettings.TargetRadius,mapSettings.DegreeFormat);
             MyTargets?.Features.Add(feature);
         }
     }
@@ -218,6 +177,7 @@ public partial class MapPage : Page
         MapControl.Refresh();
     }
 
+
     private void InitUIControls()
     {
         ColorSelector.SelectedColor = colorConvertor.WMColorFromMapsui(MapControl.Map.BackColor);
@@ -231,34 +191,29 @@ public partial class MapPage : Page
         switch (epsg)
         {
             case 6991:
-                geoConverter = new(Converter.Ellipsoids.WGS_84, Converter.Projections.ITM);
+                fromWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Projections.ITM);
+                toWGS84 = new(Converter.Projections.ITM, Converter.Ellipsoids.WGS_84);
                 break;
             case 32636:
-                geoConverter = new(Converter.Ellipsoids.WGS_84, Converter.Projections.UTM_36N);
+                fromWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Projections.UTM_36N);
+                toWGS84 = new(Converter.Projections.UTM_36N, Converter.Ellipsoids.WGS_84);
                 break;
             default:
-                geoConverter = new(Converter.Ellipsoids.WGS_84, Converter.Ellipsoids.WGS_84);
+                fromWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Ellipsoids.WGS_84);
+                toWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Ellipsoids.WGS_84);
                 break;
         }
     }
     private void LoadLayers()
     {
+        // Special layers
         MyBoatLayer = new BoatShapeLayer(MapControl.Map, mapSettings.BoatShape)
         {
             Name = "Location",
             Enabled = true,
             IsCentered = ToggleTracking.IsChecked.Value,
         };
-        if (MapControl.Renderer is Mapsui.Rendering.Skia.MapRenderer && !MapControl.Renderer.StyleRenderers.ContainsKey(typeof(BoatStyle)))
-        {
-            MapControl.Renderer.StyleRenderers.Add(typeof(BoatStyle), new BoatRenderer());
-        }
-        if (MapControl.Renderer is Mapsui.Rendering.Skia.MapRenderer && !MapControl.Renderer.StyleRenderers.ContainsKey(typeof(TargetStyle)))
-        {
-            MapControl.Renderer.StyleRenderers.Add(typeof(TargetStyle), new TargetRenderer());
-        }
         MyMeasurementLayer = new WritableLayer() { Name = "Measurement", Opacity = 0.7f };
-
         MyTargets = new GenericCollectionLayer<List<IFeature>>
         {
             IsMapInfoLayer = true,
@@ -270,35 +225,23 @@ public partial class MapPage : Page
 
             }
         };
+        // Layer renderers
+        if (MapControl.Renderer is Mapsui.Rendering.Skia.MapRenderer && !MapControl.Renderer.StyleRenderers.ContainsKey(typeof(BoatStyle)))
+        {
+            MapControl.Renderer.StyleRenderers.Add(typeof(BoatStyle), new BoatRenderer());
+        }
+        if (MapControl.Renderer is Mapsui.Rendering.Skia.MapRenderer && !MapControl.Renderer.StyleRenderers.ContainsKey(typeof(TargetStyle)))
+        {
+            MapControl.Renderer.StyleRenderers.Add(typeof(TargetStyle), new TargetRenderer());
+        }
+        // Adding the features
         AddSavedTargets();
-        foreach (var chart in mapSettings.ChartItems)
-        {
-            if (File.Exists(chart.Path))
-            {
-                switch (chart.ChartType)
-                {
-                    case ChartType.Shapefile:
-                        MapControl.Map.Layers.Add(CreateShpLayer(chart));
-                        //MapControl.Map.Layers.Add(CreateLabelLayer(chart));
-                        break;
-                    case ChartType.Geotiff:
-                        MapControl.Map.Layers.Add(CreateTiffLayer(chart));
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-        foreach (var layer in MapControl.Map.Layers)
-        {
-            var test = layer.GetFeatures(MapControl.Map.Extent, MapControl.Map.Navigator.Viewport.Resolution);
-        }
+        AddCharts();
+        // Adding the layers to the map
         MapControl.Map.Layers.Add(MyTargets);
         MapControl.Map.Layers.Add(MyMeasurementLayer);
         MapControl.Map.Layers.Add(MyBoatLayer);
     }
-
-    
 
     private void SaveMapControlState()
     {
@@ -313,6 +256,7 @@ public partial class MapPage : Page
     {
         if (MapControl.Map is not null)
         {
+            
             MapControl.Map.BackColor = colorConvertor.String2Mapsui(Properties.MapControl.Default.BackColor);
             MapControl.Map.Navigator.RotateTo(Properties.MapControl.Default.Rotation);
             ToggleTracking.IsChecked = Properties.MapControl.Default.BtnTrackingState;
@@ -373,7 +317,7 @@ public partial class MapPage : Page
             default:
                 break;
         }
-        vm.UpdateDataView(VesselData, geoConverter);
+        vm.UpdateDataView(VesselData, fromWGS84);
     }
     private void ConnectToGps()
     {
@@ -409,7 +353,7 @@ public partial class MapPage : Page
     {
         double lon = VesselData.GetGGA.Longitude.Degrees;
         double lat = VesselData.GetGGA.Latitude.Degrees;
-        var p = geoConverter.Convert(new(lon, lat, 0));
+        var p = fromWGS84.Convert(new(lon, lat, 0));
         MPoint point = new MPoint(p.X, p.Y);
         MyBoatLayer.UpdateMyLocation(point);
         MyBoatLayer.DataHasChanged();
@@ -510,6 +454,15 @@ public partial class MapPage : Page
         var feature = new GeometryFeature(line);
         MyMeasurementLayer.Add(feature);
     }
+    private void TurnCalloutOff(CalloutStyle currentCallout = null)
+    {
+        foreach (var feature in MyTargets?.Features)
+        {
+            var callout = feature.Styles.Where(s => s is CalloutStyle).Cast<CalloutStyle>().FirstOrDefault();
+            if (callout == currentCallout) continue;
+            callout.Enabled = false;
+        }
+    }
     #endregion
 
     #region Events
@@ -537,22 +490,58 @@ public partial class MapPage : Page
     {
         ZoomActive();
     }
-    private void MapControlOnInfo(object? sender, MapInfoEventArgs args)
+    private void MapControl_Click(object sender, MapInfoEventArgs e)
     {
-        if (args.MapInfo?.Feature != null)
+        if (e.MapInfo?.WorldPosition is null)
         {
-            FeatureInfoBorder.Visibility = Visibility.Visible;
-            FeatureInfo.Text = $"Click Info:{Environment.NewLine}{args.MapInfo.Feature.ToDisplayText()}";
+            return;
         }
-        else
+        if (vm.MeasurementMode)
         {
-            FeatureInfoBorder.Visibility = Visibility.Hidden;
+            switch (measureStart is null)
+            {
+                case true:
+                    StartMeasurement(e.MapInfo.ScreenPosition);
+                    break;
+                case false:
+                    StopMeasurement();
+                    break;
+            }
+        }
+        if (vm.TargetMode)
+        {
+            int id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
+            Target target = Target.CreateTarget(e.MapInfo.WorldPosition,id,toWGS84);
+            mapSettings.TargetList.Add(target);
+            mapSettings.SaveMapSettings();
+            var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius,mapSettings.DegreeFormat);
+            MyTargets?.Features.Add(feature);
+            e.MapInfo.Layer?.DataHasChanged();
+            MapControl.Refresh();
+        }
+        if (!vm.MeasurementMode && !vm.TargetMode)
+        {
+            var calloutStyle = e.MapInfo?.Feature?.Styles.Where(s => s is CalloutStyle).Cast<CalloutStyle>().FirstOrDefault();
+            TurnCalloutOff(calloutStyle);
+            if (calloutStyle is not null)
+            {
+                calloutStyle.Enabled = !calloutStyle.Enabled;
+                e.MapInfo?.Layer?.DataHasChanged(); // To trigger a refresh of graphics.
+            }
+            MapControl.Refresh();
         }
     }
-    private static void MapControlFeatureInfo(object? sender, FeatureInfoEventArgs e)
+    private void MapControl_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
     {
-        _ = e.FeatureInfo.Count;
-        MessageBox.Show(e.FeatureInfo?.ToDisplayText());
+        if (vm.TargetMode)
+        {
+            if (MyTargets?.Features is null) return;
+            var screenPosition = e.GetPosition(MapControl).ToMapsui();
+            MapInfo info = MapControl.GetMapInfo(screenPosition);
+            MyTargets.Features.Remove(info.Feature);
+            RemoveTarget(info.Feature);
+            MapControl.Refresh();
+        }
     }
     private void MapControlOnMouseMove(object sender, MouseEventArgs e)
     {
@@ -570,25 +559,7 @@ public partial class MapPage : Page
             MapControl.Refresh();
         }
     }
-    //private void MapControl_StartMeasure(object sender, MouseButtonEventArgs e) //Right button down
-    //{
-    //    if (measureMode)
-    //    {
-    //        MPoint screenPosition = new MPoint(e.GetPosition(MapControl).X,e.GetPosition(MapControl).Y);
-    //        StartMeasurement(screenPosition);
-    //    }
-    //}
-
     
-    //private void MapControl_StopMeasure(object sender, MouseButtonEventArgs e)
-    //{
-    //    if (measureMode)
-    //    {
-    //        StopMeasurement();
-    //    }
-    //}
-
-
     #endregion
 
     #region MapControls

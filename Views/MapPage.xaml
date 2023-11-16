@@ -8,11 +8,14 @@
     xmlns:properties="clr-namespace:Mapper_v1.Properties"
     xmlns:mapsui="clr-namespace:Mapsui.UI.Wpf;assembly=Mapsui.UI.Wpf"
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
-    xmlns:ll="clr-namespace:Mapsui.Samples.Wpf"
-    xmlns:fa="http://schemas.fontawesome.io/icons/" xmlns:excss="clr-namespace:ExCSS;assembly=ExCSS"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800" Unloaded="Page_Unloaded" Loaded="Page_Loaded">
-    
+    <!--<Page.Resources>
+        <Label x:Key="NoseUpOn" FontFamily="RNav" Content="&#xE71f;"
+               FontSize="24" FontWeight="Light"/>
+        <Label x:Key="NoseUpOff" FontFamily="RNav" Content="&#xE705;"
+               FontSize="24" FontWeight="Light"/>
+    </Page.Resources>-->
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
@@ -38,23 +41,44 @@
             
             <Grid Grid.Column="0">
                 <mapsui:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
-                                   Background="{StaticResource MahApps.Brushes.Gray10}" MouseRightButtonDown="MapControl_MouseRightButtonDown"/>
+                                   Background="{StaticResource MahApps.Brushes.Gray10}"/>
                 <Border VerticalAlignment="Top" HorizontalAlignment="Left">
                     <StackPanel Orientation="Vertical">
                         <Button x:Name="ZoomExtent" Margin="1" Padding="0" Click="ZoomExtent_Click">
-                            <Label fa:Awesome.Content="Arrows" FontSize="32"/>
+                            <Label FontFamily="RNav" Content="&#xE709;"
+                                   FontSize="24"
+                                   FontWeight="Light"/>
                         </Button>
                         <ToggleButton x:Name="ToggleTracking" Margin="1" Padding="0" Click="ToggleTracking_Click">
-                            <Label fa:Awesome.Content="Crosshairs" FontSize="32"/>
+                            <Label FontFamily="RNav" Content="&#xE703;"
+                                   FontSize="24"
+                                   FontWeight="Light"/>
                         </ToggleButton>
-                        <ToggleButton x:Name="ToggleNoseUp" Margin="1" Padding="0" Unchecked="ToggleNoseUp_Unchecked" >
-                            <Label fa:Awesome.Content="Compass" FontSize="32"/>
+                        <ToggleButton x:Name="ToggleNoseUp" Margin="1" Padding="0" Unchecked="ToggleNoseUp_Unchecked">
+                            <Label FontFamily="RNav" Content="&#xE71f;"
+                                   FontSize="24" FontWeight="Light"/>
+                            <!--<ToggleButton.Style>
+                                <Style TargetType="{x:Type ToggleButton}">
+                                       <Setter Property="Content" Value="{StaticResource NoseUpOff}"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsChecked" Value="True">
+                                            <Setter Property="Content" Value="{StaticResource NoseUpOn}"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </ToggleButton.Style>-->
                         </ToggleButton>
-                        <ToggleButton x:Name="ToggleMeasure" Margin="1" Padding="0" IsChecked="{Binding MeasurementMode}" Command="{Binding MeasureCommand}">
-                            <Label fa:Awesome.Content="Expand" FontSize="32"/>
+                        <ToggleButton x:Name="ToggleMeasure" Margin="1" Padding="0" 
+                                      IsChecked="{Binding MeasurementMode}" Command="{Binding MeasureCommand}">
+                            <Label FontFamily="RNav" Content="&#xE708;"
+                                   FontSize="24"
+                                   FontWeight="Light"/>
                         </ToggleButton>
-                        <ToggleButton x:Name="ToggleTarget" Margin="1" Padding="0" IsChecked="{Binding TargetMode}" Command="{Binding TargetCommand}">
-                            <Label fa:Awesome.Content="MapPin" FontSize="32"/>
+                        <ToggleButton x:Name="ToggleTarget" Margin="1" Padding="0" 
+                                      IsChecked="{Binding TargetMode}" Command="{Binding TargetCommand}">
+                            <Label FontFamily="RNav" Content="&#xE702;" 
+                                   FontSize="24"
+                                   FontWeight="Light"/>
                         </ToggleButton>
                     </StackPanel>
                 </Border>
@@ -77,10 +101,10 @@
                         </StackPanel>
                     </Expander>
                 </Border>
-                <Border Name="FeatureInfoBorder" BorderBrush="White" Opacity="0.65" Background="White" BorderThickness="6"
+                <!--<Border Name="FeatureInfoBorder" BorderBrush="White" Opacity="0.65" Background="White" BorderThickness="6"
                             VerticalAlignment="Bottom" HorizontalAlignment="left">
                     <TextBlock Name="FeatureInfo" TextWrapping="Wrap"/>
-                </Border>
+                </Border>-->
             </Grid>
             <Expander x:Name="DataDisplay" ExpandDirection="Left" Grid.Column="1">
                 <Expander.Header>

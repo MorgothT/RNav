@@ -39,6 +39,10 @@ public partial class App : Application
     private async void OnStartup(object sender, StartupEventArgs e)
     {
         SquirrelAwareApp.HandleEvents( onInitialInstall: OnAppInstall, onAppUninstall: OnAppUninstall, onEveryRun: OnAppRun);
+        //
+        // Squirrel.exe pack --packId "RNav" --packVersion "1.0.0" --packDirectory "c:\Users\tal\source\repos\Mapper v1\bin\Release\net6.0-windows10.0.19041.0"
+        //
+        _ = UpdateMyApp();
         var appLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
         // For more information about .NET generic host see  https://docs.microsoft.com/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-3.0
@@ -52,7 +56,34 @@ public partial class App : Application
 
         await _host.StartAsync();
     }
+    private static async Task UpdateMyApp()
+    {
+        try
+        {
+            //TODO: add correct link to Releases
+            using (var mgr = new UpdateManager(@"c:\RNav\Releases"))
+            {
+                var newVersion = await mgr.UpdateApp();
 
+                // optionally restart the app automatically, or ask the user if/when they want to restart
+                if (newVersion != null)
+                {
+                    var result = MessageBox.Show($"Version {newVersion.Version.ToString()} is available.{Environment.NewLine}Do you wish to restart the application ?",
+                                    "New version found",
+                                    MessageBoxButton.YesNo,
+                                    MessageBoxImage.Question,
+                                    MessageBoxResult.No);
+                    //MessageBox.Show("new update available");
+                    if (result == MessageBoxResult.Yes) UpdateManager.RestartApp();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message);
+        }
+        
+    }
     private void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
         // TODO: Register your services, viewmodels and pages here
@@ -92,7 +123,6 @@ public partial class App : Application
 
         services.AddTransient<IShellDialogWindow, ShellDialogWindow>();
         services.AddTransient<ShellDialogViewModel>();
-        //TODO: Add Serial service as singleton
 
         // Configuration
         services.Configure<AppConfig>(context.Configuration.GetSection(nameof(AppConfig)));

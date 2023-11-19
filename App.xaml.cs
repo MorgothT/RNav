@@ -61,7 +61,8 @@ public partial class App : Application
     {
         try
         {
-            using (var mgr = new UpdateManager("https://github.com/MorgothT/RNav/releases"))
+            using (var mgr = await UpdateManager.GitHubUpdateManager("https://github.com/MorgothT/RNav"))
+            //using (var mgr = await UpdateManager(new GithubSource("https://github.com/MorgothT/RNav")))
             {
                 var newVersion = await mgr.UpdateApp();
 
@@ -76,6 +77,7 @@ public partial class App : Application
                     //MessageBox.Show("new update available");
                     if (result == MessageBoxResult.Yes) UpdateManager.RestartApp();
                 }
+                else MessageBox.Show("RNav is running the latest version");
             }
         }
         catch (Exception ex)

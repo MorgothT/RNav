@@ -16,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Squirrel;
+using Squirrel.Sources;
 
 namespace Mapper_v1;
 
@@ -61,7 +62,7 @@ public partial class App : Application
         try
         {
             //TODO: add correct link to Releases
-            using (var mgr = new UpdateManager(@"c:\RNav\Releases"))
+            using (var mgr = new UpdateManager("https://github.com/MorgothT/RNav/releases"))
             {
                 var newVersion = await mgr.UpdateApp();
 

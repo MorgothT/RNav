@@ -61,7 +61,6 @@ public partial class App : Application
     {
         try
         {
-            //TODO: add correct link to Releases
             using (var mgr = new UpdateManager("https://github.com/MorgothT/RNav/releases"))
             {
                 var newVersion = await mgr.UpdateApp();

@@ -97,28 +97,28 @@ public partial class MapPage : Page
         }
     }
 
-    private Target AddTarget(MPoint worldPosition)
-    {
-        int id;
-        if (mapSettings.TargetList is null)
-        {
-            mapSettings.TargetList = new();
-        }
-        id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
-        Converter.Point3d latlon = Converter.ToDeg(new Converter.Point3d(worldPosition.X, worldPosition.Y, 0));
-        Target target = new()
-        {
-            Id = id,
-            Name = $"Target no.{id}",
-            X = worldPosition.X,
-            Y = worldPosition.Y,
-            Lat = latlon.Y,
-            Lon = latlon.X
-        };
-        mapSettings.TargetList.Add(target);
-        mapSettings.SaveMapSettings();
-        return target;
-    }
+    //private Target AddTarget(MPoint worldPosition)
+    //{
+    //    int id;
+    //    if (mapSettings.TargetList is null)
+    //    {
+    //        mapSettings.TargetList = new();
+    //    }
+    //    id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
+    //    Converter.Point3d latlon = Converter.ToDeg(new Converter.Point3d(worldPosition.X, worldPosition.Y, 0));
+    //    Target target = new()
+    //    {
+    //        Id = id,
+    //        Name = $"Target no.{id}",
+    //        X = worldPosition.X,
+    //        Y = worldPosition.Y,
+    //        Lat = latlon.Y,
+    //        Lon = latlon.X
+    //    };
+    //    mapSettings.TargetList.Add(target);
+    //    mapSettings.SaveMapSettings();
+    //    return target;
+    //}
 
     private void RemoveTarget(IFeature feature)
     {
@@ -335,7 +335,7 @@ public partial class MapPage : Page
     }
     private void UpdateDirection()
     {
-        double heading = VesselData.GetHDT.HeadingTrue;
+        double heading = (VesselData.GetHDT.HeadingTrue + mapSettings.HeadingOffset) % 360;
         double mapRotation = Properties.MapControl.Default.Rotation;
         if (ToggleNoseUp.IsChecked.Value)
         {

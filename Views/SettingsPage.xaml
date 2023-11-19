@@ -14,6 +14,11 @@
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="1000">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="MouseLeave">
+            <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
     <Page.Resources>
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" EnumType="models:AppTheme"/>
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConnectionType" EnumType="models:ConnectionType"/>
@@ -225,6 +230,7 @@
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
                         </Grid.RowDefinitions>
                         <TextBlock Text="Vessel Shape:" VerticalAlignment="Center"
                                     Grid.Column="0"/>
@@ -256,6 +262,17 @@
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                         </mah:ColorPicker>
+                        <TextBlock Text="Heading Offset (Deg):" 
+                                   Grid.ColumnSpan="2" Grid.Row="3" Grid.Column="0" 
+                                   VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding MapSettings.HeadingOffset}" 
+                                 Grid.Row="3" Grid.Column="2">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="LostFocus">
+                                    <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </TextBox>
                     </Grid>
                 </GroupBox>
                 <GroupBox Header="Data Display">

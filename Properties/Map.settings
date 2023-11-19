@@ -23,8 +23,11 @@
     <Setting Name="TargetList" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="TargetRadius" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+    <Setting Name="TargetRadius" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="HeadingOffset" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -25,7 +25,6 @@ public partial class MapViewModel : ObservableObject
     }
     #region Commands
 
-
     [RelayCommand]
     private void Measure()
     {
@@ -47,6 +46,7 @@ public partial class MapViewModel : ObservableObject
         }
         else if (!MeasurementMode) { CurrentMapMode = MapMode.Navigate; }
     }
+
     #endregion
 
     private void InitDataView()
@@ -72,7 +72,7 @@ public partial class MapViewModel : ObservableObject
         Data["Y"] = p.Y.ToString("F2");
         Data["Latitude"] = Formater.FormatLatLong(lat,MapSettings.DegreeFormat);
         Data["Longitude"] = Formater.FormatLatLong(lon,MapSettings.DegreeFormat);
-        Data["Heading"] = vessel.GetHDT.HeadingTrue;
+        Data["Heading"] = ((vessel.GetHDT.HeadingTrue + MapSettings.HeadingOffset) % 360).ToString("F2");    // Added offset
         Data["Time (UTC)"] = vessel.GetGGA.UTC.ToString(@"hh\:mm\:ss");
         Data["No. of Sats"] = vessel.GetGGA.SatelliteCount;
         Data["Quality"] = vessel.GetGGA.FixQuality;

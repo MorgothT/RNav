@@ -85,8 +85,8 @@ public class NmeaDevice
             //IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, DeviceSettings.Port);
             //IPEndPoint endPoint = new IPEndPoint(address, DeviceSettings.Port);
             Port = new UdpClient(DeviceSettings.Port);
-            
-            Task.Run(ReceiveUDP,TokenSource.Token);
+
+            Task.Run(ReceiveUDP, TokenSource.Token);
             TokenSource.Token.Register(() => (Port as UdpClient).Close());
         }
         catch (OperationCanceledException)
@@ -160,7 +160,7 @@ public class NmeaDevice
                 catch (Exception ex)
                 {
                     MessageBox.Show(ex.Message);
-                } 
+                }
             }
         }
     }

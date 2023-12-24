@@ -1,16 +1,11 @@
 ﻿using InvernessPark.Utilities.NMEA;
 using InvernessPark.Utilities.NMEA.Sentences;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mapper_v1.Models;
 
 public class NmeaHandler : INmeaHandler
 {
-    public double Lat,Lon,Heading,SOG;
+    public double Lat, Lon, Heading, SOG;
     public GGA GetGGA = new();
     public VTG GetVTG = new();
     public HDT GetHDT = new();
@@ -67,6 +62,6 @@ public class NmeaHandler : INmeaHandler
                 LogNmeaMessage?.Invoke(msg);
                 break;
         }
-        
+
     }
 }

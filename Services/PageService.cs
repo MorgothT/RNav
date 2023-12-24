@@ -1,10 +1,8 @@
-﻿using System.Windows.Controls;
-
-using CommunityToolkit.Mvvm.ComponentModel;
-
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Mapper_v1.Contracts.Services;
 using Mapper_v1.ViewModels;
 using Mapper_v1.Views;
+using System.Windows.Controls;
 
 namespace Mapper_v1.Services;
 

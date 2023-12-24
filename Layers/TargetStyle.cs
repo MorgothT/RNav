@@ -1,20 +1,12 @@
-﻿using Mapsui.Layers;
-using Mapsui.Rendering.Skia.SkiaStyles;
+﻿using Mapsui;
+using Mapsui.Extensions;
+using Mapsui.Layers;
 using Mapsui.Rendering;
-using Mapsui;
+using Mapsui.Rendering.Skia.SkiaStyles;
 using Mapsui.Styles;
 using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Mapsui.Extensions;
-using NetTopologySuite.Geometries;
-using Mapsui.Nts;
-using System.Windows.Documents;
 
-namespace Mapper_v1.Models;
+namespace Mapper_v1.Layers;
 
 public class TargetStyle : IStyle
 {
@@ -47,7 +39,7 @@ public class TargetRenderer : ISkiaStyleRenderer
 
         var screenPoint = viewport.WorldToScreen(worldPoint);
         TargetStyle targetStyle = (TargetStyle)style;
-        using var colored = new SKPaint { Color = targetStyle.Color, IsAntialias = true, Style = SKPaintStyle.Stroke};
+        using var colored = new SKPaint { Color = targetStyle.Color, IsAntialias = true, Style = SKPaintStyle.Stroke };
         using var filled = new SKPaint { Color = targetStyle.Color.WithAlpha((byte)(255 * targetStyle.Opacity)), IsAntialias = true, Style = SKPaintStyle.Fill };
         canvas.Translate((float)screenPoint.X, (float)screenPoint.Y);
         canvas.Scale(-(float)(1.0 / viewport.Resolution));

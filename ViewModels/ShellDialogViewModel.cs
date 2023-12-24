@@ -1,7 +1,6 @@
-﻿using System.Windows.Input;
-
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Windows.Input;
 
 namespace Mapper_v1.ViewModels;
 

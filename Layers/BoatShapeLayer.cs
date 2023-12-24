@@ -1,4 +1,5 @@
-﻿using Mapsui;
+﻿using Mapper_v1.Models;
+using Mapsui;
 using Mapsui.Animations;
 using Mapsui.Extensions;
 using Mapsui.Layers;
@@ -6,7 +7,7 @@ using Mapsui.Styles;
 using Mapsui.Utilities;
 #nullable enable
 
-namespace Mapper_v1.Models;
+namespace Mapper_v1.Layers;
 
 public class BoatShapeLayer : BaseLayer, IModifyFeatureLayer, IDisposable
 {
@@ -22,7 +23,7 @@ public class BoatShapeLayer : BaseLayer, IModifyFeatureLayer, IDisposable
     private readonly List<IFeature> _features;
     private AnimationEntry<Map>? _animationMyDirection;
     private AnimationEntry<Map>? _animationMyLocation;
-    
+
     private BoatShape _boatShape;
     /// <summary>
     /// The Vessel's Shape to be displayed on the map
@@ -115,7 +116,7 @@ public class BoatShapeLayer : BaseLayer, IModifyFeatureLayer, IDisposable
     /// </summary>
     /// <param name="map">MapView, to which this layer belongs</param>
     /// <param name="location">Location, where to start</param>
-    public BoatShapeLayer(Map map, MPoint location, BoatShape boatShape) : this(map,boatShape)
+    public BoatShapeLayer(Map map, MPoint location, BoatShape boatShape) : this(map, boatShape)
     {
         _myLocation = location;
     }
@@ -124,7 +125,7 @@ public class BoatShapeLayer : BaseLayer, IModifyFeatureLayer, IDisposable
     /// Initializes a new instance of the <see cref="T:Mapsui.Layers.MyLocationLayer"/> class.
     /// </summary>
     /// <param name="map">Map, to which this layer belongs</param>
-    public BoatShapeLayer(Map map,BoatShape boatShape)
+    public BoatShapeLayer(Map map, BoatShape boatShape)
     {
         _map = map ?? throw new ArgumentNullException("Map shouldn't be null");
         _map.Info += HandleClicked;
@@ -143,8 +144,8 @@ public class BoatShapeLayer : BaseLayer, IModifyFeatureLayer, IDisposable
         {
             Enabled = true,
             SymbolRotation = 0,
-            Fill = new Brush() { Color = Color.Orange},
-            Outline = new Pen() { Color = Color.Black}
+            Fill = new Brush() { Color = Color.Orange },
+            Outline = new Pen() { Color = Color.Black }
         };
 
         _coStyle = new CalloutStyle

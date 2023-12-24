@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GeoConverter
+﻿namespace GeoConverter
 {
     public class Converter
     {
@@ -78,7 +76,7 @@ namespace GeoConverter
         {
             return new Point3d(point.X * 180 / Math.PI, point.Y * 180 / Math.PI, point.Z);
         }
-        
+
         public Point3d Convert(Point3d point)
         {
             switch (mode)

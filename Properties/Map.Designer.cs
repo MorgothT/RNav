@@ -12,7 +12,7 @@ namespace Mapper_v1.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.7.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.8.0.0")]
     internal sealed partial class Map : global::System.Configuration.ApplicationSettingsBase {
         
         private static Map defaultInstance = ((Map)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Map())));
@@ -128,6 +128,42 @@ namespace Mapper_v1.Properties {
             }
             set {
                 this["HeadingOffset"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public ushort TrailDuration {
+            get {
+                return ((ushort)(this["TrailDuration"]));
+            }
+            set {
+                this["TrailDuration"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LogDirectory {
+            get {
+                return ((string)(this["LogDirectory"]));
+            }
+            set {
+                this["LogDirectory"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastTrail {
+            get {
+                return ((string)(this["LastTrail"]));
+            }
+            set {
+                this["LastTrail"] = value;
             }
         }
     }

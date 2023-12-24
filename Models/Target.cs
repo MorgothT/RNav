@@ -1,12 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using GeoConverter;
 using Mapper_v1.Helpers;
+using Mapper_v1.Models;
 using Mapsui;
 using Mapsui.Extensions;
 using Mapsui.Layers;
 using Mapsui.Styles;
-using System.Windows;
-using System.Windows.Shapes;
 using static GeoConverter.Converter;
 
 namespace Mapper_v1.Models;
@@ -17,8 +16,8 @@ public partial class Target : ObservableObject
     [ObservableProperty]
     private int id;
     [ObservableProperty]
-	private string name = "";
-	[ObservableProperty]
+    private string name = "";
+    [ObservableProperty]
     private double x;
     [ObservableProperty]
     private double y;
@@ -36,7 +35,7 @@ public partial class Target : ObservableObject
 
     public override string ToString()   //for export
     {
-        return $"{Id},{Name},{X},{Y},{Lat},{Lon}";    
+        return $"{Id},{Name},{X},{Y},{Lat},{Lon}";
     }
     public static Target Parse(string line)
     {
@@ -54,13 +53,13 @@ public partial class Target : ObservableObject
             };
             return target;
         }
-        catch (Exception ex) 
+        catch (Exception)
         {
             return null;
         }
 
     }
-    public static Target CreateTarget(MPoint point,int id, Converter converter)
+    public static Target CreateTarget(MPoint point, int id, Converter converter)
     {
         Point3d latlon = converter.Convert(new Point3d(point.X, point.Y, 0));
         Target target = new()
@@ -89,7 +88,7 @@ public partial class Target : ObservableObject
         };
     }
 
-    public static PointFeature CreateTargetFeature(Target target,float radius,DegreeFormat degreeFormat)
+    public static PointFeature CreateTargetFeature(Target target, float radius, DegreeFormat degreeFormat)
     {
         var feature = new PointFeature(target.X, target.Y);
         feature[nameof(Id)] = target.Id;

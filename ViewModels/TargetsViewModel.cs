@@ -4,10 +4,8 @@ using GeoConverter;
 using Mapper_v1.Models;
 using Mapsui;
 using Microsoft.Win32;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
-using System.Windows.Media;
 
 namespace Mapper_v1.ViewModels;
 
@@ -30,13 +28,13 @@ public partial class TargetsViewModel : ObservableObject
     #endregion
 
     #region Constractor
-    public TargetsViewModel() 
+    public TargetsViewModel()
     {
         int epsg = int.Parse(mapSettings.CurrentProjection.Split(':')[1]);
         switch (epsg)
         {
             case 6991:
-                toWgs = new( Converter.Projections.ITM,Converter.Ellipsoids.WGS_84);
+                toWgs = new(Converter.Projections.ITM, Converter.Ellipsoids.WGS_84);
                 break;
             case 32636:
                 toWgs = new(Converter.Projections.UTM_36N, Converter.Ellipsoids.WGS_84);
@@ -63,11 +61,11 @@ public partial class TargetsViewModel : ObservableObject
             {
                 //if (sfd.FileName.EndsWith(".csv"))    //if there is a need for another format
                 //{
-                    File.AppendAllText(sfd.FileName, $"{target}{Environment.NewLine}");
+                File.AppendAllText(sfd.FileName, $"{target}{Environment.NewLine}");
                 //}
             }
         }
-        
+
     }
     private bool CanExportTargets()
     {
@@ -168,7 +166,7 @@ public partial class TargetsViewModel : ObservableObject
             MapSettings.TargetList = new();
         }
         id = MapSettings.TargetList.Count == 0 ? 0 : MapSettings.TargetList.Max(x => x.Id) + 1;
-        Target target = Target.CreateTarget(point, id,toWgs);
+        Target target = Target.CreateTarget(point, id, toWgs);
         MapSettings.TargetList.Add(target);
         MapSettings.SaveMapSettings();
         return target;

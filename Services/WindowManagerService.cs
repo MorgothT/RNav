@@ -1,12 +1,10 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Navigation;
-
-using MahApps.Metro.Controls;
-
+﻿using MahApps.Metro.Controls;
 using Mapper_v1.Contracts.Services;
 using Mapper_v1.Contracts.ViewModels;
 using Mapper_v1.Contracts.Views;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Navigation;
 
 namespace Mapper_v1.Services;
 

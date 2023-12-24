@@ -26,6 +26,7 @@
             Style="{StaticResource PageTitleStyle}"
             Margin="{StaticResource MediumLeftMargin}"
             Text="{x:Static properties:Resources.MapPageTitle}" />
+        
         <Grid
             Grid.Row="1"
             Margin="5"
@@ -38,7 +39,18 @@
             The Mahapps Gray10 color represents where you should place your content.
             Place your content here.
             -->
-            
+            <mah:FlyoutsControl Grid.Row="0" Panel.ZIndex="99" >
+                <mah:Flyout x:Name="NewVersion" Position="Top" CloseButtonVisibility="Collapsed">
+                    <DockPanel LastChildFill="True">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                            <Button Content="Yes" Margin="5"/>
+                            <Button Content="No" Margin="5"/>
+                        </StackPanel>
+                        <TextBlock x:Name="NewVersionText"/>
+                    </DockPanel>
+                </mah:Flyout>
+                <mah:Flyout x:Name="LatestVersion" Position="Top"/>
+            </mah:FlyoutsControl>
             <Grid Grid.Column="0">
                 <mapsui:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
                                    Background="{StaticResource MahApps.Brushes.Gray10}"/>

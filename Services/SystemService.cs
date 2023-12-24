@@ -1,6 +1,5 @@
-﻿using System.Diagnostics;
-
-using Mapper_v1.Contracts.Services;
+﻿using Mapper_v1.Contracts.Services;
+using System.Diagnostics;
 
 namespace Mapper_v1.Services;
 

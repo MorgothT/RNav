@@ -1,9 +1,4 @@
-﻿using System.IO;
-using System.Reflection;
-using System.Windows;
-using System.Windows.Threading;
-
-using Mapper_v1.Contracts.Services;
+﻿using Mapper_v1.Contracts.Services;
 using Mapper_v1.Contracts.Views;
 using Mapper_v1.Core.Contracts.Services;
 using Mapper_v1.Core.Services;
@@ -11,12 +6,14 @@ using Mapper_v1.Models;
 using Mapper_v1.Services;
 using Mapper_v1.ViewModels;
 using Mapper_v1.Views;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Squirrel;
-using Squirrel.Sources;
+using System.IO;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace Mapper_v1;
 
@@ -39,11 +36,11 @@ public partial class App : Application
 
     private async void OnStartup(object sender, StartupEventArgs e)
     {
-        SquirrelAwareApp.HandleEvents( onInitialInstall: OnAppInstall, onAppUninstall: OnAppUninstall, onEveryRun: OnAppRun);
+        SquirrelAwareApp.HandleEvents(onInitialInstall: OnAppInstall, onAppUninstall: OnAppUninstall, onEveryRun: OnAppRun);
         //
         // Squirrel.exe pack --packId "RNav" --packVersion "1.0.0" --packDirectory "c:\Users\tal\source\repos\Mapper v1\bin\Release\net6.0-windows10.0.19041.0"
         //
-        _ = UpdateMyApp();
+        //_ = UpdateMyApp();
         var appLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
         // For more information about .NET generic host see  https://docs.microsoft.com/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-3.0
@@ -57,35 +54,7 @@ public partial class App : Application
 
         await _host.StartAsync();
     }
-    private static async Task UpdateMyApp()
-    {
-        try
-        {
-            using (var mgr = await UpdateManager.GitHubUpdateManager("https://github.com/MorgothT/RNav"))
-            //using (var mgr = await UpdateManager(new GithubSource("https://github.com/MorgothT/RNav")))
-            {
-                var newVersion = await mgr.UpdateApp();
 
-                // optionally restart the app automatically, or ask the user if/when they want to restart
-                if (newVersion != null)
-                {
-                    var result = MessageBox.Show($"Version {newVersion.Version.ToString()} is available.{Environment.NewLine}Do you wish to restart the application ?",
-                                    "New version found",
-                                    MessageBoxButton.YesNo,
-                                    MessageBoxImage.Question,
-                                    MessageBoxResult.No);
-                    //MessageBox.Show("new update available");
-                    if (result == MessageBoxResult.Yes) UpdateManager.RestartApp();
-                }
-                else MessageBox.Show("RNav is running the latest version");
-            }
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(ex.Message);
-        }
-        
-    }
     private void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
         // TODO: Register your services, viewmodels and pages here

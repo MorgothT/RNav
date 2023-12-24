@@ -1,10 +1,4 @@
-﻿using Mapsui.Styles;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
+﻿using System.Windows.Media;
 using Color = Mapsui.Styles.Color;
 
 namespace Mapper_v1.Converters;
@@ -34,10 +28,10 @@ public class ColorConvertor
         }
         catch (Exception)
         {
-            return Color.FromArgb(255,180,200,220); //default
+            return Color.FromArgb(255, 180, 200, 220); //default
         }
-        
-        
+
+
     }
     public string Mapsui2String(Color from)
     {

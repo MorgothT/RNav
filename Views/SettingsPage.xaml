@@ -193,7 +193,7 @@
                     Style="{StaticResource BodyTextStyle}"
                     Text="{x:Static properties:Resources.SettingsPageAboutText}" />
 
-                <TextBlock
+                <!--<TextBlock
                     Margin="{StaticResource SmallTopMargin}"
                     AutomationProperties.Name="{Binding Text, ElementName=settingsPrivacyStatement}">
                     <Hyperlink
@@ -204,7 +204,7 @@
                             Style="{StaticResource BodyTextStyle}"
                             Text="{x:Static properties:Resources.SettingsPagePrivacyStatementText}" />
                     </Hyperlink>
-                </TextBlock>
+                </TextBlock>-->
             </StackPanel>
             <StackPanel Grid.Column="1" Grid.Row="1"
                         Orientation="Vertical"
@@ -227,6 +227,8 @@
                             <ColumnDefinition Width="50"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
@@ -273,6 +275,29 @@
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                         </TextBox>
+                        <TextBlock Text="Trail Duration (Min):" 
+                                   Grid.ColumnSpan="2" Grid.Row="4" Grid.Column="0" 
+                                   VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding MapSettings.TrailDuration}" 
+                                 Grid.Row="4" Grid.Column="2">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="LostFocus">
+                                    <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </TextBox>
+                        <TextBlock Text="Trail Log Location:" 
+                                   Grid.Row="5" Grid.Column="0" 
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding MapSettings.LogDirectory}"
+                                   Grid.Row="5" Grid.Column="1" 
+                                   Margin="{StaticResource SmallLeftRightMargin}" VerticalAlignment="Center">
+                            
+                        </TextBlock>
+                        <Button Command="{Binding BrowseLogDirectoryCommand}" Style="{StaticResource MahApps.Styles.Button.ToolBar}"
+                                Grid.Row="5" Grid.Column="2" Padding="0" Width="48">
+                            <Label FontFamily="RNav" Content="&#xE711;" FontSize="24" FontWeight="Light" Padding="0"/>
+                        </Button>
                     </Grid>
                 </GroupBox>
                 <GroupBox Header="Data Display">

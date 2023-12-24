@@ -1,39 +1,45 @@
-﻿using System.IO;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Diagnostics;
-using System.Windows.Threading;
-using System.Collections.ObjectModel;
-using Mapper_v1.Converters;
-using Mapper_v1.Models;
-using Mapper_v1.ViewModels;
-using Mapper_v1.Properties;
-using GeoConverter;
+﻿using GeoConverter;
 using InvernessPark.Utilities.NMEA;
-using Newtonsoft.Json;
-using NetTopologySuite.IO;
+using Mapper_v1.Converters;
+using Mapper_v1.Layers;
+using Mapper_v1.Models;
+using Mapper_v1.Properties;
+using Mapper_v1.ViewModels;
 using Mapsui;
 using Mapsui.Extensions;
 using Mapsui.Extensions.Provider;
 using Mapsui.Layers;
+using Mapsui.Nts;
+using Mapsui.Nts.Extensions;
 using Mapsui.Nts.Providers.Shapefile;
 using Mapsui.Providers;
 using Mapsui.Samples.CustomWidget;
 using Mapsui.Styles;
-using Mapsui.Widgets.ScaleBar;
 using Mapsui.UI.Wpf;
-using Mapsui.Nts;
-using SkiaSharp;
-using System.Data;
 using Mapsui.UI.Wpf.Extensions;
+using Mapsui.Widgets.ScaleBar;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.IO;
+using Newtonsoft.Json;
+using SkiaSharp;
+using SkiaSharp.Views.WPF;
+using Squirrel;
+using System.Collections.ObjectModel;
+using System.Data;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Mapper_v1.Views;
 
 public partial class MapPage : Page
 {
     public BoatShapeLayer MyBoatLayer;
+    public MemoryLayer BoatTrailLayer;
     public VesselData VesselData = new();
 
     private MapSettings mapSettings = new();
@@ -46,7 +52,7 @@ public partial class MapPage : Page
     private WritableLayer MyMeasurementLayer;
     //private bool targetMode = false;
     private GenericCollectionLayer<List<IFeature>> MyTargets = new();
-
+    private List<TimedPoint> MyTrail = new();
     private static Converter fromWGS84;
     private static Converter toWGS84;
     private static ColorConvertor colorConvertor = new();
@@ -56,10 +62,11 @@ public partial class MapPage : Page
     {
         InitializeComponent();
         DataContext = viewModel;
-        
+        //_ = UpdateMyApp();
+
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         vm = viewModel;
-        
+
         SubscribeToNmea();
         InitMapControl();
         InitUIControls();
@@ -122,7 +129,7 @@ public partial class MapPage : Page
 
     private void RemoveTarget(IFeature feature)
     {
-        if (feature is null ) { return; }
+        if (feature is null) { return; }
         PointFeature pointFeature = (PointFeature)feature;
         foreach (Target target in mapSettings.TargetList)
         {
@@ -158,7 +165,7 @@ public partial class MapPage : Page
     {
         foreach (Target target in mapSettings.TargetList)
         {
-            var feature = Target.CreateTargetFeature(target,mapSettings.TargetRadius,mapSettings.DegreeFormat);
+            var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
             MyTargets?.Features.Add(feature);
         }
     }
@@ -213,6 +220,17 @@ public partial class MapPage : Page
             Enabled = true,
             IsCentered = ToggleTracking.IsChecked.Value,
         };
+        BoatTrailLayer = new MemoryLayer()
+        {
+            //Features = new[] { CreateTrailFeature() },
+            Name = "BoatTrail",
+            Style = new VectorStyle
+            {
+                Fill = null,
+                Outline = null,
+                Line = { Color = colorConvertor.WMColorToMapsui(mapSettings.BoatShape.Outline) }
+            }
+        };
         MyMeasurementLayer = new WritableLayer() { Name = "Measurement", Opacity = 0.7f };
         MyTargets = new GenericCollectionLayer<List<IFeature>>
         {
@@ -237,10 +255,44 @@ public partial class MapPage : Page
         // Adding the features
         AddSavedTargets();
         AddCharts();
+        AddLastTrail();
         // Adding the layers to the map
         MapControl.Map.Layers.Add(MyTargets);
         MapControl.Map.Layers.Add(MyMeasurementLayer);
+        MapControl.Map.Layers.Add(BoatTrailLayer);
         MapControl.Map.Layers.Add(MyBoatLayer);
+    }
+
+    private void AddLastTrail()
+    {
+
+        try
+        {
+            MyTrail = mapSettings.GetTrail();
+        }
+        catch (Exception)
+        {
+            
+        }
+        if (MyTrail is null) 
+        { 
+            MyTrail = new(); 
+        }
+        //throw new NotImplementedException();
+    }
+
+    private GeometryFeature CreateTrailFeature()
+    {
+        //var coords = new List<Coordinate>();
+        if (MyTrail.Count < 2) { return null; }
+        var trail = new LineString(MyTrail.Select(x=> new MPoint(x.X, x.Y).ToCoordinate()).ToArray());
+        return new GeometryFeature(trail);
+        
+        //foreach (TimedPoint point in MyTrail)
+        //{
+        //    coords.Add(new Coordinate(point.X, point.Y));
+        //}
+        //var trail = new LineString(coords.ToArray());
     }
 
     private void SaveMapControlState()
@@ -256,7 +308,7 @@ public partial class MapPage : Page
     {
         if (MapControl.Map is not null)
         {
-            
+
             MapControl.Map.BackColor = colorConvertor.String2Mapsui(Properties.MapControl.Default.BackColor);
             MapControl.Map.Navigator.RotateTo(Properties.MapControl.Default.Rotation);
             ToggleTracking.IsChecked = Properties.MapControl.Default.BtnTrackingState;
@@ -310,6 +362,8 @@ public partial class MapPage : Page
         {
             case "GGA":
                 Dispatcher.BeginInvoke(UpdateLocation);
+                Dispatcher.BeginInvoke(DispatcherPriority.Background, LogLocation);
+                Dispatcher.BeginInvoke(DispatcherPriority.Background, UpdateTrail);
                 break;
             case "HDT":
                 Dispatcher.BeginInvoke(UpdateDirection);
@@ -318,6 +372,42 @@ public partial class MapPage : Page
                 break;
         }
         vm.UpdateDataView(VesselData, fromWGS84);
+    }
+    private void UpdateTrail()
+    {
+        TimedPoint point = new TimedPoint(VesselData.GetGGA, fromWGS84);
+        MyTrail.Add(point);
+        if(MyTrail.Count < 2) 
+        {
+            return;
+        }
+        MyTrail.RemoveAll(x => point.Time.Subtract(x.Time) > TimeSpan.FromMinutes(mapSettings.TrailDuration));
+        mapSettings.SaveTrail(MyTrail);
+
+        try
+        {
+            BoatTrailLayer.Features = new[] { CreateTrailFeature() };
+            //if (!MapControl.Map.Layers.Contains(BoatTrailLayer))
+            //{
+            //    MapControl.Map.Layers.Add(BoatTrailLayer);
+            //}
+        }
+        catch (Exception)
+        {
+
+        }
+        
+
+    }
+    private void LogLocation()
+    {
+        string logPath = @$"{mapSettings.LogDirectory}\{DateTime.Today.ToString("yyyyMMdd")}.log";
+        if (!Directory.Exists(mapSettings.LogDirectory))
+        {
+            Directory.CreateDirectory(mapSettings.LogDirectory);
+        }
+        TimedPoint point = new TimedPoint(VesselData.GetGGA,fromWGS84);
+        File.AppendAllText(logPath, $"{point.ToLocalTime()}\n");
     }
     private void ConnectToGps()
     {
@@ -357,7 +447,7 @@ public partial class MapPage : Page
         MPoint point = new MPoint(p.X, p.Y);
         MyBoatLayer.UpdateMyLocation(point);
         MyBoatLayer.DataHasChanged();
-    } 
+    }
     #endregion
 
     #region Helpers
@@ -511,10 +601,10 @@ public partial class MapPage : Page
         if (vm.TargetMode)
         {
             int id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
-            Target target = Target.CreateTarget(e.MapInfo.WorldPosition,id,toWGS84);
+            Target target = Target.CreateTarget(e.MapInfo.WorldPosition, id, toWGS84);
             mapSettings.TargetList.Add(target);
             mapSettings.SaveMapSettings();
-            var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius,mapSettings.DegreeFormat);
+            var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
             MyTargets?.Features.Add(feature);
             e.MapInfo.Layer?.DataHasChanged();
             MapControl.Refresh();
@@ -559,7 +649,7 @@ public partial class MapPage : Page
             MapControl.Refresh();
         }
     }
-    
+
     #endregion
 
     #region MapControls
@@ -581,7 +671,7 @@ public partial class MapPage : Page
     //    {
     //        vm.TargetMode = false;
     //    }       
-        
+
     //}
     //private void ToggleTarget_Click(object sender, RoutedEventArgs e)
     //{
@@ -610,6 +700,39 @@ public partial class MapPage : Page
     }
     #endregion
 
-    
+//    private static async Task UpdateMyApp()
+//    {
+//        try
+//        {
+//#pragma warning disable CS0618 // Type or member is obsolete
+//            using (var mgr = await UpdateManager.GitHubUpdateManager("https://github.com/MorgothT/RNav"))
+//            //using (var mgr = await UpdateManager(new GithubSource("https://github.com/MorgothT/RNav")))
+//            {
+//                var newVersion = await mgr.UpdateApp();
+
+//                // optionally restart the app automatically, or ask the user if/when they want to restart
+
+//                if (newVersion != null)
+//                {
+//                    var result = MessageBox.Show($"Version {newVersion.Version} is available.{Environment.NewLine}Do you wish to restart the application ?",
+//                                    "New version found",
+//                                    button: MessageBoxButton.YesNo,
+//                                    icon: MessageBoxImage.Question,
+//                                    defaultResult: MessageBoxResult.No);
+//                    if (result == MessageBoxResult.Yes) UpdateManager.RestartApp();
+//                }
+//                else
+//                {
+//                    MessageBox.Show("RNav is running the latest version");
+//                }
+
+//            }
+//#pragma warning restore CS0618 // Type or member is obsolete
+//        }
+//        catch (Exception ex)
+//        {
+//            MessageBox.Show(ex.Message);
+//        }
+//    }
 }
 

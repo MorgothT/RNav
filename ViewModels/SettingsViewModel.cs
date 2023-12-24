@@ -1,16 +1,12 @@
-﻿using System.IO;
-using System.Windows;
-using System.Windows.Input;
-
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
 using Mapper_v1.Contracts.Services;
 using Mapper_v1.Contracts.ViewModels;
 using Mapper_v1.Models;
-
 using Microsoft.Extensions.Options;
 using Microsoft.Win32;
+using System.Windows.Input;
+
 
 namespace Mapper_v1.ViewModels;
 
@@ -60,7 +56,6 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     [RelayCommand(CanExecute = nameof(CanRemoveDevice))]
     private void RemoveDevice()
     {
-        //int idx = CommSettings.Devices.IndexOf(SelectedDevice);
         CommSettings.Devices.Remove(SelectedDevice);
         CommSettings.SaveSettings();
     }
@@ -88,7 +83,19 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
             MapSettings = new();
         }
     }
-    
+
+    [RelayCommand]
+    private void BrowseLogDirectory()
+    {
+        var ofd = new OpenFolderDialog();
+        ofd.InitialDirectory = MapSettings.LogDirectory;
+        ofd.Multiselect = false;
+        if (ofd.ShowDialog() == true)
+        {
+            MapSettings.LogDirectory = ofd.FolderName;
+        }
+    }
+
     public SettingsViewModel(IOptions<AppConfig> appConfig, IThemeSelectorService themeSelectorService, ISystemService systemService, IApplicationInfoService applicationInfoService)
     {
         _appConfig = appConfig.Value;

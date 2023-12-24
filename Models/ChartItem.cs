@@ -1,14 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Mapsui.Styles;
-using NetTopologySuite.Geometries.Prepared;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
 using System.Windows.Media;
 using Color = System.Windows.Media.Color;
 
@@ -28,7 +18,7 @@ public partial class ChartItem : ObservableObject
     private Color fillColor;
     [ObservableProperty]
     private int lineWidth;
-    
+
     [ObservableProperty]
     private int labelFontSize;
     [ObservableProperty]
@@ -46,8 +36,8 @@ public partial class ChartItem : ObservableObject
 
     public string Name { get; private set; }
     public string Path { get; private set; }
-    
-    public ChartType ChartType {get;}
+
+    public ChartType ChartType { get; }
 
     public ChartItem(string path, Color? linecolor = null, Color? outlinecolor = null, Color? fillcolor = null, int width = 1)
     {
@@ -85,9 +75,9 @@ public partial class ChartItem : ObservableObject
 
 public enum ChartType
 {
-Shapefile,
-Geotiff,
-Unsupported = -1
+    Shapefile,
+    Geotiff,
+    Unsupported = -1
 }
 
 public enum HorizontalAlignmentEnum

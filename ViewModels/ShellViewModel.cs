@@ -1,13 +1,12 @@
-﻿using System.Collections.ObjectModel;
-using System.Windows.Input;
-
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
 using MahApps.Metro.Controls;
-
 using Mapper_v1.Contracts.Services;
 using Mapper_v1.Properties;
+using Squirrel;
+using System.Collections.ObjectModel;
+using System.Windows;
+using System.Windows.Input;
 
 namespace Mapper_v1.ViewModels;
 
@@ -65,6 +64,7 @@ public class ShellViewModel : ObservableObject
     private void OnLoaded()
     {
         _navigationService.Navigated += OnNavigated;
+        UpdateMyApp();
     }
 
     private void OnUnloaded()
@@ -108,5 +108,40 @@ public class ShellViewModel : ObservableObject
                     .FirstOrDefault(i => viewModelName == i.TargetPageType?.FullName);
         }
         GoBackCommand.NotifyCanExecuteChanged();
+    }
+
+    private static async Task UpdateMyApp()
+    {
+        try
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            using (var mgr = await UpdateManager.GitHubUpdateManager("https://github.com/MorgothT/RNav"))
+            //using (var mgr = await UpdateManager(new GithubSource("https://github.com/MorgothT/RNav")))
+            {
+                var newVersion = await mgr.UpdateApp();
+
+                // optionally restart the app automatically, or ask the user if/when they want to restart
+
+                if (newVersion != null)
+                {
+                    var result = MessageBox.Show($"Version {newVersion.Version} is available.{Environment.NewLine}Do you wish to restart the application ?",
+                                    "New version found",
+                                    button: MessageBoxButton.YesNo,
+                                    icon: MessageBoxImage.Question,
+                                    defaultResult: MessageBoxResult.No);
+                    if (result == MessageBoxResult.Yes) UpdateManager.RestartApp();
+                }
+                else
+                {
+                    MessageBox.Show("RNav is running the latest version");
+                }
+
+            }
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message);
+        }
     }
 }

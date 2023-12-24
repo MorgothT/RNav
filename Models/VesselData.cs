@@ -1,20 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using InvernessPark.Utilities.NMEA;
 using InvernessPark.Utilities.NMEA.Sentences;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Threading;
 
 namespace Mapper_v1.Models;
 
 public partial class VesselData : ObservableObject
 {
 
-	[ObservableProperty]
-	private GGA getGGA = new();
+    [ObservableProperty]
+    private GGA getGGA = new();
     [ObservableProperty]
     private GSA getGSA = new();
     [ObservableProperty]
@@ -27,6 +21,9 @@ public partial class VesselData : ObservableObject
     private RMC getRMC = new();
     [ObservableProperty]
     private VTG getVTG = new();
+
+    [ObservableProperty]
+    private List<TimedPoint> trail = new();
 
     //[ObservableProperty]
     //private Dictionary<string,object> dataViewItems = new();
@@ -64,7 +61,7 @@ public partial class VesselData : ObservableObject
     //}
     //private void UpdateView()
     //{
-        
+
     //    DataViewItems["Latitude"] = GetGGA.Latitude.Degrees;
     //    DataViewItems["Longitude"] = GetGGA.Longitude.Degrees;
     //    DataViewItems["Heading"] = GetHDT.HeadingTrue;

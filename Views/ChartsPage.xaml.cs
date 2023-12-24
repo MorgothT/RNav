@@ -1,7 +1,5 @@
-﻿using System.Windows.Controls;
-using Mapper_v1.Models;
-using Mapper_v1.ViewModels;
-using Mapsui.Styles;
+﻿using Mapper_v1.ViewModels;
+using System.Windows.Controls;
 
 namespace Mapper_v1.Views;
 

@@ -1,8 +1,7 @@
-﻿using System.Windows.Controls;
-using System.Windows.Navigation;
-
-using Mapper_v1.Contracts.Services;
+﻿using Mapper_v1.Contracts.Services;
 using Mapper_v1.Contracts.ViewModels;
+using System.Windows.Controls;
+using System.Windows.Navigation;
 
 namespace Mapper_v1.Services;
 

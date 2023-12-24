@@ -1,5 +1,6 @@
-﻿using Newtonsoft.Json;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Mapper_v1.Layers;
+using Newtonsoft.Json;
 using System.Collections.ObjectModel;
 
 namespace Mapper_v1.Models;
@@ -17,28 +18,31 @@ public partial class MapSettings : ObservableObject
     private BoatShape boatShape;
     [ObservableProperty]
     private double fontSize;
+    [ObservableProperty]
+    private DegreeFormat degreeFormat;
+    [ObservableProperty]
+    private ObservableCollection<Target> targetList;
+    [ObservableProperty]
+    private float targetRadius = 5;
+    [ObservableProperty]
+    private double headingOffset = 0;
+    [ObservableProperty]
+    private ushort trailDuration;
+    [ObservableProperty]
+    private string logDirectory;
+    [ObservableProperty]
+    private List<TimedPoint> lastTrail;
+
     public double[] GetFontSizes
     {
         get
         {
-            return new double[] {  12 ,  16 ,  20 ,  24 ,  30 ,  40  };
+            return new double[] { 12, 16, 20, 24, 30, 40 };
         }
     }
-    [ObservableProperty]
-    private DegreeFormat degreeFormat;
-
-    [ObservableProperty]
-    private ObservableCollection<Target> targetList;
-
-    [ObservableProperty]
-    private float targetRadius = 5;
-
-    [ObservableProperty]
-    private double headingOffset = 0;
-
 
     public MapSettings() => GetMapSettings();
-    
+
     public void InitializeMapSettings()
     {
         ProjectionList = new()
@@ -53,6 +57,8 @@ public partial class MapSettings : ObservableObject
         DegreeFormat = DegreeFormat.Deg;
         TargetList = new ObservableCollection<Target>();
         TargetRadius = 10;
+        TrailDuration = 0;
+        LogDirectory = @"C:\RNav\Logs";
         SaveMapSettings();
     }
     public MapSettings GetMapSettings()
@@ -70,6 +76,8 @@ public partial class MapSettings : ObservableObject
             if (TargetList is null) TargetList = new ObservableCollection<Target>();
             TargetRadius = Properties.Map.Default.TargetRadius;
             HeadingOffset = Properties.Map.Default.HeadingOffset;
+            TrailDuration = Properties.Map.Default.TrailDuration;
+            LogDirectory = Properties.Map.Default.LogDirectory;
             
             if (ProjectionList is null) InitializeMapSettings();
         }
@@ -90,6 +98,18 @@ public partial class MapSettings : ObservableObject
         Properties.Map.Default.TargetList = JsonConvert.SerializeObject(TargetList);
         Properties.Map.Default.TargetRadius = TargetRadius;
         Properties.Map.Default.HeadingOffset = HeadingOffset;
+        Properties.Map.Default.TrailDuration = TrailDuration;
+        Properties.Map.Default.LogDirectory = LogDirectory;
+        
         Properties.Map.Default.Save();
+    }
+    public List<TimedPoint> GetTrail()
+    {
+        return JsonConvert.DeserializeObject<List<TimedPoint>>(Properties.Map.Default.LastTrail);
+    }
+
+    public void SaveTrail(List<TimedPoint> myTrail)
+    {
+        Properties.Map.Default.LastTrail = JsonConvert.SerializeObject(myTrail);
     }
 }

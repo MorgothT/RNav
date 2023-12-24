@@ -1,11 +1,8 @@
-﻿using System.Windows;
-
-using ControlzEx.Theming;
-
+﻿using ControlzEx.Theming;
 using MahApps.Metro.Theming;
-
 using Mapper_v1.Contracts.Services;
 using Mapper_v1.Models;
+using System.Windows;
 
 namespace Mapper_v1.Services;
 

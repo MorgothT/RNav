@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System.IO.Ports;
-using System.Net;
 
 namespace Mapper_v1.Models;
 

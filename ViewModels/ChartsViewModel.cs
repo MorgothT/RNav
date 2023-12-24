@@ -12,8 +12,8 @@ public partial class ChartsViewModel : ObservableObject
     private MapSettings mapSettings = new();
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(MoveDownCommand),nameof(MoveUpCommand),
-        nameof(MoveTopCommand),nameof(MoveButtomCommand),nameof(RemoveChartCommand))]
+    [NotifyCanExecuteChangedFor(nameof(MoveDownCommand), nameof(MoveUpCommand),
+        nameof(MoveTopCommand), nameof(MoveButtomCommand), nameof(RemoveChartCommand))]
     private ChartItem selectedChart;
 
     public ChartsViewModel()

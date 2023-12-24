@@ -1,9 +1,7 @@
-﻿using System.Windows.Controls;
-
-using MahApps.Metro.Controls;
-
+﻿using MahApps.Metro.Controls;
 using Mapper_v1.Contracts.Views;
 using Mapper_v1.ViewModels;
+using System.Windows.Controls;
 
 namespace Mapper_v1.Views;
 

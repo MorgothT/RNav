@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace Mapper_v1.Models
+﻿namespace Mapper_v1.Models
 {
     public interface IDeviceSettings
     {

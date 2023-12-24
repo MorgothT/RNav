@@ -11,7 +11,7 @@ public partial class MapViewModel : ObservableObject
     [ObservableProperty]
     private MapSettings mapSettings = new();
     [ObservableProperty]
-    private Dictionary<string,object> data = new();
+    private Dictionary<string, object> data = new();
     [ObservableProperty]
     private bool measurementMode = false;
     [ObservableProperty]
@@ -39,10 +39,10 @@ public partial class MapViewModel : ObservableObject
     [RelayCommand]
     private void Target()
     {
-        if (TargetMode) 
+        if (TargetMode)
         {
             CurrentMapMode = MapMode.Target;
-            MeasurementMode = false; 
+            MeasurementMode = false;
         }
         else if (!MeasurementMode) { CurrentMapMode = MapMode.Navigate; }
     }
@@ -63,15 +63,14 @@ public partial class MapViewModel : ObservableObject
     }
     public void UpdateDataView(VesselData vessel, GeoConverter.Converter converter)
     {
-        //TODO: add heading offset (to all relevent palces)
         double lon, lat;
         lon = vessel.GetGGA.Longitude.Degrees;
         lat = vessel.GetGGA.Latitude.Degrees;
         var p = converter.Convert(new(lon, lat, 0));
         Data["X"] = p.X.ToString("F2");
         Data["Y"] = p.Y.ToString("F2");
-        Data["Latitude"] = Formater.FormatLatLong(lat,MapSettings.DegreeFormat);
-        Data["Longitude"] = Formater.FormatLatLong(lon,MapSettings.DegreeFormat);
+        Data["Latitude"] = Formater.FormatLatLong(lat, MapSettings.DegreeFormat);
+        Data["Longitude"] = Formater.FormatLatLong(lon, MapSettings.DegreeFormat);
         Data["Heading"] = ((vessel.GetHDT.HeadingTrue + MapSettings.HeadingOffset) % 360).ToString("F2");    // Added offset
         Data["Time (UTC)"] = vessel.GetGGA.UTC.ToString(@"hh\:mm\:ss");
         Data["No. of Sats"] = vessel.GetGGA.SatelliteCount;
@@ -79,4 +78,6 @@ public partial class MapViewModel : ObservableObject
         Data["Speed (Kn)"] = vessel.GetVTG.GroundSpeedKnots.ToString("F2");
         Data = new Dictionary<string, object>(Data);
     }
+
+
 }

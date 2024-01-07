@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Mapper_v1.Layers;
+using Mapper_v1.Projections;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
 
@@ -32,6 +33,8 @@ public partial class MapSettings : ObservableObject
     private string logDirectory;
     [ObservableProperty]
     private List<TimedPoint> lastTrail;
+    [ObservableProperty]
+    private bool mapOverlay;
 
     public double[] GetFontSizes
     {
@@ -45,11 +48,13 @@ public partial class MapSettings : ObservableObject
 
     public void InitializeMapSettings()
     {
-        ProjectionList = new()
-        {
-            {"Israeli_Grid_05-12:6991" },
-            {"WGS_1984_UTM_Zone_36N:32636" }
-        };
+        //ProjectionList = new()
+        //{
+        //    {"Israeli_Grid_05-12:6991" },
+        //    {"WGS_1984_UTM_Zone_36N:32636" }
+        //};
+        ProjectionList = ProjectProjections.GetProjections();
+
         CurrentProjection = ProjectionList.First();
         ChartItems = new ObservableCollection<ChartItem>();
         BoatShape = new BoatShape();
@@ -59,6 +64,7 @@ public partial class MapSettings : ObservableObject
         TargetRadius = 10;
         TrailDuration = 0;
         LogDirectory = @"C:\RNav\Logs";
+        MapOverlay = false;
         SaveMapSettings();
     }
     public MapSettings GetMapSettings()
@@ -67,7 +73,8 @@ public partial class MapSettings : ObservableObject
         try
         {
             CurrentProjection = Properties.Map.Default.Projection;
-            ProjectionList = JsonConvert.DeserializeObject<List<string>>(Properties.Map.Default.ProjectionList);
+            //ProjectionList = JsonConvert.DeserializeObject<List<string>>(Properties.Map.Default.ProjectionList);
+            ProjectionList = ProjectProjections.GetProjections();
             ChartItems = JsonConvert.DeserializeObject<ObservableCollection<ChartItem>>(Properties.Map.Default.Layers);
             BoatShape = JsonConvert.DeserializeObject<BoatShape>(Properties.Map.Default.BoatShape);
             FontSize = Properties.Map.Default.FontSize;
@@ -78,7 +85,7 @@ public partial class MapSettings : ObservableObject
             HeadingOffset = Properties.Map.Default.HeadingOffset;
             TrailDuration = Properties.Map.Default.TrailDuration;
             LogDirectory = Properties.Map.Default.LogDirectory;
-            
+            MapOverlay = Properties.Map.Default.MapOverlay;
             if (ProjectionList is null) InitializeMapSettings();
         }
         catch (Exception)
@@ -90,7 +97,7 @@ public partial class MapSettings : ObservableObject
     public void SaveMapSettings()
     {
         Properties.Map.Default.Projection = CurrentProjection;
-        Properties.Map.Default.ProjectionList = JsonConvert.SerializeObject(ProjectionList);
+        //Properties.Map.Default.ProjectionList = JsonConvert.SerializeObject(ProjectionList);
         Properties.Map.Default.Layers = JsonConvert.SerializeObject(ChartItems);
         Properties.Map.Default.BoatShape = JsonConvert.SerializeObject(BoatShape);
         Properties.Map.Default.FontSize = FontSize;
@@ -100,7 +107,8 @@ public partial class MapSettings : ObservableObject
         Properties.Map.Default.HeadingOffset = HeadingOffset;
         Properties.Map.Default.TrailDuration = TrailDuration;
         Properties.Map.Default.LogDirectory = LogDirectory;
-        
+        Properties.Map.Default.MapOverlay = MapOverlay;
+
         Properties.Map.Default.Save();
     }
     public List<TimedPoint> GetTrail()

@@ -15,7 +15,7 @@ public partial class DeviceSettings : ObservableObject, IDeviceSettings
     private string comPort;
     [ObservableProperty]
     private int baudRate;
-    public string[] AvailableComPorts => SerialPort.GetPortNames();
+    public string[] AvailableComPorts => SerialPort.GetPortNames().Order().ToArray();
     public int[] AvailableBaudRates => new[] { 4800, 9600, 19200, 38400, 57600, 115200, 230400 };
 
     // UDP/TCP

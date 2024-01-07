@@ -87,7 +87,13 @@ public partial class Target : ObservableObject
             SymbolOffset = new Offset(0, radius)
         };
     }
-
+    /// <summary>
+    /// Target is in Project CRS
+    /// </summary>
+    /// <param name="target"></param>
+    /// <param name="radius"></param>
+    /// <param name="degreeFormat"></param>
+    /// <returns></returns>
     public static PointFeature CreateTargetFeature(Target target, float radius, DegreeFormat degreeFormat)
     {
         var feature = new PointFeature(target.X, target.Y);

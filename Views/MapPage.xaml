@@ -55,7 +55,7 @@
                 <mapsui:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
                                    Background="{StaticResource MahApps.Brushes.Gray10}"/>
                 <Border VerticalAlignment="Top" HorizontalAlignment="Left">
-                    <StackPanel Orientation="Vertical">
+                    <StackPanel Name="MapControls" Orientation="Vertical">
                         <Button x:Name="ZoomExtent" Margin="1" Padding="0" Click="ZoomExtent_Click">
                             <Label FontFamily="RNav" Content="&#xE709;"
                                    FontSize="24"
@@ -99,7 +99,7 @@
                     <Expander Header="Settings" Background="#7FFFFFFF">
                         <StackPanel>
                             <!--<ll:LayerList x:Name="LayerList"/>-->
-                            <StackPanel Orientation="Horizontal">
+                            <StackPanel Name="MapSettings" Orientation="Horizontal">
                                 <Slider x:Name="RotationSlider" MinWidth="100" ValueChanged="RotationSliderChanged"/>
                                 <TextBlock x:Name="Rotation" 
                                        VerticalAlignment="Center"
@@ -110,6 +110,7 @@
                                      Background="{x:Null}" 
                                      SelectedColorChanged="SelectedColorChanged" 
                                      MaxWidth="50"/>
+                            <Button Content="Clear Trail" Click="Button_ClearTrail" />
                         </StackPanel>
                     </Expander>
                 </Border>

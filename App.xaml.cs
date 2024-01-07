@@ -37,8 +37,8 @@ public partial class App : Application
     private async void OnStartup(object sender, StartupEventArgs e)
     {
         SquirrelAwareApp.HandleEvents(onInitialInstall: OnAppInstall, onAppUninstall: OnAppUninstall, onEveryRun: OnAppRun);
-        //
-        // Squirrel.exe pack --packId "RNav" --packVersion "1.0.0" --packDirectory "c:\Users\tal\source\repos\Mapper v1\bin\Release\net6.0-windows10.0.19041.0"
+        // TODO: Squirrel!
+        // Squirrel.exe pack --packId "RNav" --packVersion "1.0.6" --packDirectory "c:\Users\tal\source\repos\Mapper v1\bin\Release\net8.0-windows10.0.19041.0"
         //
         //_ = UpdateMyApp();
         var appLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);

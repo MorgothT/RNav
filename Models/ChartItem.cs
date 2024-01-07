@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Mapper_v1.Projections;
 using System.Windows.Media;
 using Color = System.Windows.Media.Color;
 
@@ -34,6 +35,16 @@ public partial class ChartItem : ObservableObject
     [ObservableProperty]
     private HorizontalAlignmentEnum horizontalAlignment;
 
+
+    [ObservableProperty]
+    private string projection;
+    public static List<string> Projections 
+    { 
+        get
+        {
+            return ProjectProjections.GetProjections();
+        } 
+    }
     public string Name { get; private set; }
     public string Path { get; private set; }
 
@@ -44,6 +55,8 @@ public partial class ChartItem : ObservableObject
         Enabled = true;
         Name = System.IO.Path.GetFileNameWithoutExtension(path);
         Path = path;
+        //Projections = ProjectProjections.GetProjections();
+        //Projection = ProjectProjections.ITM;
         Opacity = 1;
         LineColor = linecolor ?? Colors.Black;
         OutlineColor = outlinecolor ?? Colors.Black;

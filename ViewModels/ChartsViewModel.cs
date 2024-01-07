@@ -35,6 +35,7 @@ public partial class ChartsViewModel : ObservableObject
             if (!MapSettings.ChartItems.Any(x => x.Path == ofd.FileName))
             {
                 ChartItem chart = new(ofd.FileName);
+                chart.Projection = MapSettings.CurrentProjection;
                 MapSettings.ChartItems.Add(chart);
                 SelectedChart = chart;
             }

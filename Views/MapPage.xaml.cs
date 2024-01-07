@@ -1,20 +1,27 @@
-﻿using GeoConverter;
+﻿using BruTile.Predefined;
+using ControlzEx.Standard;
+using GeoConverter;
 using InvernessPark.Utilities.NMEA;
 using Mapper_v1.Converters;
 using Mapper_v1.Layers;
 using Mapper_v1.Models;
+using Mapper_v1.Projections;
 using Mapper_v1.Properties;
 using Mapper_v1.ViewModels;
 using Mapsui;
 using Mapsui.Extensions;
+using Mapsui.Extensions.Projections;
 using Mapsui.Extensions.Provider;
 using Mapsui.Layers;
 using Mapsui.Nts;
 using Mapsui.Nts.Extensions;
 using Mapsui.Nts.Providers.Shapefile;
+using Mapsui.Projections;
 using Mapsui.Providers;
 using Mapsui.Samples.CustomWidget;
 using Mapsui.Styles;
+using Mapsui.Tiling;
+using Mapsui.Tiling.Layers;
 using Mapsui.UI.Wpf;
 using Mapsui.UI.Wpf.Extensions;
 using Mapsui.Widgets.ScaleBar;
@@ -57,7 +64,7 @@ public partial class MapPage : Page
     private static Converter toWGS84;
     private static ColorConvertor colorConvertor = new();
     private readonly MapViewModel vm;
-
+    private string ProjectCRS;
     public MapPage(MapViewModel viewModel)
     {
         InitializeComponent();
@@ -130,17 +137,32 @@ public partial class MapPage : Page
     private void RemoveTarget(IFeature feature)
     {
         if (feature is null) { return; }
-        PointFeature pointFeature = (PointFeature)feature;
+        //ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, feature);
+        var pointFeature = (PointFeature)feature;
         foreach (Target target in mapSettings.TargetList)
         {
-            if (target.X == pointFeature.Point.X && target.Y == pointFeature.Point.Y)
-            {
+            if (target.Id == (int)pointFeature["Id"]) {
                 mapSettings.TargetList.Remove(target);
                 mapSettings.SaveMapSettings();
                 return;
             }
         }
-    }
+            //{
+
+            //    if (target.Id == int.Parse(pointFeature[0]))
+            //    {
+            //        mapSettings.TargetList.Remove(target);
+            //        mapSettings.SaveMapSettings();
+            //        return;
+            //    }
+            //    //if (target.X == pointFeature.Point.X && target.Y == pointFeature.Point.Y)
+            //    //{
+            //    //    mapSettings.TargetList.Remove(target);
+            //    //    mapSettings.SaveMapSettings();
+            //    //    return;
+            //    //}
+            //}
+        }
     private void AddCharts()
     {
         foreach (var chart in mapSettings.ChartItems)
@@ -166,15 +188,18 @@ public partial class MapPage : Page
         foreach (Target target in mapSettings.TargetList)
         {
             var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
+            ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
             MyTargets?.Features.Add(feature);
         }
     }
-    private void StartMeasurement(MPoint point)
+    private void StartMeasurement(MPoint point) // Map CRS -> Project Crs
     {
         ToggleTracking.IsChecked = false;
         MyBoatLayer.IsCentered = false;
         //MapControl.Map.Navigator.PanLock = true;
-        measureStart = MapControl.Map.Navigator.Viewport.ScreenToWorld(point);
+        //measureStart = MapControl.Map.Navigator.Viewport.ScreenToWorld(point);
+        ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, point);
+        measureStart = point;
     }
     private void StopMeasurement()
     {
@@ -194,20 +219,26 @@ public partial class MapPage : Page
     }
     private void SetCRS()
     {
+        MapControl.Map.CRS = "EPSG:3857";
+        ProjectionDefaults.Projection = new IsraelProjections();
+
         int epsg = int.Parse(mapSettings.CurrentProjection.Split(':')[1]);
         switch (epsg)
         {
             case 6991:
                 fromWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Projections.ITM);
                 toWGS84 = new(Converter.Projections.ITM, Converter.Ellipsoids.WGS_84);
+                ProjectCRS = "EPSG:6991";
                 break;
             case 32636:
                 fromWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Projections.UTM_36N);
                 toWGS84 = new(Converter.Projections.UTM_36N, Converter.Ellipsoids.WGS_84);
+                ProjectCRS = "EPSG:32636";
                 break;
             default:
                 fromWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Ellipsoids.WGS_84);
                 toWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Ellipsoids.WGS_84);
+                ProjectCRS = "EPSG:4326";
                 break;
         }
     }
@@ -234,6 +265,7 @@ public partial class MapPage : Page
         MyMeasurementLayer = new WritableLayer() { Name = "Measurement", Opacity = 0.7f };
         MyTargets = new GenericCollectionLayer<List<IFeature>>
         {
+            Name = "Targets",
             IsMapInfoLayer = true,
             Style = new TargetStyle()
             {
@@ -243,6 +275,7 @@ public partial class MapPage : Page
 
             }
         };
+        
         // Layer renderers
         if (MapControl.Renderer is Mapsui.Rendering.Skia.MapRenderer && !MapControl.Renderer.StyleRenderers.ContainsKey(typeof(BoatStyle)))
         {
@@ -253,10 +286,17 @@ public partial class MapPage : Page
             MapControl.Renderer.StyleRenderers.Add(typeof(TargetStyle), new TargetRenderer());
         }
         // Adding the features
+        if (mapSettings.MapOverlay == true)
+        {
+            var osm = OpenStreetMap.CreateTileLayer("RNav_OSM");
+            osm.Name = "MapOvelay";
+            MapControl.Map.Layers.Add(osm);
+        }
         AddSavedTargets();
         AddCharts();
         AddLastTrail();
         // Adding the layers to the map
+        
         MapControl.Map.Layers.Add(MyTargets);
         MapControl.Map.Layers.Add(MyMeasurementLayer);
         MapControl.Map.Layers.Add(BoatTrailLayer);
@@ -280,7 +320,6 @@ public partial class MapPage : Page
         }
         //throw new NotImplementedException();
     }
-
     private GeometryFeature CreateTrailFeature()
     {
         //var coords = new List<Coordinate>();
@@ -387,6 +426,10 @@ public partial class MapPage : Page
         try
         {
             BoatTrailLayer.Features = new[] { CreateTrailFeature() };
+            if (BoatTrailLayer.Features != null && BoatTrailLayer.Features.First() != null)
+            {
+                ProjectionDefaults.Projection.Project(ProjectCRS,MapControl.Map.CRS, BoatTrailLayer.Features);
+            }
             //if (!MapControl.Map.Layers.Contains(BoatTrailLayer))
             //{
             //    MapControl.Map.Layers.Add(BoatTrailLayer);
@@ -396,9 +439,23 @@ public partial class MapPage : Page
         {
 
         }
-        
-
     }
+    private void ClearTrail()
+    {
+        try
+        {
+            MyTrail.RemoveRange(0, MyTrail.Count-1);
+            mapSettings.SaveTrail(MyTrail);
+            //BoatTrailLayer.Features = new GeometryFeature[] { null };
+            //BoatTrailLayer.DataHasChanged();
+        }
+        catch
+        {
+        }
+    }
+    /// <summary>
+    /// Logging vessel trail to file using WGS84 -> Project projection
+    /// </summary>
     private void LogLocation()
     {
         string logPath = @$"{mapSettings.LogDirectory}\{DateTime.Today.ToString("yyyyMMdd")}.log";
@@ -439,12 +496,14 @@ public partial class MapPage : Page
             MyBoatLayer.UpdateMyDirection((heading + mapRotation) % 360, 0);
         }
     }
-    private void UpdateLocation()
+    private void UpdateLocation()   // WGS84 (GNSS) -> Map CRS
     {
         double lon = VesselData.GetGGA.Longitude.Degrees;
         double lat = VesselData.GetGGA.Latitude.Degrees;
-        var p = fromWGS84.Convert(new(lon, lat, 0));
-        MPoint point = new MPoint(p.X, p.Y);
+        MPoint point = new MPoint(lon,lat);
+        ProjectionDefaults.Projection.Project("EPSG:4326", MapControl.Map.CRS, point);
+        //var p = fromWGS84.Convert(new(lon, lat, 0));
+        //Point point = new MPoint(p.X, p.Y);
         MyBoatLayer.UpdateMyLocation(point);
         MyBoatLayer.DataHasChanged();
     }
@@ -453,11 +512,11 @@ public partial class MapPage : Page
     #region Helpers
     private void ZoomActive()
     {
-        MyBoatLayer.MyLocation.X.ToString();
+        //MyBoatLayer.MyLocation.X.ToString();
         MRect ext = null;
         foreach (var layer in MapControl.Map.Layers)
         {
-            if (layer.Enabled)
+            if (layer.Enabled && layer.Name != "MapOvelay")
             {
                 if (ext is null)
                 {
@@ -470,8 +529,10 @@ public partial class MapPage : Page
             }
         }
         if (ext is not null)
+        {
             MapControl.Map.Navigator.ZoomToBox(ext);
-
+            MapControl.Map.Navigator.OverridePanBounds = ext;
+        }
     }
     private ILayer CreateTiffLayer(ChartItem chart)
     {
@@ -489,13 +550,18 @@ public partial class MapPage : Page
     }
     private ILayer CreateShpLayer(ChartItem chart)
     {
-        IProvider shpsource = new ShapeFile(chart.Path, true, readPrjFile: true, projectionCrs: null);
+        IProvider shpsource = new ShapeFile(chart.Path, true, readPrjFile: true,null);
+        shpsource.CRS = $"EPSG:{chart.Projection.Split(':')[1]}";
+        var datasource = new ProjectingProvider(shpsource)
+        {
+            CRS = MapControl.Map.CRS
+        };
         var layer = new Layer
         {
             Opacity = chart.Opacity,
             Enabled = chart.Enabled,
             Name = chart.Name,
-            DataSource = shpsource,
+            DataSource = datasource,    //shpsource,
             Style = GetShapefileStyles(chart)
         };
         return layer;
@@ -542,6 +608,7 @@ public partial class MapPage : Page
         MyMeasurementLayer.Clear();
         var line = new WKTReader().Read($"LINESTRING ({measureStart.X} {measureStart.Y},{to.X} {to.Y})");
         var feature = new GeometryFeature(line);
+        ProjectionDefaults.Projection.Project(ProjectCRS,MapControl.Map.CRS, feature);
         MyMeasurementLayer.Add(feature);
     }
     private void TurnCalloutOff(CalloutStyle currentCallout = null)
@@ -591,7 +658,8 @@ public partial class MapPage : Page
             switch (measureStart is null)
             {
                 case true:
-                    StartMeasurement(e.MapInfo.ScreenPosition);
+                    //StartMeasurement(e.MapInfo.ScreenPosition);
+                    StartMeasurement(e.MapInfo.WorldPosition);  // world pos is Map CRS
                     break;
                 case false:
                     StopMeasurement();
@@ -601,10 +669,13 @@ public partial class MapPage : Page
         if (vm.TargetMode)
         {
             int id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
-            Target target = Target.CreateTarget(e.MapInfo.WorldPosition, id, toWGS84);
+            MPoint tr = e.MapInfo.WorldPosition;
+            ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, tr);
+            Target target = Target.CreateTarget(tr, id, toWGS84);
             mapSettings.TargetList.Add(target);
             mapSettings.SaveMapSettings();
-            var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
+            var feature = Target.CreateTargetFeature(target,mapSettings.TargetRadius, mapSettings.DegreeFormat);
+            ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS,feature);
             MyTargets?.Features.Add(feature);
             e.MapInfo.Layer?.DataHasChanged();
             MapControl.Refresh();
@@ -636,7 +707,8 @@ public partial class MapPage : Page
     private void MapControlOnMouseMove(object sender, MouseEventArgs e)
     {
         var screenPosition = e.GetPosition(MapControl);
-        var worldPosition = MapControl.Map.Navigator.Viewport.ScreenToWorld(screenPosition.X, screenPosition.Y);
+        var worldPosition = MapControl.Map.Navigator.Viewport.ScreenToWorld(screenPosition.X, screenPosition.Y);    // Map CRS
+        ProjectionDefaults.Projection.Project(MapControl.Map.CRS,ProjectCRS, worldPosition);                        // Project CRS
         MousePosX.Text = $"{worldPosition.X:F2}";
         MousePosY.Text = $"{worldPosition.Y:F2}";
         if (vm.MeasurementMode && measureStart is not null)
@@ -698,41 +770,46 @@ public partial class MapPage : Page
         Rotation.Text = MapControl.Map.Navigator.Viewport.Rotation.ToString("F0");
         SaveMapControlState();
     }
+
+    private void Button_ClearTrail(object sender, RoutedEventArgs e)
+    {
+        ClearTrail();
+    }
     #endregion
 
-//    private static async Task UpdateMyApp()
-//    {
-//        try
-//        {
-//#pragma warning disable CS0618 // Type or member is obsolete
-//            using (var mgr = await UpdateManager.GitHubUpdateManager("https://github.com/MorgothT/RNav"))
-//            //using (var mgr = await UpdateManager(new GithubSource("https://github.com/MorgothT/RNav")))
-//            {
-//                var newVersion = await mgr.UpdateApp();
+    //    private static async Task UpdateMyApp()
+    //    {
+    //        try
+    //        {
+    //#pragma warning disable CS0618 // Type or member is obsolete
+    //            using (var mgr = await UpdateManager.GitHubUpdateManager("https://github.com/MorgothT/RNav"))
+    //            //using (var mgr = await UpdateManager(new GithubSource("https://github.com/MorgothT/RNav")))
+    //            {
+    //                var newVersion = await mgr.UpdateApp();
 
-//                // optionally restart the app automatically, or ask the user if/when they want to restart
+    //                // optionally restart the app automatically, or ask the user if/when they want to restart
 
-//                if (newVersion != null)
-//                {
-//                    var result = MessageBox.Show($"Version {newVersion.Version} is available.{Environment.NewLine}Do you wish to restart the application ?",
-//                                    "New version found",
-//                                    button: MessageBoxButton.YesNo,
-//                                    icon: MessageBoxImage.Question,
-//                                    defaultResult: MessageBoxResult.No);
-//                    if (result == MessageBoxResult.Yes) UpdateManager.RestartApp();
-//                }
-//                else
-//                {
-//                    MessageBox.Show("RNav is running the latest version");
-//                }
+    //                if (newVersion != null)
+    //                {
+    //                    var result = MessageBox.Show($"Version {newVersion.Version} is available.{Environment.NewLine}Do you wish to restart the application ?",
+    //                                    "New version found",
+    //                                    button: MessageBoxButton.YesNo,
+    //                                    icon: MessageBoxImage.Question,
+    //                                    defaultResult: MessageBoxResult.No);
+    //                    if (result == MessageBoxResult.Yes) UpdateManager.RestartApp();
+    //                }
+    //                else
+    //                {
+    //                    MessageBox.Show("RNav is running the latest version");
+    //                }
 
-//            }
-//#pragma warning restore CS0618 // Type or member is obsolete
-//        }
-//        catch (Exception ex)
-//        {
-//            MessageBox.Show(ex.Message);
-//        }
-//    }
+    //            }
+    //#pragma warning restore CS0618 // Type or member is obsolete
+    //        }
+    //        catch (Exception ex)
+    //        {
+    //            MessageBox.Show(ex.Message);
+    //        }
+    //    }
 }
 

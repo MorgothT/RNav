@@ -25,6 +25,8 @@ using Mapsui.Tiling.Layers;
 using Mapsui.UI.Wpf;
 using Mapsui.UI.Wpf.Extensions;
 using Mapsui.Widgets.ScaleBar;
+using netDxf.Header;
+using netDxf;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 using Newtonsoft.Json;
@@ -110,106 +112,6 @@ public partial class MapPage : Page
             throw;
         }
     }
-
-    //private Target AddTarget(MPoint worldPosition)
-    //{
-    //    int id;
-    //    if (mapSettings.TargetList is null)
-    //    {
-    //        mapSettings.TargetList = new();
-    //    }
-    //    id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
-    //    Converter.Point3d latlon = Converter.ToDeg(new Converter.Point3d(worldPosition.X, worldPosition.Y, 0));
-    //    Target target = new()
-    //    {
-    //        Id = id,
-    //        Name = $"Target no.{id}",
-    //        X = worldPosition.X,
-    //        Y = worldPosition.Y,
-    //        Lat = latlon.Y,
-    //        Lon = latlon.X
-    //    };
-    //    mapSettings.TargetList.Add(target);
-    //    mapSettings.SaveMapSettings();
-    //    return target;
-    //}
-
-    private void RemoveTarget(IFeature feature)
-    {
-        if (feature is null) { return; }
-        //ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, feature);
-        var pointFeature = (PointFeature)feature;
-        foreach (Target target in mapSettings.TargetList)
-        {
-            if (target.Id == (int)pointFeature["Id"]) {
-                mapSettings.TargetList.Remove(target);
-                mapSettings.SaveMapSettings();
-                return;
-            }
-        }
-            //{
-
-            //    if (target.Id == int.Parse(pointFeature[0]))
-            //    {
-            //        mapSettings.TargetList.Remove(target);
-            //        mapSettings.SaveMapSettings();
-            //        return;
-            //    }
-            //    //if (target.X == pointFeature.Point.X && target.Y == pointFeature.Point.Y)
-            //    //{
-            //    //    mapSettings.TargetList.Remove(target);
-            //    //    mapSettings.SaveMapSettings();
-            //    //    return;
-            //    //}
-            //}
-        }
-    private void AddCharts()
-    {
-        foreach (var chart in mapSettings.ChartItems)
-        {
-            if (File.Exists(chart.Path))
-            {
-                switch (chart.ChartType)
-                {
-                    case ChartType.Shapefile:
-                        MapControl.Map.Layers.Add(CreateShpLayer(chart));
-                        break;
-                    case ChartType.Geotiff:
-                        MapControl.Map.Layers.Add(CreateTiffLayer(chart));
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-    }
-    private void AddSavedTargets()
-    {
-        foreach (Target target in mapSettings.TargetList)
-        {
-            var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
-            ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
-            MyTargets?.Features.Add(feature);
-        }
-    }
-    private void StartMeasurement(MPoint point) // Map CRS -> Project Crs
-    {
-        ToggleTracking.IsChecked = false;
-        MyBoatLayer.IsCentered = false;
-        //MapControl.Map.Navigator.PanLock = true;
-        //measureStart = MapControl.Map.Navigator.Viewport.ScreenToWorld(point);
-        ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, point);
-        measureStart = point;
-    }
-    private void StopMeasurement()
-    {
-        MyMeasurementLayer.Clear();
-        //MapControl.Map.Navigator.PanLock = false;
-        measureStart = null;
-        MapControl.Refresh();
-    }
-
-
     private void InitUIControls()
     {
         ColorSelector.SelectedColor = colorConvertor.WMColorFromMapsui(MapControl.Map.BackColor);
@@ -242,6 +144,77 @@ public partial class MapPage : Page
                 break;
         }
     }
+
+    private void RemoveTarget(IFeature feature)
+    {
+        if (feature is null) { return; }
+        var pointFeature = (PointFeature)feature;
+        foreach (Target target in mapSettings.TargetList)
+        {
+            if (target.Id == (int)pointFeature["Id"]) {
+                mapSettings.TargetList.Remove(target);
+                mapSettings.SaveMapSettings();
+                return;
+            }
+        }
+    }
+    private void AddCharts()
+    {
+        foreach (var chart in mapSettings.ChartItems)
+        {
+            if (File.Exists(chart.Path))
+            {
+                switch (chart.ChartType)
+                {
+                    case ChartType.Shapefile:
+                        MapControl.Map.Layers.Add(CreateShpLayer(chart));
+                        break;
+                    case ChartType.Geotiff:
+                        MapControl.Map.Layers.Add(CreateTiffLayer(chart));
+                        break;
+                    case ChartType.Dxf:
+                        if (DxfDocument.CheckDxfFileVersion(chart.Path) < DxfVersion.AutoCad2000)
+                        {
+                            MessageBox.Show($"Error: {chart.Path}\nMinimum DXF version is AutoCad2000 !");
+                            break;
+                        }
+                        else
+                        {
+                            MapControl.Map.Layers.Add(CreateDxfLayer(chart));
+                            break;
+                        }
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+    private void AddSavedTargets()
+    {
+        foreach (Target target in mapSettings.TargetList)
+        {
+            var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
+            ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
+            MyTargets?.Features.Add(feature);
+        }
+    }
+    private void StartMeasurement(MPoint point) // Map CRS -> Project Crs
+    {
+        ToggleTracking.IsChecked = false;
+        MyBoatLayer.IsCentered = false;
+        //MapControl.Map.Navigator.PanLock = true;
+        //measureStart = MapControl.Map.Navigator.Viewport.ScreenToWorld(point);
+        ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, point);
+        measureStart = point;
+    }
+    private void StopMeasurement()
+    {
+        MyMeasurementLayer.Clear();
+        //MapControl.Map.Navigator.PanLock = false;
+        measureStart = null;
+        MapControl.Refresh();
+    }
+    
     private void LoadLayers()
     {
         // Special layers
@@ -326,12 +299,6 @@ public partial class MapPage : Page
         if (MyTrail.Count < 2) { return null; }
         var trail = new LineString(MyTrail.Select(x=> new MPoint(x.X, x.Y).ToCoordinate()).ToArray());
         return new GeometryFeature(trail);
-        
-        //foreach (TimedPoint point in MyTrail)
-        //{
-        //    coords.Add(new Coordinate(point.X, point.Y));
-        //}
-        //var trail = new LineString(coords.ToArray());
     }
 
     private void SaveMapControlState()
@@ -414,6 +381,7 @@ public partial class MapPage : Page
     }
     private void UpdateTrail()
     {
+        if (mapSettings.TrailDuration == 0) return;
         TimedPoint point = new TimedPoint(VesselData.GetGGA, fromWGS84);
         MyTrail.Add(point);
         if(MyTrail.Count < 2) 
@@ -430,10 +398,6 @@ public partial class MapPage : Page
             {
                 ProjectionDefaults.Projection.Project(ProjectCRS,MapControl.Map.CRS, BoatTrailLayer.Features);
             }
-            //if (!MapControl.Map.Layers.Contains(BoatTrailLayer))
-            //{
-            //    MapControl.Map.Layers.Add(BoatTrailLayer);
-            //}
         }
         catch (Exception)
         {
@@ -566,6 +530,19 @@ public partial class MapPage : Page
         };
         return layer;
     }
+    private ILayer CreateDxfLayer(ChartItem chart)
+    {
+        var layer = new DxfLayer(chart.Path)
+        {
+            Opacity = chart.Opacity,
+            Enabled = chart.Enabled,
+            Name = chart.Name,
+            Style = GetShapefileStyles(chart),   // need to change
+        };
+        ProjectionDefaults.Projection.Project($"EPSG:{chart.Projection.Split(':')[1]}", MapControl.Map.CRS, layer.Features);
+        return layer;
+    }
+
     private StyleCollection GetShapefileStyles(ChartItem chart)
     {
         var styles = new StyleCollection();

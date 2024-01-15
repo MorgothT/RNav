@@ -79,6 +79,9 @@ public partial class ChartItem : ObservableObject
             case ".tif":
                 ChartType = ChartType.Geotiff;
                 break;
+            case ".dxf":
+                ChartType = ChartType.Dxf;
+                break;
             default:
                 ChartType = ChartType.Unsupported;
                 throw new FormatException();
@@ -90,6 +93,7 @@ public enum ChartType
 {
     Shapefile,
     Geotiff,
+    Dxf,
     Unsupported = -1
 }
 

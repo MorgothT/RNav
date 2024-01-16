@@ -4,7 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <!--TODO: Change Version here-->
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
 	<RootNamespace>Mapper_v1</RootNamespace>
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -52,14 +52,12 @@
     <None Remove="app__.manifest__" />
     <None Remove="RNav.bmp" />
     <None Remove="RNav.svg" />
-    <None Remove="RNav.ttf" />
-    <None Remove="RNavFont.ttf" />
     <None Remove="RNav_Orange_1.png" />
     <None Remove="RNav_Orange_2.png" />
-    <None Remove="VesselShapes\CraneDimond.shp" />
-    <None Remove="VesselShapes\Marker.shp" />
-    <None Remove="VesselShapes\Rect.shp" />
-    <None Remove="VesselShapes\X.shp" />
+    <None Update="VesselShapes\CraneDimond.shp" />
+    <None Update="VesselShapes\Marker.shp" />
+    <None Update="VesselShapes\Rect.shp" />
+    <None Update="VesselShapes\X.shp" />
   </ItemGroup>
   
   <ItemGroup>
@@ -68,9 +66,10 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Resource Include="RNav.ttf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
+    <Content Include="Fonts\RNav.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+
   </ItemGroup>
   
   <ItemGroup>
@@ -156,17 +155,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="VesselShapes\CraneDimond.shp">
+    <Content Include="VesselShapes\CraneDimond.shp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="VesselShapes\Marker.shp">
+    </Content>
+    <Content Include="VesselShapes\Marker.shp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="VesselShapes\Rect.shp">
+    </Content>
+	  <Content Include="VesselShapes\Rect.shp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="VesselShapes\X.shp">
+    </Content>
+	<Content Include="VesselShapes\X.shp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
+    </Content>
   </ItemGroup>
 </Project>

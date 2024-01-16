@@ -169,7 +169,7 @@ public partial class MapPage : Page
                     case ChartType.Shapefile:
                         MapControl.Map.Layers.Add(CreateShpLayer(chart));
                         break;
-                    case ChartType.Geotiff:
+                    case ChartType.Geotiff: // TODO: make async
                         MapControl.Map.Layers.Add(CreateTiffLayer(chart));
                         break;
                     case ChartType.Dxf:
@@ -295,7 +295,6 @@ public partial class MapPage : Page
     }
     private GeometryFeature CreateTrailFeature()
     {
-        //var coords = new List<Coordinate>();
         if (MyTrail.Count < 2) { return null; }
         var trail = new LineString(MyTrail.Select(x=> new MPoint(x.X, x.Y).ToCoordinate()).ToArray());
         return new GeometryFeature(trail);
@@ -504,13 +503,21 @@ public partial class MapPage : Page
                         {
                             colorConvertor.WMColorToMapsui(chart.FillColor)
                         };
-        return new Layer
+        IProvider tiffsource = new GeoTiffProvider(chart.Path, colorTrans);
+        tiffsource.CRS = $"EPSG:{chart.Projection.Split(':')[1]}";
+        var datasource = new ProjectingProvider(tiffsource)
+        {
+            CRS = MapControl.Map.CRS
+        };
+        var layer = new Layer
         {
             Opacity = chart.Opacity,
             Enabled = chart.Enabled,
             Name = chart.Name,
-            DataSource = new GeoTiffProvider(chart.Path, colorTrans)
+            DataSource = datasource //new GeoTiffProvider(chart.Path, colorTrans)
         };
+
+        return layer;
     }
     private ILayer CreateShpLayer(ChartItem chart)
     {

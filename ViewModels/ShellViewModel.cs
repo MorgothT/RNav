@@ -5,6 +5,7 @@ using Mapper_v1.Contracts.Services;
 using Mapper_v1.Properties;
 using Squirrel;
 using System.Collections.ObjectModel;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 
@@ -60,7 +61,8 @@ public class ShellViewModel : ObservableObject
     {
         _navigationService = navigationService;
     }
-
+    
+    
     private void OnLoaded()
     {
         _navigationService.Navigated += OnNavigated;

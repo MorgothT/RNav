@@ -1,6 +1,4 @@
-﻿using BruTile.Predefined;
-using ControlzEx.Standard;
-using GeoConverter;
+﻿using GeoConverter;
 using InvernessPark.Utilities.NMEA;
 using Mapper_v1.Converters;
 using Mapper_v1.Layers;
@@ -10,7 +8,6 @@ using Mapper_v1.Properties;
 using Mapper_v1.ViewModels;
 using Mapsui;
 using Mapsui.Extensions;
-using Mapsui.Extensions.Projections;
 using Mapsui.Extensions.Provider;
 using Mapsui.Layers;
 using Mapsui.Nts;
@@ -21,7 +18,6 @@ using Mapsui.Providers;
 using Mapsui.Samples.CustomWidget;
 using Mapsui.Styles;
 using Mapsui.Tiling;
-using Mapsui.Tiling.Layers;
 using Mapsui.UI.Wpf;
 using Mapsui.UI.Wpf.Extensions;
 using Mapsui.Widgets.ScaleBar;
@@ -31,8 +27,6 @@ using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 using Newtonsoft.Json;
 using SkiaSharp;
-using SkiaSharp.Views.WPF;
-using Squirrel;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Diagnostics;
@@ -42,6 +36,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Mapper_v1.Providers;
 
 namespace Mapper_v1.Views;
 
@@ -171,6 +166,7 @@ public partial class MapPage : Page
                         break;
                     case ChartType.Geotiff: // TODO: make async
                         MapControl.Map.Layers.Add(CreateTiffLayer(chart));
+                        //_ = Task.Run(() => MapControl.Map.Layers.Add(CreateTiffLayer(chart)));
                         break;
                     case ChartType.Dxf:
                         if (DxfDocument.CheckDxfFileVersion(chart.Path) < DxfVersion.AutoCad2000)
@@ -183,6 +179,10 @@ public partial class MapPage : Page
                             MapControl.Map.Layers.Add(CreateDxfLayer(chart));
                             break;
                         }
+                    case ChartType.Ecw:
+                        // TODO: implament .ecw
+                        MapControl.Map.Layers.Add(CreateEcwLayer(chart));
+                        break;
                     default:
                         break;
                 }
@@ -503,9 +503,35 @@ public partial class MapPage : Page
                         {
                             colorConvertor.WMColorToMapsui(chart.FillColor)
                         };
-        IProvider tiffsource = new GeoTiffProvider(chart.Path, colorTrans);
-        tiffsource.CRS = $"EPSG:{chart.Projection.Split(':')[1]}";
+        IProvider tiffsource = new GeoTiffProvider(chart.Path, colorTrans)
+        {
+            CRS = $"EPSG:{chart.Projection.Split(':')[1]}"
+        };
         var datasource = new ProjectingProvider(tiffsource)
+        {
+            CRS = MapControl.Map.CRS
+        };
+        var layer = new Layer
+        {
+            Opacity = chart.Opacity,
+            Enabled = chart.Enabled,
+            Name = chart.Name,
+            DataSource = datasource //new GeoTiffProvider(chart.Path, colorTrans)
+        };
+
+        return layer;
+    }
+    private ILayer CreateEcwLayer(ChartItem chart)
+    {
+        var colorTrans = new List<Color>
+        {
+            colorConvertor.WMColorToMapsui(chart.FillColor)
+        };
+        IProvider ecwsource = new EcwProvider(chart.Path, colorTrans)
+        {
+            CRS = $"EPSG:{chart.Projection.Split(':')[1]}"
+        };
+        var datasource = new ProjectingProvider(ecwsource)
         {
             CRS = MapControl.Map.CRS
         };
@@ -549,6 +575,8 @@ public partial class MapPage : Page
         ProjectionDefaults.Projection.Project($"EPSG:{chart.Projection.Split(':')[1]}", MapControl.Map.CRS, layer.Features);
         return layer;
     }
+
+    
 
     private StyleCollection GetShapefileStyles(ChartItem chart)
     {

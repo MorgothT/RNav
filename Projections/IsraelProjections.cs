@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GeoConverter;
 
+#nullable enable
 namespace Mapper_v1.Projections
 {
     public class IsraelProjections : IProjection

@@ -4,7 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <!--TODO: Change Version here-->
-    <Version>1.2.1</Version>
+    <Version>1.2.2</Version>
 	<RootNamespace>Mapper_v1</RootNamespace>
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -16,6 +16,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>RNav</AssemblyName>
     <UseWindowsForms>False</UseWindowsForms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -54,6 +55,9 @@
     <None Remove="RNav.svg" />
     <None Remove="RNav_Orange_1.png" />
     <None Remove="RNav_Orange_2.png" />
+    <None Update="NCSEcw.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="VesselShapes\CraneDimond.shp" />
     <None Update="VesselShapes\Marker.shp" />
     <None Update="VesselShapes\Rect.shp" />
@@ -83,10 +87,10 @@
     <PackageReference Include="Clowd.Squirrel" Version="2.11.1" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="MahApps.Metro" Version="2.4.10" />
-    <PackageReference Include="Mapsui" Version="4.1.1" />
-    <PackageReference Include="Mapsui.Extensions" Version="4.1.1" />
-    <PackageReference Include="Mapsui.Nts" Version="4.1.1" />
-    <PackageReference Include="Mapsui.Wpf" Version="4.1.1" />
+    <PackageReference Include="Mapsui" Version="4.1.2" />
+    <PackageReference Include="Mapsui.Extensions" Version="4.1.2" />
+    <PackageReference Include="Mapsui.Nts" Version="4.1.2" />
+    <PackageReference Include="Mapsui.Wpf" Version="4.1.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="netDxf" Version="2022.11.2" />
     <PackageReference Include="NuGet.CommandLine" Version="6.8.0">

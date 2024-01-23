@@ -29,7 +29,7 @@ public partial class ChartsViewModel : ObservableObject
     private void AddChart()
     {
         OpenFileDialog ofd = new OpenFileDialog();
-        ofd.Filter = @"Shapefiles (*.shp)|*.shp|Dxf file (*.dxf)|*.dxf|GeoTiff (*.tif)|*.tif";   // TODO: add more file types
+        ofd.Filter = @"Vector files (*.shp;*.dxf)|*.shp;*.dxf|Raster files (*.tif;*.ecw)|*.tif;*.ecw|All files (*.*)|*.*";   // TODO: add more file types
         if (ofd.ShowDialog() == true)
         {
             if (!MapSettings.ChartItems.Any(x => x.Path == ofd.FileName))

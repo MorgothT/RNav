@@ -79,6 +79,9 @@ public partial class ChartItem : ObservableObject
             case ".tif":
                 ChartType = ChartType.Geotiff;
                 break;
+            case ".ecw":
+                ChartType = ChartType.Ecw;
+                break;
             case ".dxf":
                 ChartType = ChartType.Dxf;
                 break;
@@ -94,6 +97,7 @@ public enum ChartType
     Shapefile,
     Geotiff,
     Dxf,
+    Ecw,
     Unsupported = -1
 }
 

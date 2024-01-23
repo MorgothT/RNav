@@ -25,7 +25,6 @@ namespace Mapper_v1.Layers
     public class DxfLayer : MemoryLayer, ILayer, IDisposable
     {
         private List<IFeature> _features;
-        private Map _map;
         private string _path;
 
         public string CRS { get; set; }

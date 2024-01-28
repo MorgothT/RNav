@@ -35,6 +35,9 @@ public partial class ChartItem : ObservableObject
     [ObservableProperty]
     private HorizontalAlignmentEnum horizontalAlignment;
 
+    [ObservableProperty]
+    private double maxResulotion;
+
 
     [ObservableProperty]
     private string projection;
@@ -47,9 +50,7 @@ public partial class ChartItem : ObservableObject
     }
     public string Name { get; private set; }
     public string Path { get; private set; }
-
     public ChartType ChartType { get; }
-
     public ChartItem(string path, Color? linecolor = null, Color? outlinecolor = null, Color? fillcolor = null, int width = 1)
     {
         Enabled = true;
@@ -70,6 +71,7 @@ public partial class ChartItem : ObservableObject
         LabelAttributeName = "NAME";
         HorizontalAlignment = HorizontalAlignmentEnum.Center;
         VerticalAlignment = VerticalAlignmentEnum.Center;
+        MaxResulotion = 0.2;
 
         switch (System.IO.Path.GetExtension(path).ToLowerInvariant())
         {

@@ -1,11 +1,6 @@
 ﻿using Mapsui;
 using Mapsui.Projections;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using GeoConverter;
 
 #nullable enable
@@ -48,28 +43,24 @@ namespace Mapper_v1.Projections
             var p = converter.Convert(new Converter.Point3d(x, y, 0));
             return (lon: p.X, lat: p.Y);
         }
-
         private (double x, double y) toUtm(double lon, double lat)
         {
             var converter = new Converter(Converter.Ellipsoids.WGS_84, GeoConverter.Converter.Projections.UTM_36N);
             var p = converter.Convert(new Converter.Point3d(lon, lat, 0));
             return (p.X, p.Y);
         }
-
         private static (double lon, double lat) fromItm(double x, double y)
         {
             var converter = new Converter(Converter.Projections.ITM,Converter.Ellipsoids.WGS_84);
             var p = converter.Convert(new Converter.Point3d(x, y, 0));
             return (lon:p.X, lat:p.Y); 
         }
-
         private static (double x, double y) toItm(double lon, double lat)
         {
             var converter = new Converter(Converter.Ellipsoids.WGS_84, GeoConverter.Converter.Projections.ITM);
             var p = converter.Convert(new Converter.Point3d(lon, lat, 0));
             return (p.X, p.Y);
         }
-
         private static (double X, double Y) Project(double x, double y, Func<double, double, (double, double)> projectFunc)
         {
             return projectFunc(x, y);
@@ -99,7 +90,6 @@ namespace Mapper_v1.Projections
         {
             (point.X, point.Y) = projectFunc(point.X, point.Y);
         }
-
         public (double X, double Y) Project(string fromCRS, string toCRS, double x, double y)
         {
             var (x2, y2) = Project(x, y, _toLonLat[fromCRS]);

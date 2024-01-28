@@ -32,7 +32,7 @@
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
                 <CheckBox x:Name="EnabledCheckbox" IsChecked="{Binding Enabled}" Margin="3,0" Grid.Column="0"/>
-                <TextBlock Text="{Binding Path}" Grid.Column="1" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center" ToolTip="{Binding Path}"/>
                 <ComboBox ItemsSource="{Binding Projections, Mode=OneWay}" 
                           SelectedItem="{Binding Projection}"
                           Grid.Column="2"/>
@@ -42,6 +42,16 @@
                             <i:ChangePropertyAction PropertyName="IsExpanded" Value="false"/>
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
+                    <Expander.Style>
+                        <Style TargetType="Expander" BasedOn="{StaticResource MahApps.Styles.Expander}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=ChartType}" Value="Shapefile">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Expander.Style>
                     <StackPanel>
                             <DockPanel Name="AttributeName">
                                 <TextBlock Text="Attribute:" Margin="2"/>
@@ -125,7 +135,7 @@
             Text="{x:Static properties:Resources.ChartsPageTitle}" />
         <Grid
             Grid.Row="1"
-            Margin="{StaticResource MediumLeftMargin}">
+            Margin="2">
             <!--
             The Mahapps Gray10 color represents where you should place your content.
             Place your content here.
@@ -133,70 +143,78 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="5"/>
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
-                <CheckBox IsChecked="{Binding MapSettings.MapOverlay}" Content="Enable Map Overlay"
-                          Grid.Row="1" Margin="5"/>
-                <ListView x:Name="ChartTable"
+                <Border BorderBrush="{StaticResource MahApps.Brushes.Accent3}"
+                        BorderThickness="2">
+                    <StackPanel>
+                        <CheckBox IsChecked="{Binding MapSettings.MapOverlay}" Content="OSM Map Overlay"
+                           Margin="5"/>
+                        <ListView x:Name="ChartTable"
                           IsSynchronizedWithCurrentItem="True"
                           ItemsSource="{Binding MapSettings.ChartItems}"
                           SelectedItem="{Binding SelectedChart}"
                           Grid.Column="0" d:ItemsSource="{d:SampleData ItemCount=5}">
-                </ListView>
-                <StackPanel Orientation="Vertical"
-                            Grid.Column="2">
+                        </ListView>
+                    </StackPanel>
+                </Border>
+                <StackPanel Orientation="Vertical" Grid.Column="2">
                     <Button Command="{Binding AddChartCommand}" BorderThickness="0"
+                            ToolTip="Add Chart"
                             Padding="0" Margin="5">
-                        <Label FontFamily="RNav" Content="&#xE71D;"
+                            <Label FontFamily="RNav" Content="&#xE71D;"
                                FontSize="{StaticResource XLargeFontSize}" 
                                Foreground="{DynamicResource MahApps.Brushes.AccentBase}" 
                                FontWeight="Normal"/>
-                    </Button>
+                        </Button>
                     <Button Command="{Binding RemoveChartCommand}" BorderThickness="0"
+                            ToolTip="Remove Chart"
                             Padding="0" Margin="5">
-                        <Label FontFamily="RNav" Content="&#xE71e;"
+                            <Label FontFamily="RNav" Content="&#xE71e;"
                                FontSize="{StaticResource XLargeFontSize}" 
                                Foreground="Red" FontWeight="Normal"/>
-                    </Button>
+                        </Button>
                     <Button Command="{Binding MoveTopCommand}" BorderThickness="0"
+                            ToolTip="Move to bottom"
                             Padding="0" Margin="5">
-                        <Label FontFamily="RNav" Content="&#xE732;"
+                            <Label FontFamily="RNav" Content="&#xE732;"
                                FontSize="{StaticResource XLargeFontSize}" 
                                FontWeight="Normal" 
                                RenderTransformOrigin="0.5,0.5">
-                            <Label.RenderTransform>
-                                <TransformGroup>
-                                    <ScaleTransform ScaleY="-1"/>
-                                    <SkewTransform/>
-                                    <RotateTransform/>
-                                    <TranslateTransform/>
-                                </TransformGroup>
-                            </Label.RenderTransform>
-                        </Label>
-                    </Button>
+                                <Label.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleY="-1"/>
+                                        <SkewTransform/>
+                                        <RotateTransform/>
+                                        <TranslateTransform/>
+                                    </TransformGroup>
+                                </Label.RenderTransform>
+                            </Label>
+                        </Button>
                     <Button Command="{Binding MoveUpCommand}" BorderThickness="0"
+                            ToolTip="Move back"
                             Padding="0" Margin="5" Height="32">
-                        <Label FontFamily="RNav" Content="&#xE730;"
+                            <Label FontFamily="RNav" Content="&#xE730;"
                                FontSize="{StaticResource LargeFontSize}" 
                                FontWeight="Normal"/>
-                    </Button>
+                        </Button>
                     <Button Command="{Binding MoveDownCommand}" BorderThickness="0"
+                            ToolTip="Move forward"
                             Padding="0" Margin="5" Height="32">
-                        <Label FontFamily="RNav" Content="&#xE731;"
+                            <Label FontFamily="RNav" Content="&#xE731;"
                                FontSize="{StaticResource LargeFontSize}" 
                                FontWeight="Normal"/>
-                    </Button>
+                        </Button>
                     <Button Command="{Binding MoveButtomCommand}" BorderThickness="0"
+                            ToolTip="Move to top"
                             Padding="0" Margin="5">
-                        <Label FontFamily="RNav" Content="&#xE732;"
+                            <Label FontFamily="RNav" Content="&#xE732;"
                                FontSize="{StaticResource XLargeFontSize}" 
                                FontWeight="Normal"/>
-                    </Button>
+                        </Button>
                 </StackPanel>
             </Grid>
         </Grid>

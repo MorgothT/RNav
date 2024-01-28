@@ -34,8 +34,6 @@ public partial class App : Application
     public App()
     {
     }
-    
-
     private async void OnStartup(object sender, StartupEventArgs e)
     {
         SquirrelAwareApp.HandleEvents(onInitialInstall: OnAppInstall, onAppUninstall: OnAppUninstall, onEveryRun: OnAppRun);

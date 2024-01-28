@@ -1,10 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Mapsui;
-using Mapsui.Extensions;
-using Mapsui.Layers;
-using Mapsui.Rendering;
-using Mapsui.Rendering.Skia.SkiaStyles;
-using Mapsui.Styles;
 using SkiaSharp;
 using SkiaSharp.Views.WPF;
 using System.IO;
@@ -14,16 +8,14 @@ namespace Mapper_v1.Models;
 
 public partial class BoatShape : ObservableObject
 {
-
     [ObservableProperty]
     private string path;
     //public float Rotation { get; set; } = 0;
     public List<SKPoint> SKPoints { get; private set; } = new();
-
     [ObservableProperty]
-    private System.Windows.Media.Color fill = Colors.Orange;
+    private Color fill = Colors.Orange;
     [ObservableProperty]
-    private System.Windows.Media.Color outline = Colors.Black;
+    private Color outline = Colors.Black;
     public SKPaint SKFill { get => new SKPaint { Color = Fill.ToSKColor() }; }
     public SKPaint SKOutline { get => new SKPaint { Color = Outline.ToSKColor() }; }
     public float Opacity { get; set; } = 0.7f;
@@ -35,23 +27,14 @@ public partial class BoatShape : ObservableObject
     {
         SKPoints = new() { new SKPoint(0, 0) };
     }
-    public BoatShape(string path, System.Windows.Media.Color fill, System.Windows.Media.Color outline)
+    public BoatShape(string path, Color fill, Color outline)
     {
+        Path = path;
         ReadBoatShapeFile();
         ChangeColors(fill, outline);
     }
-    //public BoatShape(string path, Mapsui.Styles.Color fill, Mapsui.Styles.Color outline)
-    //{
-    //    ReadBoatShapeFile();
-    //}
-    //public BoatShape(string path, SKPaint fill, SKPaint outline)
-    //{
-    //    ReadBoatShapeFile();
-    //}
-
     private void ReadBoatShapeFile()
     {
-
         if (File.Exists(Path))
         {
             try
@@ -66,7 +49,7 @@ public partial class BoatShape : ObservableObject
                 }
                 SKPoints = new(points);
             }
-            catch (System.Exception)
+            catch (Exception)
             {
 
             }

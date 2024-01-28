@@ -5,12 +5,10 @@ using Mapper_v1.Contracts.Services;
 using Mapper_v1.Properties;
 using Squirrel;
 using System.Collections.ObjectModel;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 
 namespace Mapper_v1.ViewModels;
-
 public class ShellViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
@@ -27,13 +25,12 @@ public class ShellViewModel : ObservableObject
         get { return _selectedMenuItem; }
         set { SetProperty(ref _selectedMenuItem, value); }
     }
-
     public HamburgerMenuItem SelectedOptionsMenuItem
     {
         get { return _selectedOptionsMenuItem; }
         set { SetProperty(ref _selectedOptionsMenuItem, value); }
     }
-
+    
     // TODO: Change the icons and titles for all HamburgerMenuItems here.
     public ObservableCollection<HamburgerMenuItem> MenuItems { get; } = new ObservableCollection<HamburgerMenuItem>()
     {
@@ -41,53 +38,36 @@ public class ShellViewModel : ObservableObject
         new HamburgerMenuGlyphItem() { Label = Resources.ShellChartsPage, Glyph = "\ue71c", TargetPageType = typeof(ChartsViewModel) },
         new HamburgerMenuGlyphItem() { Label = Resources.ShellTargetsPage, Glyph = "\ue701", TargetPageType = typeof(TargetsViewModel) },
     };
-
     public ObservableCollection<HamburgerMenuItem> OptionMenuItems { get; } = new ObservableCollection<HamburgerMenuItem>()
     {
         new HamburgerMenuGlyphItem() { Label = Resources.ShellSettingsPage, Glyph = "\uE720", TargetPageType = typeof(SettingsViewModel) }
     };
-
     public RelayCommand GoBackCommand => _goBackCommand ?? (_goBackCommand = new RelayCommand(OnGoBack, CanGoBack));
-
     public ICommand MenuItemInvokedCommand => _menuItemInvokedCommand ?? (_menuItemInvokedCommand = new RelayCommand(OnMenuItemInvoked));
-
     public ICommand OptionsMenuItemInvokedCommand => _optionsMenuItemInvokedCommand ?? (_optionsMenuItemInvokedCommand = new RelayCommand(OnOptionsMenuItemInvoked));
-
     public ICommand LoadedCommand => _loadedCommand ?? (_loadedCommand = new RelayCommand(OnLoaded));
-
     public ICommand UnloadedCommand => _unloadedCommand ?? (_unloadedCommand = new RelayCommand(OnUnloaded));
-
     public ShellViewModel(INavigationService navigationService)
     {
         _navigationService = navigationService;
     }
-    
-    
-    private void OnLoaded()
+    private async void OnLoaded()
     {
         _navigationService.Navigated += OnNavigated;
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-        UpdateMyApp();
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+        await UpdateMyApp().ConfigureAwait(false);
     }
-
     private void OnUnloaded()
     {
         _navigationService.Navigated -= OnNavigated;
     }
-
     private bool CanGoBack()
         => _navigationService.CanGoBack;
-
     private void OnGoBack()
         => _navigationService.GoBack();
-
     private void OnMenuItemInvoked()
         => NavigateTo(SelectedMenuItem.TargetPageType);
-
     private void OnOptionsMenuItemInvoked()
         => NavigateTo(SelectedOptionsMenuItem.TargetPageType);
-
     private void NavigateTo(Type targetViewModel)
     {
         if (targetViewModel != null)
@@ -95,7 +75,6 @@ public class ShellViewModel : ObservableObject
             _navigationService.NavigateTo(targetViewModel.FullName);
         }
     }
-
     private void OnNavigated(object sender, string viewModelName)
     {
         var item = MenuItems
@@ -113,7 +92,6 @@ public class ShellViewModel : ObservableObject
         }
         GoBackCommand.NotifyCanExecuteChanged();
     }
-
     private static async Task UpdateMyApp()
     {
         try

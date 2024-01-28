@@ -81,7 +81,7 @@
             Margin="{StaticResource MediumLeftMargin}"
             Text="{x:Static properties:Resources.TargetsPageTitle}" />
         <Grid Grid.Row="1"
-              Margin="{StaticResource MediumLeftRightMargin}">
+              Margin="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
@@ -104,7 +104,9 @@
                       SelectedItem="{Binding SelectedTarget}" 
                       Style="{StaticResource MahApps.Styles.ListBox}"
                       Grid.Row="1"
-                      IsSynchronizedWithCurrentItem="True">
+                      IsSynchronizedWithCurrentItem="True"
+                      BorderBrush="{StaticResource MahApps.Brushes.Accent3}"
+                      BorderThickness="2">
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="LostFocus">
                         <i:InvokeCommandAction Command="{Binding RecalculateCommand}" PassEventArgsToCommand="True"/>

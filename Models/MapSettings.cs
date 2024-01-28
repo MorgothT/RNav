@@ -48,13 +48,7 @@ public partial class MapSettings : ObservableObject
 
     public void InitializeMapSettings()
     {
-        //ProjectionList = new()
-        //{
-        //    {"Israeli_Grid_05-12:6991" },
-        //    {"WGS_1984_UTM_Zone_36N:32636" }
-        //};
         ProjectionList = ProjectProjections.GetProjections();
-
         CurrentProjection = ProjectionList.First();
         ChartItems = new ObservableCollection<ChartItem>();
         BoatShape = new BoatShape();
@@ -69,11 +63,9 @@ public partial class MapSettings : ObservableObject
     }
     public MapSettings GetMapSettings()
     {
-        //InitializeMapSettings();
         try
         {
             CurrentProjection = Properties.Map.Default.Projection;
-            //ProjectionList = JsonConvert.DeserializeObject<List<string>>(Properties.Map.Default.ProjectionList);
             ProjectionList = ProjectProjections.GetProjections();
             ChartItems = JsonConvert.DeserializeObject<ObservableCollection<ChartItem>>(Properties.Map.Default.Layers);
             BoatShape = JsonConvert.DeserializeObject<BoatShape>(Properties.Map.Default.BoatShape);
@@ -97,7 +89,6 @@ public partial class MapSettings : ObservableObject
     public void SaveMapSettings()
     {
         Properties.Map.Default.Projection = CurrentProjection;
-        //Properties.Map.Default.ProjectionList = JsonConvert.SerializeObject(ProjectionList);
         Properties.Map.Default.Layers = JsonConvert.SerializeObject(ChartItems);
         Properties.Map.Default.BoatShape = JsonConvert.SerializeObject(BoatShape);
         Properties.Map.Default.FontSize = FontSize;
@@ -115,7 +106,6 @@ public partial class MapSettings : ObservableObject
     {
         return JsonConvert.DeserializeObject<List<TimedPoint>>(Properties.Map.Default.LastTrail);
     }
-
     public void SaveTrail(List<TimedPoint> myTrail)
     {
         Properties.Map.Default.LastTrail = JsonConvert.SerializeObject(myTrail);

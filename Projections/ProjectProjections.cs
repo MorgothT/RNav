@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Mapper_v1.Projections
+﻿namespace Mapper_v1.Projections
 {
     public static class ProjectProjections
     {
@@ -18,13 +11,13 @@ namespace Mapper_v1.Projections
         public static List<string> GetProjections()
         {
             var proj = new List<string>();
-            foreach (var prop in typeof(ProjectProjections).GetFields()) 
+            foreach (var prop in typeof(ProjectProjections).GetFields())
             {
                 proj.Add($"{prop.Name} - {prop.GetValue(null)}");
             }
             return proj;
         }
     }
-    
-    
+
+
 }

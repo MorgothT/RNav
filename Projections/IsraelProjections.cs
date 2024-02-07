@@ -1,7 +1,7 @@
-﻿using Mapsui;
+﻿using GeoConverter;
+using Mapsui;
 using Mapsui.Projections;
 using System.Diagnostics.CodeAnalysis;
-using GeoConverter;
 
 #nullable enable
 namespace Mapper_v1.Projections
@@ -12,7 +12,7 @@ namespace Mapper_v1.Projections
 
         private readonly IDictionary<string, Func<double, double, (double, double)>> _fromLonLat = new Dictionary<string, Func<double, double, (double, double)>>();
         //private static Converter converter;
-        public IsraelProjections() 
+        public IsraelProjections()
         {
             _toLonLat["EPSG:4326"] = (double x, double y) => (x, y);
             _fromLonLat["EPSG:4326"] = (double x, double y) => (x, y);
@@ -51,9 +51,9 @@ namespace Mapper_v1.Projections
         }
         private static (double lon, double lat) fromItm(double x, double y)
         {
-            var converter = new Converter(Converter.Projections.ITM,Converter.Ellipsoids.WGS_84);
+            var converter = new Converter(Converter.Projections.ITM, Converter.Ellipsoids.WGS_84);
             var p = converter.Convert(new Converter.Point3d(x, y, 0));
-            return (lon:p.X, lat:p.Y); 
+            return (lon: p.X, lat: p.Y);
         }
         private static (double x, double y) toItm(double lon, double lat)
         {

@@ -41,12 +41,12 @@ public partial class ChartItem : ObservableObject
 
     [ObservableProperty]
     private string projection;
-    public static List<string> Projections 
-    { 
+    public static List<string> Projections
+    {
         get
         {
             return ProjectProjections.GetProjections();
-        } 
+        }
     }
     public string Name { get; private set; }
     public string Path { get; private set; }

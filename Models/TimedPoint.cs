@@ -1,11 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using InvernessPark.Utilities.NMEA.Sentences;
-using Mapper_v1.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mapper_v1.Models
 {
@@ -13,13 +7,13 @@ namespace Mapper_v1.Models
     {
         [ObservableProperty]
         private double x;
-        [ObservableProperty]    
+        [ObservableProperty]
         private double y;
         [ObservableProperty]
         private DateTime time;
 
         public TimedPoint() { X = 0; Y = 0; Time = DateTime.MinValue; }
-        public TimedPoint(GGA nmea,GeoConverter.Converter converter)
+        public TimedPoint(GGA nmea, GeoConverter.Converter converter)
         {
             double lon = nmea.Longitude.Degrees;
             double lat = nmea.Latitude.Degrees;

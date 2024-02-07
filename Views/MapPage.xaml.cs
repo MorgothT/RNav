@@ -5,6 +5,7 @@ using Mapper_v1.Layers;
 using Mapper_v1.Models;
 using Mapper_v1.Projections;
 using Mapper_v1.Properties;
+using Mapper_v1.Providers;
 using Mapper_v1.ViewModels;
 using Mapsui;
 using Mapsui.Extensions;
@@ -21,8 +22,8 @@ using Mapsui.Tiling;
 using Mapsui.UI.Wpf;
 using Mapsui.UI.Wpf.Extensions;
 using Mapsui.Widgets.ScaleBar;
-using netDxf.Header;
 using netDxf;
+using netDxf.Header;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 using Newtonsoft.Json;
@@ -36,7 +37,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using Mapper_v1.Providers;
 
 namespace Mapper_v1.Views;
 
@@ -293,7 +293,7 @@ public partial class MapPage : Page
         catch (Exception)
         {
         }
-    } 
+    }
     #endregion
 
     #region GNSS_Methods
@@ -342,7 +342,7 @@ public partial class MapPage : Page
         if (mapSettings.TrailDuration == 0) return;
         TimedPoint point = new TimedPoint(VesselData.GetGGA, fromWGS84);
         MyTrail.Add(point);
-        if(MyTrail.Count < 2) 
+        if (MyTrail.Count < 2)
         {
             return;
         }
@@ -354,7 +354,7 @@ public partial class MapPage : Page
             BoatTrailLayer.Features = new[] { CreateTrailFeature() };
             if (BoatTrailLayer.Features != null && BoatTrailLayer.Features.First() != null)
             {
-                ProjectionDefaults.Projection.Project(ProjectCRS,MapControl.Map.CRS, BoatTrailLayer.Features);
+                ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, BoatTrailLayer.Features);
             }
         }
         catch (Exception)
@@ -367,7 +367,7 @@ public partial class MapPage : Page
         try
         {
             if (MyTrail.Count < 2) return;
-            MyTrail.RemoveRange(0, MyTrail.Count-1);
+            MyTrail.RemoveRange(0, MyTrail.Count - 1);
             mapSettings.SaveTrail(MyTrail);
             //BoatTrailLayer.Features = new GeometryFeature[] { null };
             //BoatTrailLayer.DataHasChanged();
@@ -376,7 +376,7 @@ public partial class MapPage : Page
         {
         }
     }
-    
+
     /// <summary>
     /// Logging vessel trail to file using WGS84 -> Project projection
     /// </summary>
@@ -387,7 +387,7 @@ public partial class MapPage : Page
         {
             Directory.CreateDirectory(mapSettings.LogDirectory);
         }
-        TimedPoint point = new TimedPoint(VesselData.GetGGA,fromWGS84);
+        TimedPoint point = new TimedPoint(VesselData.GetGGA, fromWGS84);
         File.AppendAllText(logPath, $"{point.ToLocalTime()}\n");
     }
     private void ConnectToGps()
@@ -424,7 +424,7 @@ public partial class MapPage : Page
     {
         double lon = VesselData.GetGGA.Longitude.Degrees;
         double lat = VesselData.GetGGA.Latitude.Degrees;
-        MPoint point = new MPoint(lon,lat);
+        MPoint point = new MPoint(lon, lat);
         ProjectionDefaults.Projection.Project("EPSG:4326", MapControl.Map.CRS, point);
         //var p = fromWGS84.Convert(new(lon, lat, 0));
         //Point point = new MPoint(p.X, p.Y);
@@ -464,7 +464,7 @@ public partial class MapPage : Page
         {
             colorConvertor.WMColorToMapsui(chart.FillColor)
         };
-        IProvider ecwsource = new EcwProvider(chart.Path, colorTrans, chart.MaxResulotion)
+        EcwProvider ecwsource = new EcwProvider(chart.Path, colorTrans, chart.MaxResulotion)
         {
             CRS = $"EPSG:{chart.Projection.Split(':')[1]}"
         };
@@ -477,10 +477,11 @@ public partial class MapPage : Page
             Opacity = chart.Opacity,
             Enabled = chart.Enabled,
             Name = chart.Name,
-            DataSource = datasource //new GeoTiffProvider(chart.Path, colorTrans)
+            Style = new RasterStyle(),
+            DataSource = datasource
         };
-        //return new RasterizingLayer(layer);
-        return layer;
+        return new RasterizingLayer(layer);
+        //return layer;
     }
     private ILayer CreateShpLayer(ChartItem chart)
     {
@@ -581,7 +582,7 @@ public partial class MapPage : Page
         MyMeasurementLayer.Clear();
         var line = new WKTReader().Read($"LINESTRING ({measureStart.X} {measureStart.Y},{to.X} {to.Y})");
         var feature = new GeometryFeature(line);
-        ProjectionDefaults.Projection.Project(ProjectCRS,MapControl.Map.CRS, feature);
+        ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
         MyMeasurementLayer.Add(feature);
     }
     private void TurnCalloutOff(CalloutStyle currentCallout = null)
@@ -647,6 +648,7 @@ public partial class MapPage : Page
                 device.Dispose();
             }
             MapControl.Dispose();
+            Trace.WriteLine("Disposed of MapControl");
         }
         catch (Exception)
         {
@@ -684,8 +686,8 @@ public partial class MapPage : Page
             Target target = Target.CreateTarget(tr, id, toWGS84);
             mapSettings.TargetList.Add(target);
             mapSettings.SaveMapSettings();
-            var feature = Target.CreateTargetFeature(target,mapSettings.TargetRadius, mapSettings.DegreeFormat);
-            ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS,feature);
+            var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
+            ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
             MyTargets?.Features.Add(feature);
             e.MapInfo.Layer?.DataHasChanged();
             MapControl.Refresh();
@@ -718,7 +720,7 @@ public partial class MapPage : Page
     {
         var screenPosition = e.GetPosition(MapControl);
         var worldPosition = MapControl.Map.Navigator.Viewport.ScreenToWorld(screenPosition.X, screenPosition.Y);    // Map CRS
-        ProjectionDefaults.Projection.Project(MapControl.Map.CRS,ProjectCRS, worldPosition);                        // Project CRS
+        ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, worldPosition);                        // Project CRS
         MousePosX.Text = $"{worldPosition.X:F2}";
         MousePosY.Text = $"{worldPosition.Y:F2}";
         if (vm.MeasurementMode && measureStart is not null)

@@ -4,7 +4,6 @@ using Mapsui.Providers;
 using Mapsui.Styles;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
-using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -53,7 +52,7 @@ namespace Mapper_v1.Providers
         public string CRS { get; set; } = "";
 
         public EcwProvider(string ecwpath, List<Color>? colorTrans) : this(ecwpath, colorTrans, null) { }
-        public EcwProvider(string ecwpath, List<Color>? colorTrans,double? resulotion)
+        public EcwProvider(string ecwpath, List<Color>? colorTrans, double? resulotion)
         {
             if (resulotion is not null) MAXRESULOTION = (double)resulotion;
             if (!File.Exists(ecwpath))
@@ -147,9 +146,9 @@ namespace Mapper_v1.Providers
             public unsafe char* sAddress;// updatable
             public unsafe char* sTelephone; // updatable
         }
-    #endregion
+        #endregion
         #region Enums
-    public enum NCSCellSizeUnitType
+        public enum NCSCellSizeUnitType
         {
             ECW_CELL_UNITS_INVALID = 0,
             ECW_CELL_UNITS_METERS = 1,
@@ -213,7 +212,7 @@ namespace Mapper_v1.Providers
             NCS_GDT_GET_DATUM_SHIFTS_ERROR, NCS_PROJECTION_STRING_TOO_LONG, NCS_OTDF_FILE_VERSION_NOT_SUPPORTED, NCS_ECWP_POLLING,
             NCS_INSUFFICIENT_PRIVILEGE, NCS_INSUFFICENT_FILESYSTEM_SPACE, NCS_INVALID_WMS_SERVICE, NCS_NON_MATCHED_TEMPORAL_EXTENT,
             NCS_UNSUPPORTED_FILE_TYPE_OR_VERSION, NCS_NO_VALUE, NCS_MAX_ERROR_NUMBER
-        } 
+        }
         #endregion
         private static NCSFileInfo ReadFileInfo(string path)
         {
@@ -224,7 +223,7 @@ namespace Mapper_v1.Providers
             NCSError infoerror = NCSGetViewFileInfo(pNCSFileView, out pFileInfo);
             return Marshal.PtrToStructure<NCSFileInfo>(pFileInfo);
         }
-        private static MemoryStream ReadFile(string path,NCSFileInfo fileInfo, List<Color> noDataColors, int scale)
+        private static MemoryStream ReadFile(string path, NCSFileInfo fileInfo, List<Color> noDataColors, int scale)
         {
             SKBitmap sKBitmap = new();
             try
@@ -240,7 +239,7 @@ namespace Mapper_v1.Providers
                 uint[] bandList;
                 if (fileInfo.nBands == 3) bandList = [0, 1, 2];
                 else if (fileInfo.nBands == 4) bandList = [0, 1, 2, 3];
-                else throw new DataMisalignedException();
+                else throw new DataMisalignedException("Number of bands must be 3 or 4 (RGB + Alpha)");
 
                 int tileWidth = (int)(fileInfo.nSizeX / scale);
                 int tileHeight = (int)(fileInfo.nSizeY / scale);
@@ -261,7 +260,7 @@ namespace Mapper_v1.Providers
                 try
                 {
                     //Trace.WriteLine($"Stride: {bmdata.Stride}");
-                    var ptrdest = (IntPtr)bmdata.Scan0; // bmdata.ImageData;
+                    nint ptrdest = bmdata.Scan0; // bmdata.ImageData;
                     for (int i = 0; i < tileHeight; i++)
                     {
                         result = NCSReadViewLineBGRA(pNCSFileView, ptrdest);

@@ -1,16 +1,11 @@
-﻿using Mapsui.Layers;
-using Mapsui.Rendering.Skia.SkiaStyles;
-using Mapsui.Rendering;
-using Mapsui.Styles;
+﻿using Mapper_v1.Models;
 using Mapsui;
-using SkiaSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Mapsui.Extensions;
-using Mapper_v1.Models;
+using Mapsui.Layers;
+using Mapsui.Rendering;
+using Mapsui.Rendering.Skia.SkiaStyles;
+using Mapsui.Styles;
+using SkiaSharp;
 
 namespace Mapper_v1.Layers
 {
@@ -45,6 +40,6 @@ namespace Mapper_v1.Layers
         }
     }
 
-    
+
 
 }

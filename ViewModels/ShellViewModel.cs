@@ -30,7 +30,7 @@ public class ShellViewModel : ObservableObject
         get { return _selectedOptionsMenuItem; }
         set { SetProperty(ref _selectedOptionsMenuItem, value); }
     }
-    
+
     // TODO: Change the icons and titles for all HamburgerMenuItems here.
     public ObservableCollection<HamburgerMenuItem> MenuItems { get; } = new ObservableCollection<HamburgerMenuItem>()
     {

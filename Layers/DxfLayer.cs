@@ -1,22 +1,12 @@
-﻿using BruTile.Wmts;
-using HarfBuzzSharp;
-using Mapsui;
+﻿using Mapsui;
 using Mapsui.Layers;
 using Mapsui.Nts;
 using netDxf;
 using netDxf.Entities;
 using netDxf.Header;
 using NetTopologySuite;
-using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.Triangulate.QuadEdge;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using IFeature = Mapsui.IFeature;
 
@@ -40,9 +30,9 @@ namespace Mapper_v1.Layers
             {
 
             }
-            if (version < DxfVersion.AutoCad2000 ) 
+            if (version < DxfVersion.AutoCad2000)
             {
-                
+
             }
             try
             {
@@ -53,7 +43,7 @@ namespace Mapper_v1.Layers
             {
                 MessageBox.Show("Minimum DXF version is AutoCad2000 !");
             }
-            
+
         }
 
         private void AddFeatures(DxfDocument dxfDocument)
@@ -176,7 +166,7 @@ namespace Mapper_v1.Layers
         {
             Polyline2D poly = feature as Polyline2D;
             Coordinate[] points = (from Polyline2DVertex vertex in poly.Vertexes
-                                       select ToCoord(vertex.Position)).ToArray();
+                                   select ToCoord(vertex.Position)).ToArray();
             return new GeometryFeature(new LineString(points));
         }
 

@@ -1,15 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   
   <PropertyGroup>
+    <!--TODO: Change Version here-->
+    <Version>1.2.5</Version>
+    <StartupObject>Mapper_v1.Program</StartupObject>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-    <!--TODO: Change Version here-->
-    <Version>1.2.4</Version>
-	<RootNamespace>Mapper_v1</RootNamespace>
+    
+    <RootNamespace>Mapper_v1</RootNamespace>
     <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
-    <StartupObject>Mapper_v1.Program</StartupObject>
+    
     <ApplicationIcon>RNav.ico</ApplicationIcon>
     <PackageIcon>RNav.ico</PackageIcon>
     <Platforms>AnyCPU;x64;x86</Platforms>

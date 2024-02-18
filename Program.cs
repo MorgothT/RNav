@@ -18,7 +18,7 @@ namespace Mapper_v1
                                 .WithAfterInstallFastCallback(v => AddFontResource(@"./Fonts/RNav.ttf"))
                                 .WithBeforeUninstallFastCallback(v => RemoveFontResource(@"./Fonts/RNav.ttf"))
                                 .Run();
-
+                _ = UpdateMyApp();
                 var app = new App();
                 app.InitializeComponent();
                 app.Run();

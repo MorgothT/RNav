@@ -34,6 +34,8 @@ public partial class MapSettings : ObservableObject
     private List<TimedPoint> lastTrail;
     [ObservableProperty]
     private bool mapOverlay;
+    [ObservableProperty]
+    private int selectedTargetId;
 
     public double[] GetFontSizes
     {
@@ -58,6 +60,7 @@ public partial class MapSettings : ObservableObject
         TrailDuration = 0;
         LogDirectory = @"C:\RNav\Logs";
         MapOverlay = false;
+        SelectedTargetId = -1;
         SaveMapSettings();
     }
     public MapSettings GetMapSettings()
@@ -77,6 +80,7 @@ public partial class MapSettings : ObservableObject
             TrailDuration = Properties.Map.Default.TrailDuration;
             LogDirectory = Properties.Map.Default.LogDirectory;
             MapOverlay = Properties.Map.Default.MapOverlay;
+            SelectedTargetId = Properties.Map.Default.LastTargetId;
             if (ProjectionList is null) InitializeMapSettings();
         }
         catch (Exception)
@@ -98,6 +102,7 @@ public partial class MapSettings : ObservableObject
         Properties.Map.Default.TrailDuration = TrailDuration;
         Properties.Map.Default.LogDirectory = LogDirectory;
         Properties.Map.Default.MapOverlay = MapOverlay;
+        Properties.Map.Default.LastTargetId = SelectedTargetId;
 
         Properties.Map.Default.Save();
     }

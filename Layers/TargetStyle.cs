@@ -5,6 +5,7 @@ using Mapsui.Rendering;
 using Mapsui.Rendering.Skia.SkiaStyles;
 using Mapsui.Styles;
 using SkiaSharp;
+using System.Drawing;
 
 namespace Mapper_v1.Layers;
 
@@ -39,8 +40,15 @@ public class TargetRenderer : ISkiaStyleRenderer
 
         var screenPoint = viewport.WorldToScreen(worldPoint);
         TargetStyle targetStyle = (TargetStyle)style;
+        
         using var colored = new SKPaint { Color = targetStyle.Color, IsAntialias = true, Style = SKPaintStyle.Stroke };
         using var filled = new SKPaint { Color = targetStyle.Color.WithAlpha((byte)(255 * targetStyle.Opacity)), IsAntialias = true, Style = SKPaintStyle.Fill };
+        if ((bool)feature["IsSelected"] == true)
+        {
+            colored.Color = SKColors.DarkRed;
+            filled.Color = SKColors.DarkRed.WithAlpha((byte)(255 * targetStyle.Opacity));
+        }
+        
         canvas.Translate((float)screenPoint.X, (float)screenPoint.Y);
         canvas.Scale(-(float)(1.0 / viewport.Resolution));
         canvas.DrawCircle(0, 0, (float)targetStyle.Radius, colored);

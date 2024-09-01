@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Mapper_v1.Helpers;
 using Mapper_v1.Models;
+using Mapsui;
 
 namespace Mapper_v1.ViewModels;
 
@@ -60,8 +61,12 @@ public partial class MapViewModel : ObservableObject
         Data.Add("Quality", 0);
         Data.Add("Heading", 0);
         Data.Add("Speed (Kn)", 0);
+
+        Data.Add("Target Name", "");
+        Data.Add("Bearing", 0);
+        Data.Add("Distance", 0);
     }
-    public void UpdateDataView(VesselData vessel, GeoConverter.Converter converter)
+    public void UpdateDataView(VesselData vessel, GeoConverter.Converter converter, Target CurrentTarget)
     {
         double lon, lat;
         lon = vessel.GetGGA.Longitude.Degrees;
@@ -76,8 +81,12 @@ public partial class MapViewModel : ObservableObject
         Data["No. of Sats"] = vessel.GetGGA.SatelliteCount;
         Data["Quality"] = vessel.GetGGA.FixQuality;
         Data["Speed (Kn)"] = vessel.GetVTG.GroundSpeedKnots.ToString("F2");
+        Data["Target Name"] = CurrentTarget.Name;
+        MPoint vesselPoint = new MPoint(p.X,p.Y);
+        MPoint targetPoint = new MPoint(CurrentTarget.X,CurrentTarget.Y);
+        Data["Bearing"] = GeoMath.CalcBearing(vesselPoint, targetPoint).ToString("F1");
+        Data["Distance"] = vesselPoint.Distance(targetPoint).ToString("F1");
         Data = new Dictionary<string, object>(Data);
     }
-
-
+    
 }

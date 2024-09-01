@@ -1,7 +1,11 @@
-﻿using System.Runtime.InteropServices;
+﻿using ExCSS;
+using System.Drawing;
+using System.Drawing.Text;
+using System.Runtime.InteropServices;
 using System.Windows;
 using Velopack;
 using Velopack.Sources;
+using Windows.Networking;
 
 namespace Mapper_v1
 {
@@ -12,6 +16,10 @@ namespace Mapper_v1
         {
             try
             {
+                if (IsFontInstalled("Rnav Regular"))
+                {
+                    AddFontResource(@"./Fonts/RNav.ttf");
+                }
                 VelopackApp.Build()
                                 .WithFirstRun(v => MessageBox.Show("Thanks for installing RNav !"))
                                 .SetAutoApplyOnStartup(false)
@@ -26,6 +34,15 @@ namespace Mapper_v1
             catch (Exception ex)
             {
                 MessageBox.Show($"Unhandeled exception: {ex}");
+            }
+        }
+
+        private static bool IsFontInstalled(string name)
+        {
+            using (InstalledFontCollection fontsCollection = new InstalledFontCollection())
+            {
+                return fontsCollection.Families
+                    .Any(x => x.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
             }
         }
 

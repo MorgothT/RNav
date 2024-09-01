@@ -103,6 +103,19 @@ public partial class Target : ObservableObject
         feature[nameof(Lat)] = Formater.FormatLatLong(target.Lat, degreeFormat);
         feature[nameof(Lon)] = Formater.FormatLatLong(target.Lon, degreeFormat);
         feature.Styles.Add(CreateTargetCalloutStyle(feature.ToStringOfKeyValuePairs(), radius));
+        feature["IsSelected"] = false;
         return feature;
+    }
+    public static Target CreateTargetFromTargetFeature(IFeature feature)
+    {   
+        var target = new Target();
+        if (feature is not null)
+        {
+            target.Id = (int)feature["Id"];
+            target.Name = (string)feature["Name"];
+            target.X = double.Parse(feature["X"].ToString());
+            target.Y = double.Parse(feature["Y"].ToString());
+        }
+        return target;
     }
 }

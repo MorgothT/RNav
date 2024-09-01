@@ -2,7 +2,7 @@
   
   <PropertyGroup>
     <!--TODO: Change Version here-->
-    <Version>1.2.5</Version>
+    <Version>1.2.6</Version>
     <StartupObject>Mapper_v1.Program</StartupObject>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>

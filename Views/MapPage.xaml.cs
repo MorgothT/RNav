@@ -1,6 +1,7 @@
 ﻿using GeoConverter;
 using InvernessPark.Utilities.NMEA;
 using Mapper_v1.Converters;
+using Mapper_v1.Helpers;
 using Mapper_v1.Layers;
 using Mapper_v1.Models;
 using Mapper_v1.Projections;
@@ -53,6 +54,8 @@ public partial class MapPage : Page
     private MPoint measureStart;
     private WritableLayer MyMeasurementLayer;
     private GenericCollectionLayer<List<IFeature>> MyTargets = new();
+    private int SelectedTargetId = -1;
+    private Target SelectedTarget;
     private List<TimedPoint> MyTrail = new();
 
     private static Converter fromWGS84;
@@ -175,12 +178,18 @@ public partial class MapPage : Page
     #region Data Presistence
     private void LoadSavedTargets()
     {
+        SelectedTargetId = mapSettings.SelectedTargetId;
         foreach (Target target in mapSettings.TargetList)
         {
             var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
+            if ((int)feature["Id"] == SelectedTargetId)
+            {
+                feature["IsSelected"] = true;
+                SelectedTarget = target;
+            }
             ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
             MyTargets?.Features.Add(feature);
-        }
+        }        
     }
     private void InitMapLayers()
     {
@@ -209,10 +218,9 @@ public partial class MapPage : Page
             IsMapInfoLayer = true,
             Style = new TargetStyle()
             {
-                Color = SKColors.DarkRed,
+                Color = SKColors.LimeGreen,
                 Opacity = 0.1f,
                 Radius = mapSettings.TargetRadius
-
             }
         };
 
@@ -335,7 +343,7 @@ public partial class MapPage : Page
             default:
                 break;
         }
-        vm.UpdateDataView(VesselData, fromWGS84);
+        vm.UpdateDataView(VesselData, fromWGS84, SelectedTarget);
     }
     private void UpdateTrail()
     {
@@ -571,12 +579,7 @@ public partial class MapPage : Page
         });
         return styles;
     }
-    private double CalcBearing(MPoint p1, MPoint p2)
-    {
-        var rad = Math.Atan2((p1.Y - p2.Y), (p1.X - p2.X));
-        var deg = rad * 180 / Math.PI;
-        return (270 - deg) % 360;
-    }
+    
     private void DrawLine(MPoint to)
     {
         MyMeasurementLayer.Clear();
@@ -620,7 +623,12 @@ public partial class MapPage : Page
     {
         if (feature is null) { return; }
         var pointFeature = (PointFeature)feature;
-        foreach (Target target in mapSettings.TargetList)
+        if (SelectedTargetId == (int)pointFeature["Id"])  // Nullify the SelectedTarget
+        {
+            SelectedTargetId = -1;
+            mapSettings.SaveMapSettings();
+        }
+            foreach (Target target in mapSettings.TargetList)
         {
             if (target.Id == (int)pointFeature["Id"])
             {
@@ -715,6 +723,30 @@ public partial class MapPage : Page
             RemoveTargetFeature(info.Feature);
             MapControl.Refresh();
         }
+        else    //Target Selection
+        {
+            if (MyTargets?.Features is null) return;
+            var screenPosition = e.GetPosition(MapControl).ToMapsui();
+            MapInfo info = MapControl.GetMapInfo(screenPosition);
+            if (info.Feature is null) return;
+            SelectedTargetId = (int)info.Feature["Id"];
+
+            foreach (var targetFeature in MyTargets.Features)
+            {
+                if ((int)targetFeature["Id"] == SelectedTargetId)
+                {
+                    targetFeature["IsSelected"] = true;
+                    SelectedTarget = Target.CreateTargetFromTargetFeature(targetFeature);
+                }
+                else
+                {
+                    targetFeature["IsSelected"] = false;
+                }
+            }
+            mapSettings.SelectedTargetId = SelectedTargetId;
+            mapSettings.SaveMapSettings();
+            MapControl.Refresh();
+        }
     }
     private void MapControlOnMouseMove(object sender, MouseEventArgs e)
     {
@@ -725,7 +757,7 @@ public partial class MapPage : Page
         MousePosY.Text = $"{worldPosition.Y:F2}";
         if (vm.MeasurementMode && measureStart is not null)
         {
-            double bearing = CalcBearing(measureStart, worldPosition);
+            double bearing = GeoMath.CalcBearing(measureStart, worldPosition);
             double distance = measureStart.Distance(worldPosition);
             Distance.Text = $"{distance:F2}";
             Bearing.Text = $"{bearing:F2}";

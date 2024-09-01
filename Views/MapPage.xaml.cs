@@ -626,6 +626,7 @@ public partial class MapPage : Page
         if (SelectedTargetId == (int)pointFeature["Id"])  // Nullify the SelectedTarget
         {
             SelectedTargetId = -1;
+            SelectedTarget = null;
             mapSettings.SaveMapSettings();
         }
             foreach (Target target in mapSettings.TargetList)

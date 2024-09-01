@@ -55,9 +55,9 @@ namespace Mapper_v1
 
         private static async Task UpdateMyApp()
         {
-            var mgr = new UpdateManager("https://github.com/MorgothT/RNav");
+            var mgr = new UpdateManager(new GithubSource("https://github.com/MorgothT/RNav","",false));
             var newVersion = await mgr.CheckForUpdatesAsync();
-            if (newVersion == null) 
+            if (newVersion == null)
                 return;
             await mgr.DownloadUpdatesAsync(newVersion);
             var result = MessageBox.Show($"Version {newVersion.TargetFullRelease} is available.{Environment.NewLine}Do you wish to restart the application ?",

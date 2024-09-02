@@ -16,16 +16,17 @@ namespace Mapper_v1
         {
             try
             {
-                if (IsFontInstalled("Rnav Regular"))
-                {
-                    AddFontResource(@"./Fonts/RNav.ttf");
-                }
                 VelopackApp.Build()
                                 .WithFirstRun(v => MessageBox.Show("Thanks for installing RNav !"))
                                 .SetAutoApplyOnStartup(false)
-                                .WithAfterInstallFastCallback(v => AddFontResource(@"./Fonts/RNav.ttf"))
-                                .WithBeforeUninstallFastCallback(v => RemoveFontResource(@"./Fonts/RNav.ttf"))
+                                //.WithAfterInstallFastCallback(v => AddFontResource(@"./Fonts/RNav.ttf"))
+                                //.WithBeforeUninstallFastCallback(v => RemoveFontResource(@"./Fonts/RNav.ttf"))
                                 .Run();
+                if (IsFontInstalled("RNav") == false)
+                {
+                    var result = AddFontResource(@"./Fonts/RNav.ttf");
+                    MessageBox.Show($"Added {result} new font");
+                }
                 _ = UpdateMyApp();
                 var app = new App();
                 app.InitializeComponent();
@@ -42,7 +43,7 @@ namespace Mapper_v1
             using (InstalledFontCollection fontsCollection = new InstalledFontCollection())
             {
                 return fontsCollection.Families
-                    .Any(x => x.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
+                    .Any(x => x.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase));
             }
         }
 
@@ -60,7 +61,7 @@ namespace Mapper_v1
             if (newVersion == null)
                 return;
             await mgr.DownloadUpdatesAsync(newVersion);
-            var result = MessageBox.Show($"Version {newVersion.TargetFullRelease} is available.{Environment.NewLine}Do you wish to restart the application ?",
+            var result = MessageBox.Show($"Version {newVersion.TargetFullRelease.Version} is available.{Environment.NewLine}Do you wish to restart the application ?",
                                         "New version found",
                                         button: MessageBoxButton.YesNo,
                                         icon: MessageBoxImage.Question,

@@ -58,6 +58,19 @@ public partial class Target : ObservableObject
         }
 
     }
+    public static Target CreateTarget(MPoint point, int id, MPoint wgsPoint)
+    {
+        Target target = new()
+        {
+            Id = id,
+            Name = $"Target no.{id}",
+            X = point.X,
+            Y = point.Y,
+            Lat = wgsPoint.Y,
+            Lon = wgsPoint.X
+        };
+        return target;
+    }
     public static Target CreateTarget(MPoint point, int id, Converter converter)
     {
         Point3d latlon = converter.Convert(new Point3d(point.X, point.Y, 0));
@@ -107,7 +120,7 @@ public partial class Target : ObservableObject
         return feature;
     }
     public static Target CreateTargetFromTargetFeature(IFeature feature)
-    {   
+    {
         var target = new Target();
         if (feature is not null)
         {

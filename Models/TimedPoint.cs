@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using InvernessPark.Utilities.NMEA.Sentences;
+using Mapsui.Projections;
 
 namespace Mapper_v1.Models
 {
@@ -22,6 +23,11 @@ namespace Mapper_v1.Models
 
             X = p.X; Y = p.Y;
             Time = time;
+        }
+
+        public TimedPoint(double x, double y,DateTime time)
+        {
+            X = x; Y = y; Time = time;
         }
 
         public override string ToString()

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Mapper_v1.Projections;
+using Mapsui.Projections;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
 
@@ -67,8 +68,10 @@ public partial class MapSettings : ObservableObject
     {
         try
         {
-            CurrentProjection = Properties.Map.Default.Projection;
             ProjectionList = ProjectProjections.GetProjections();
+            CurrentProjection = Properties.Map.Default.Projection;
+            if (ProjectionList.Contains(CurrentProjection) == false)
+                CurrentProjection = ProjectionList[0];
             ChartItems = JsonConvert.DeserializeObject<ObservableCollection<ChartItem>>(Properties.Map.Default.Layers);
             BoatShape = JsonConvert.DeserializeObject<BoatShape>(Properties.Map.Default.BoatShape);
             FontSize = Properties.Map.Default.FontSize;

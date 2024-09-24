@@ -59,7 +59,8 @@ public partial class MapPage : Page
     private List<TimedPoint> MyTrail = new();
 
     private static Converter fromWGS84;
-    private static Converter toWGS84;
+    //private static Converter toWGS84;
+    //Projection ProjectProjection = new();
     private static ColorConvertor colorConvertor = new();
     private readonly MapViewModel vm;
     private string ProjectCRS;
@@ -117,32 +118,35 @@ public partial class MapPage : Page
     private void SetCRS()
     {
         MapControl.Map.CRS = "EPSG:3857";
-        ProjectionDefaults.Projection = new IsraelProjections();
-
+        ProjectionDefaults.Projection = new WktProjections(); //new IsraelProjections();
         int epsg = int.Parse(mapSettings.CurrentProjection.Split(':')[1]);
-        switch (epsg)
-        {
-            case 6991:
-                fromWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Projections.ITM);
-                toWGS84 = new(Converter.Projections.ITM, Converter.Ellipsoids.WGS_84);
-                ProjectCRS = "EPSG:6991";
-                break;
-            case 32636:
-                fromWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Projections.UTM_36N);
-                toWGS84 = new(Converter.Projections.UTM_36N, Converter.Ellipsoids.WGS_84);
-                ProjectCRS = "EPSG:32636";
-                break;
-            default:
-                fromWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Ellipsoids.WGS_84);
-                toWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Ellipsoids.WGS_84);
-                ProjectCRS = "EPSG:4326";
-                break;
-        }
+        ProjectCRS = $"EPSG:{epsg}";
+        //switch (epsg)
+        //{
+        //    case 6991:
+        //        //fromWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Projections.ITM);
+        //        //toWGS84 = new(Converter.Projections.ITM, Converter.Ellipsoids.WGS_84);
+
+        //        ProjectCRS = "EPSG:6991";
+        //        break;
+        //    case 32636:
+        //        //fromWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Projections.UTM_36N);
+        //        //toWGS84 = new(Converter.Projections.UTM_36N, Converter.Ellipsoids.WGS_84);
+        //        ProjectCRS = "EPSG:32636";
+        //        break;
+        //    default:
+        //        //fromWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Ellipsoids.WGS_84);
+        //        //toWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Ellipsoids.WGS_84);
+        //        ProjectCRS = "EPSG:4326";
+        //        break;
+        //}
     }
     private void AddCharts()
     {
         foreach (var chart in mapSettings.ChartItems)
         {
+            if (ProjectProjections.GetProjections().Contains(chart.Projection) == false)
+                chart.Projection = ProjectProjections.GetProjections()[0];
             if (chart.Enabled == false) continue;   //Skiping inactive charts
             if (File.Exists(chart.Path))
             {
@@ -189,7 +193,7 @@ public partial class MapPage : Page
             }
             ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
             MyTargets?.Features.Add(feature);
-        }        
+        }
     }
     private void InitMapLayers()
     {
@@ -343,12 +347,15 @@ public partial class MapPage : Page
             default:
                 break;
         }
-        vm.UpdateDataView(VesselData, fromWGS84, SelectedTarget);
+        vm.UpdateDataView(VesselData, ProjectCRS, SelectedTarget);
     }
     private void UpdateTrail()
     {
         if (mapSettings.TrailDuration == 0) return;
-        TimedPoint point = new TimedPoint(VesselData.GetGGA, fromWGS84);
+        //TimedPoint point = new TimedPoint(VesselData.GetGGA, fromWGS84);
+        MPoint gpsPoint = new MPoint(VesselData.GetGGA.Latitude.Degrees,VesselData.GetGGA.Longitude.Degrees);
+        ProjectionDefaults.Projection.Project("EPSG:4326", ProjectCRS, gpsPoint);
+        TimedPoint point = new TimedPoint(gpsPoint.X,gpsPoint.Y,DateTime.Today.AddSeconds(VesselData.GetGGA.UTC.TotalSeconds));
         MyTrail.Add(point);
         if (MyTrail.Count < 2)
         {
@@ -395,7 +402,10 @@ public partial class MapPage : Page
         {
             Directory.CreateDirectory(mapSettings.LogDirectory);
         }
-        TimedPoint point = new TimedPoint(VesselData.GetGGA, fromWGS84);
+        //TimedPoint point = new TimedPoint(VesselData.GetGGA, fromWGS84);
+        MPoint gpsPoint = new MPoint(VesselData.GetGGA.Latitude.Degrees, VesselData.GetGGA.Longitude.Degrees);
+        ProjectionDefaults.Projection.Project("EPSG:4326", ProjectCRS, gpsPoint);
+        TimedPoint point = new TimedPoint(gpsPoint.X, gpsPoint.Y, DateTime.Today.AddSeconds(VesselData.GetGGA.UTC.TotalSeconds));
         File.AppendAllText(logPath, $"{point.ToLocalTime()}\n");
     }
     private void ConnectToGps()
@@ -579,7 +589,7 @@ public partial class MapPage : Page
         });
         return styles;
     }
-    
+
     private void DrawLine(MPoint to)
     {
         MyMeasurementLayer.Clear();
@@ -629,7 +639,7 @@ public partial class MapPage : Page
             SelectedTarget = null;
             mapSettings.SaveMapSettings();
         }
-            foreach (Target target in mapSettings.TargetList)
+        foreach (Target target in mapSettings.TargetList)
         {
             if (target.Id == (int)pointFeature["Id"])
             {
@@ -692,7 +702,9 @@ public partial class MapPage : Page
             int id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
             MPoint tr = e.MapInfo.WorldPosition;
             ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, tr);
-            Target target = Target.CreateTarget(tr, id, toWGS84);
+            MPoint wgs = tr;
+            ProjectionDefaults.Projection.Project(ProjectCRS, "EPSG:4326", wgs);
+            Target target = Target.CreateTarget(tr, id, wgs);
             mapSettings.TargetList.Add(target);
             mapSettings.SaveMapSettings();
             var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
@@ -723,6 +735,9 @@ public partial class MapPage : Page
             MyTargets.Features.Remove(info.Feature);
             RemoveTargetFeature(info.Feature);
             MapControl.Refresh();
+        }
+        if (vm.MeasurementMode) //do nothing in Ruler mode
+        {
         }
         else    //Target Selection
         {

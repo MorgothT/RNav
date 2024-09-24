@@ -2,7 +2,7 @@
   
   <PropertyGroup>
     <!--TODO: Change Version here-->
-    <Version>1.2.11</Version>
+    <Version>1.3.0</Version>
     <StartupObject>Mapper_v1.Program</StartupObject>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
@@ -88,6 +88,8 @@
   <ItemGroup>
     <PackageReference Include="BitMiracle.LibTiff.NET" Version="2.4.649" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageReference Include="DotSpatial.Projections" Version="4.0.656" />
+    <PackageReference Include="GeoAPI.CoordinateSystems" Version="1.7.5" />
     <PackageReference Include="MahApps.Metro" Version="2.4.10" />
     <PackageReference Include="Mapsui" Version="4.1.7" />
     <PackageReference Include="Mapsui.Extensions" Version="4.1.7" />
@@ -99,6 +101,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="ProjNet" Version="2.0.0" />
     <PackageReference Include="System.IO.Ports" Version="8.0.0" />
     <PackageReference Include="System.Net.Sockets" Version="4.3.0" />
     <PackageReference Include="Velopack" Version="0.0.594" />

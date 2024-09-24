@@ -4,7 +4,6 @@ using MahApps.Metro.Controls;
 using Mapper_v1.Contracts.Services;
 using Mapper_v1.Properties;
 using System.Collections.ObjectModel;
-using System.Windows;
 using System.Windows.Input;
 
 namespace Mapper_v1.ViewModels;
@@ -90,5 +89,5 @@ public class ShellViewModel : ObservableObject
         }
         GoBackCommand.NotifyCanExecuteChanged();
     }
-    
+
 }

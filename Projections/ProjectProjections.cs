@@ -1,4 +1,7 @@
-﻿namespace Mapper_v1.Projections
+﻿using Mapper_v1.Models;
+using Mapsui.Projections;
+
+namespace Mapper_v1.Projections
 {
     public static class ProjectProjections
     {
@@ -11,11 +14,18 @@
         public static List<string> GetProjections()
         {
             var proj = new List<string>();
-            foreach (var prop in typeof(ProjectProjections).GetFields())
+            ProjectionCfg projections = new ProjectionCfg(".\\Projections.cfg");
+            foreach (var projection in projections.CoordinateSystems) 
             {
-                proj.Add($"{prop.Name} - {prop.GetValue(null)}");
+                proj.Add($"{projection.Name} - {projection.Authority}:{projection.AuthorityCode}"); 
             }
             return proj;
+            //var proj = new List<string>();
+            //foreach (var prop in typeof(ProjectProjections).GetFields())
+            //{
+            //    proj.Add($"{prop.Name} - {prop.GetValue(null)}");
+            //}
+            //return proj;
         }
     }
 

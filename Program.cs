@@ -1,11 +1,8 @@
-﻿using ExCSS;
-using System.Drawing;
-using System.Drawing.Text;
+﻿using System.Drawing.Text;
 using System.Runtime.InteropServices;
 using System.Windows;
 using Velopack;
 using Velopack.Sources;
-using Windows.Networking;
 
 namespace Mapper_v1
 {
@@ -56,7 +53,7 @@ namespace Mapper_v1
 
         private static async Task UpdateMyApp()
         {
-            var mgr = new UpdateManager(new GithubSource("https://github.com/MorgothT/RNav","",false));
+            var mgr = new UpdateManager(new GithubSource("https://github.com/MorgothT/RNav", "", false));
             var newVersion = await mgr.CheckForUpdatesAsync();
             if (newVersion == null)
                 return;

@@ -1,14 +1,10 @@
-﻿//using GeoAPI.CoordinateSystems;
-//using GeoAPI.CoordinateSystems.Transformations;
-using Mapper_v1.Models;
+﻿using Mapper_v1.Models;
 using Mapsui;
 using Mapsui.Projections;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-//using ICoordinateTransformation = GeoAPI.CoordinateSystems.Transformations.ICoordinateTransformation;
-
 
 namespace Mapper_v1.Projections;
 
@@ -19,13 +15,8 @@ public class WktProjections : Mapsui.Projections.IProjection
 
     private readonly IDictionary<string, ICoordinateTransformation> _ctToDict = new Dictionary<string, ICoordinateTransformation>();
     private readonly IDictionary<string, ICoordinateTransformation> _ctFromDict = new Dictionary<string, ICoordinateTransformation>();
-    //public List<string> ProjectionNames { get; set; } = new List<string>();
-    //ICoordinateTransformationFactory _ctFac;
-    //ICoordinateTransformation _ctTo;
-    //ICoordinateTransformation _ctFrom;
+
     private string ConfigPath = ".\\Projections.cfg";
-    // TODO: Change FilePath
-    //string[] wktStrings ;
 
     public WktProjections()
     {
@@ -81,29 +72,7 @@ public class WktProjections : Mapsui.Projections.IProjection
         var trans = ctFac.CreateFromCoordinateSystems(csSource, csTarget);
         return trans;
     }
-    //public void LoadSourceWKT(string filepath)
-    //{
-    //    ICoordinateSystemFactory csFac = new CoordinateSystemFactory() as ICoordinateSystemFactory;
-    //    ICoordinateSystem csSource = null;
-    //    ICoordinateSystem csTarget = null;
-    //    if (!String.IsNullOrWhiteSpace(filepath) && System.IO.File.Exists(filepath))
-    //    {
-    //        string wkt = System.IO.File.ReadAllText(filepath);
-    //        csSource = csFac.CreateFromWkt(wkt);
-    //        csTarget = (ICoordinateSystem)GeographicCoordinateSystem.WGS84;
-    //    }
-    //    else
-    //    {
-    //        csSource = (ICoordinateSystem)ProjectedCoordinateSystem.WebMercator;
-    //        csTarget = (ICoordinateSystem)GeographicCoordinateSystem.WGS84;
-    //    }
-    //    _ctFac = new CoordinateTransformationFactory() as ICoordinateTransformationFactory;
-
-    //    _ctTo = _ctFac.CreateFromCoordinateSystems(csSource, csTarget);
-    //    _ctFrom = _ctFac.CreateFromCoordinateSystems(csTarget, csSource);
-    //}
-
-
+    
     public Func<double, double, (double,double)> GenerateFromLatLong(string crskey)
     {
         return (x, y) => { double[] result = _ctFromDict[crskey].MathTransform.Transform([x,y]); return new (result[0], result[1]); };

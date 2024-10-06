@@ -55,21 +55,62 @@
                 <mapsui:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
                                    Background="{StaticResource MahApps.Brushes.Gray10}"/>
                 <Border VerticalAlignment="Top" HorizontalAlignment="Left">
-                    <StackPanel Name="MapControls" Orientation="Vertical">
-                        <Button x:Name="ZoomExtent" ToolTip="Zoom Extent" Margin="1" Padding="0" Click="ZoomExtent_Click">
-                            <Label FontFamily="RNav" Content="&#xE709;"
+                    <StackPanel>
+                        <StackPanel Name="LineControl" Orientation="Horizontal">
+                            <ToggleButton x:Name="RecordLine" Margin="1" Padding="0" Click="RecordBtn_Click">
+                                <ToggleButton.Style>
+                                    <Style TargetType="ToggleButton" BasedOn="{StaticResource MahApps.Styles.ToggleButton}">
+                                        <Style.Triggers>
+                                            <Trigger Property="IsChecked" Value="False">
+                                                <Setter Property="Content">
+                                                    <Setter.Value>
+                                                        <Label ToolTip="Record" FontFamily="Segoe MDL2 Assets" Content="&#xEA3B;" Foreground="Red"
+                                                               FontSize="24" FontWeight="Light">
+                                                        </Label>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Trigger>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter Property="Content">
+                                                    <Setter.Value>
+                                                        <Label ToolTip="Stop" FontFamily="Segoe MDL2 Assets" Content="&#xE73B;" Foreground="Black" 
+                                                               FontSize="24" FontWeight="Light">
+                                                            <Label.Triggers>
+                                                                <EventTrigger RoutedEvent="TextBlock.Loaded">
+                                                                    <BeginStoryboard>
+                                                                        <Storyboard RepeatBehavior="Forever">
+                                                                            <ColorAnimation
+                                                                                Storyboard.TargetProperty="(Label.Foreground).(SolidColorBrush.Color)"
+                                                                                From="Black" To="Red" Duration="0:0:1"
+                                                                                AutoReverse="True" RepeatBehavior="Forever"/>
+                                                                        </Storyboard>
+                                                                    </BeginStoryboard>
+                                                                </EventTrigger>
+                                                            </Label.Triggers>
+                                                        </Label>
+                                                    </Setter.Value>
+                                                </Setter>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ToggleButton.Style>
+                            </ToggleButton>
+                        </StackPanel>
+                        <StackPanel Name="MapControls" Orientation="Vertical">
+                            <Button x:Name="ZoomExtent" ToolTip="Zoom Extent" Margin="1" Padding="0" Click="ZoomExtent_Click">
+                                <Label FontFamily="RNav" Content="&#xE709;"
                                    FontSize="24"
                                    FontWeight="Light"/>
-                        </Button>
-                        <ToggleButton x:Name="ToggleTracking" ToolTip="Vessel Tracking" Margin="1" Padding="0" Click="ToggleTracking_Click">
-                            <Label FontFamily="RNav" Content="&#xE703;"
+                            </Button>
+                            <ToggleButton x:Name="ToggleTracking" ToolTip="Vessel Tracking" Margin="1" Padding="0" Click="ToggleTracking_Click">
+                                <Label FontFamily="RNav" Content="&#xE703;"
                                    FontSize="24"
                                    FontWeight="Light"/>
-                        </ToggleButton>
-                        <ToggleButton x:Name="ToggleNoseUp" ToolTip="Nose Up" Margin="1" Padding="0" Unchecked="ToggleNoseUp_Unchecked">
-                            <Label FontFamily="RNav" Content="&#xE71f;"
+                            </ToggleButton>
+                            <ToggleButton x:Name="ToggleNoseUp" ToolTip="Nose Up" Margin="1" Padding="0" Unchecked="ToggleNoseUp_Unchecked">
+                                <Label FontFamily="RNav" Content="&#xE71f;"
                                    FontSize="24" FontWeight="Light"/>
-                            <!--<ToggleButton.Style>
+                                <!--<ToggleButton.Style>
                                 <Style TargetType="{x:Type ToggleButton}">
                                        <Setter Property="Content" Value="{StaticResource NoseUpOff}"/>
                                     <Style.Triggers>
@@ -79,27 +120,29 @@
                                     </Style.Triggers>
                                 </Style>
                             </ToggleButton.Style>-->
-                        </ToggleButton>
-                        <ToggleButton x:Name="ToggleMeasure" ToolTip="Measure Tool" Margin="1" Padding="0" 
+                            </ToggleButton>
+                            <ToggleButton x:Name="ToggleMeasure" ToolTip="Measure Tool" Margin="1" Padding="0" 
                                       IsChecked="{Binding MeasurementMode}" Command="{Binding MeasureCommand}">
-                            <Label FontFamily="RNav" Content="&#xE708;"
+                                <Label FontFamily="RNav" Content="&#xE708;"
                                    FontSize="24"
                                    FontWeight="Light"/>
-                        </ToggleButton>
-                        <ToggleButton x:Name="ToggleTarget"  Margin="1" Padding="0" 
+                            </ToggleButton>
+                            <ToggleButton x:Name="ToggleTarget"  Margin="1" Padding="0" 
                                       IsChecked="{Binding TargetMode}" Command="{Binding TargetCommand}">
-                            <Label FontFamily="RNav" Content="&#xE702;" 
+                                <Label FontFamily="RNav" Content="&#xE702;" 
                                    FontSize="24"
                                    FontWeight="Light">
-                                <Label.ToolTip>
-                                    <StackPanel>
-                                        <TextBlock FontSize="14" FontWeight="Bold" Text="Target Editing:"/>
-                                        <TextBlock Text="Left click = Add target"/>
-                                        <TextBlock Text="Right click = Remove target"/>
-                                    </StackPanel>
-                                </Label.ToolTip>
-                            </Label>
-                        </ToggleButton>
+                                    <Label.ToolTip>
+                                        <StackPanel>
+                                            <TextBlock FontSize="14" FontWeight="Bold" Text="Target Editing:"/>
+                                            <TextBlock Text="Left click = Add target"/>
+                                            <TextBlock Text="Right click = Remove target"/>
+                                        </StackPanel>
+                                    </Label.ToolTip>
+                                </Label>
+                            </ToggleButton>
+                        </StackPanel>
+                        
                     </StackPanel>
                 </Border>
                 <Border BorderThickness="6"

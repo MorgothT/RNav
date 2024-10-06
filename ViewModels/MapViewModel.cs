@@ -63,16 +63,20 @@ public partial class MapViewModel : ObservableObject
         Data.Add("Quality", 0);
         Data.Add("Heading", 0);
         Data.Add("Speed (Kn)", 0);
+        Data.Add("Speed Fw (Kn)", double.NaN);
+        Data.Add("Speed Sb (Kn)", double.NaN);
+        Data.Add("Depth", 0);
 
         Data.Add("Target Name", "N/A");
         Data.Add("Bearing", "-");
         Data.Add("Distance", "-");
     }
+
     public void UpdateDataView(VesselData vessel,string CRS, Target CurrentTarget)
     {
         double lon, lat;
-        lon = vessel.GetGGA.Longitude.Degrees;
-        lat = vessel.GetGGA.Latitude.Degrees;
+        lon = vessel.Longitude;     //vessel.GetGGA.Longitude.Degrees;
+        lat = vessel.Latitude;     //vessel.GetGGA.Latitude.Degrees;
         MPoint p = new MPoint(lon,lat);
         Projection.Project("EPSG:4326",CRS,p);
         //var p = converter.Convert(new(lon, lat, 0));
@@ -80,11 +84,16 @@ public partial class MapViewModel : ObservableObject
         Data["Y"] = p.Y.ToString("F2");
         Data["Latitude"] = Formater.FormatLatLong(lat, MapSettings.DegreeFormat);
         Data["Longitude"] = Formater.FormatLatLong(lon, MapSettings.DegreeFormat);
-        Data["Heading"] = ((vessel.GetHDT.HeadingTrue + MapSettings.HeadingOffset) % 360).ToString("F2");    // Added offset
+        Data["Heading"] = vessel.Heading.ToString("F2");    // Added offset
+        //Data["Heading"] = ((vessel.GetHDT.HeadingTrue + MapSettings.HeadingOffset) % 360).ToString("F2");    // Added offset
         Data["Time (UTC)"] = vessel.GetGGA.UTC.ToString(@"hh\:mm\:ss");
         Data["No. of Sats"] = vessel.GetGGA.SatelliteCount;
         Data["Quality"] = vessel.GetGGA.FixQuality;
-        Data["Speed (Kn)"] = vessel.GetVTG.GroundSpeedKnots.ToString("F2");
+        Data["Speed (Kn)"] = vessel.SpeedInKnots.ToString("F2");
+        Data["Speed Fw (Kn)"] = vessel.SpeedFw.ToString("F2");
+        Data["Speed Sb (Kn)"] = vessel.SpeedSb.ToString("F2");
+        Data["Depth"] = vessel.Depth.ToString("F2");
+        //Data["Depth"] = GeoMath.FeetToMeters(vessel.GetDBT.DepthInFeet).ToString("F2");
         if (CurrentTarget is null)
         {
             Data["Target Name"] = "N/A";

@@ -16,8 +16,8 @@ public partial class BoatShape : ObservableObject
     private Color fill = Colors.Orange;
     [ObservableProperty]
     private Color outline = Colors.Black;
-    public SKPaint SKFill { get => new SKPaint { Color = Fill.ToSKColor() }; }
-    public SKPaint SKOutline { get => new SKPaint { Color = Outline.ToSKColor() }; }
+    public SKPaint SKFill { get => new() { Color = Fill.ToSKColor() }; }
+    public SKPaint SKOutline { get => new() { Color = Outline.ToSKColor() }; }
     public float Opacity { get; set; } = 0.7f;
 
     /// <summary>

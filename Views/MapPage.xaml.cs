@@ -1,5 +1,4 @@
-﻿using GeoConverter;
-using InvernessPark.Utilities.NMEA;
+﻿using InvernessPark.Utilities.NMEA;
 using Mapper_v1.Converters;
 using Mapper_v1.Helpers;
 using Mapper_v1.Layers;
@@ -57,13 +56,14 @@ public partial class MapPage : Page
     private int SelectedTargetId = -1;
     private Target SelectedTarget;
     private List<TimedPoint> MyTrail = new();
-
-    private static Converter fromWGS84;
-    //private static Converter toWGS84;
-    //Projection ProjectProjection = new();
+    
+    private DateTime startLineTime;
+    public bool RecordEnabled;
+   
     private static ColorConvertor colorConvertor = new();
     private readonly MapViewModel vm;
     private string ProjectCRS;
+    
     public MapPage(MapViewModel viewModel)
     {
         InitializeComponent();
@@ -72,10 +72,19 @@ public partial class MapPage : Page
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         vm = viewModel;
 
+        InitVessel();
+
         SubscribeToNmea();
         InitMapControl();
         InitUIControls();
         ConnectToGps();
+    }
+
+    private void InitVessel()
+    {
+        VesselData.HeadingOffset = mapSettings.HeadingOffset;
+        VesselData.DepthOffset = mapSettings.DepthOffset;
+        VesselData.PositionOffset = new(mapSettings.PositionOffset.X, mapSettings.PositionOffset.Y);
     }
 
     private void InitMapControl()
@@ -121,25 +130,6 @@ public partial class MapPage : Page
         ProjectionDefaults.Projection = new WktProjections(); //new IsraelProjections();
         int epsg = int.Parse(mapSettings.CurrentProjection.Split(':')[1]);
         ProjectCRS = $"EPSG:{epsg}";
-        //switch (epsg)
-        //{
-        //    case 6991:
-        //        //fromWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Projections.ITM);
-        //        //toWGS84 = new(Converter.Projections.ITM, Converter.Ellipsoids.WGS_84);
-
-        //        ProjectCRS = "EPSG:6991";
-        //        break;
-        //    case 32636:
-        //        //fromWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Projections.UTM_36N);
-        //        //toWGS84 = new(Converter.Projections.UTM_36N, Converter.Ellipsoids.WGS_84);
-        //        ProjectCRS = "EPSG:32636";
-        //        break;
-        //    default:
-        //        //fromWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Ellipsoids.WGS_84);
-        //        //toWGS84 = new(Converter.Ellipsoids.WGS_84, Converter.Ellipsoids.WGS_84);
-        //        ProjectCRS = "EPSG:4326";
-        //        break;
-        //}
     }
     private void AddCharts()
     {
@@ -334,27 +324,42 @@ public partial class MapPage : Page
     private void NmeaMessageReceived(INmeaMessage msg)
     {
         VesselData.Update(msg);
+        if (RecordEnabled) 
+            Dispatcher.BeginInvoke(new Action(() => LogNMEA(msg)));
         switch (msg.GetType().Name)
         {
             case "GGA":
                 Dispatcher.BeginInvoke(UpdateLocation);
                 Dispatcher.BeginInvoke(DispatcherPriority.Background, LogLocation);
                 Dispatcher.BeginInvoke(DispatcherPriority.Background, UpdateTrail);
+                //Dispatcher.BeginInvoke(DispatcherPriority.Background, LogNMEA);
                 break;
             case "HDT":
                 Dispatcher.BeginInvoke(UpdateDirection);
+                break;
+            case "DBT":
+            case "DPT":
+                //Dispatcher.BeginInvoke(DispatcherPriority.Background, LogNMEA);
+                //Dispatcher.BeginInvoke(UpdateDepth);
+                break;
+            case "ZDA":
                 break;
             default:
                 break;
         }
         vm.UpdateDataView(VesselData, ProjectCRS, SelectedTarget);
     }
+
+    
+
     private void UpdateTrail()
     {
         if (mapSettings.TrailDuration == 0) return;
         //TimedPoint point = new TimedPoint(VesselData.GetGGA, fromWGS84);
-        MPoint gpsPoint = new MPoint(VesselData.GetGGA.Latitude.Degrees,VesselData.GetGGA.Longitude.Degrees);
+        //MPoint gpsPoint = new MPoint(VesselData.GetGGA.Latitude.Degrees,VesselData.GetGGA.Longitude.Degrees);
+        MPoint gpsPoint = new MPoint(VesselData.Longitude, VesselData.Latitude);
         ProjectionDefaults.Projection.Project("EPSG:4326", ProjectCRS, gpsPoint);
+        //TODO: Add lastfixtime to vessel data
         TimedPoint point = new TimedPoint(gpsPoint.X,gpsPoint.Y,DateTime.Today.AddSeconds(VesselData.GetGGA.UTC.TotalSeconds));
         MyTrail.Add(point);
         if (MyTrail.Count < 2)
@@ -403,11 +408,25 @@ public partial class MapPage : Page
             Directory.CreateDirectory(mapSettings.LogDirectory);
         }
         //TimedPoint point = new TimedPoint(VesselData.GetGGA, fromWGS84);
-        MPoint gpsPoint = new MPoint(VesselData.GetGGA.Latitude.Degrees, VesselData.GetGGA.Longitude.Degrees);
+        MPoint gpsPoint = new MPoint(VesselData.Longitude,VesselData.Latitude);
         ProjectionDefaults.Projection.Project("EPSG:4326", ProjectCRS, gpsPoint);
+        //TODO: Add lastfixtime to vessel data
         TimedPoint point = new TimedPoint(gpsPoint.X, gpsPoint.Y, DateTime.Today.AddSeconds(VesselData.GetGGA.UTC.TotalSeconds));
         File.AppendAllText(logPath, $"{point.ToLocalTime()}\n");
     }
+    //TODO: add Log for Hypack ?
+    private void LogNMEA(INmeaMessage msg)
+    {
+        if (startLineTime == DateTime.MinValue)
+            startLineTime = DateTime.UtcNow;
+        string logPath = @$"{mapSettings.LogDirectory}\{startLineTime.ToString("yyyyMMdd-HHmmss")}.raw";
+        if (!Directory.Exists(mapSettings.LogDirectory))
+        {
+            Directory.CreateDirectory(mapSettings.LogDirectory);
+        }
+        File.AppendAllText(logPath, $"{DateTime.UtcNow:HH:mm:ss},{msg.Payload}{Environment.NewLine}");
+    }
+
     private void ConnectToGps()
     {
         foreach (NmeaDevice dev in devices)
@@ -424,7 +443,8 @@ public partial class MapPage : Page
     }
     private void UpdateDirection()
     {
-        double heading = (VesselData.GetHDT.HeadingTrue + mapSettings.HeadingOffset) % 360;
+        //double heading = (VesselData.GetHDT.HeadingTrue + mapSettings.HeadingOffset) % 360;
+        double heading = VesselData.Heading;
         double mapRotation = Properties.MapControl.Default.Rotation;
         if (ToggleNoseUp.IsChecked.Value)
         {
@@ -440,15 +460,19 @@ public partial class MapPage : Page
     }
     private void UpdateLocation()   // WGS84 (GNSS) -> Map CRS
     {
-        double lon = VesselData.GetGGA.Longitude.Degrees;
-        double lat = VesselData.GetGGA.Latitude.Degrees;
-        MPoint point = new MPoint(lon, lat);
+        //double lon = VesselData.GetGGA.Longitude.Degrees;
+        //double lat = VesselData.GetGGA.Latitude.Degrees;
+        //MPoint point = new MPoint(lon, lat);
+        MPoint point = new MPoint(VesselData.Longitude, VesselData.Latitude);
         ProjectionDefaults.Projection.Project("EPSG:4326", MapControl.Map.CRS, point);
-        //var p = fromWGS84.Convert(new(lon, lat, 0));
-        //Point point = new MPoint(p.X, p.Y);
         MyBoatLayer.UpdateMyLocation(point);
         MyBoatLayer.DataHasChanged();
     }
+    private void UpdateDepth()
+    { 
+        //TODO: Add Depth Alarm
+    }
+
     #endregion
 
     #region LayerCreators
@@ -781,6 +805,15 @@ public partial class MapPage : Page
             MapControl.Refresh();
         }
     }
+
+    private void RecordBtn_Click(object sender, RoutedEventArgs e)
+    {
+        RecordEnabled = RecordLine.IsChecked.Value;
+        if (RecordEnabled)
+        {
+            startLineTime = DateTime.UtcNow;
+        }
+    }
     #endregion
 
     #region MapControls
@@ -815,5 +848,7 @@ public partial class MapPage : Page
         ClearTrail();
     }
     #endregion
+
+    
 }
 

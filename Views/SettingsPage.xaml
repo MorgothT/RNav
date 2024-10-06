@@ -224,9 +224,11 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="50"/>
+                            <ColumnDefinition Width="auto"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
@@ -239,14 +241,14 @@
                         <TextBlock Text="{Binding MapSettings.BoatShape}"
                                     Grid.Column="1" Margin="{StaticResource SmallLeftRightMargin}" VerticalAlignment="Center"/>
                         <Button Command="{Binding BrowseBoatShapeCommand}" Style="{StaticResource MahApps.Styles.Button.ToolBar}"
-                                Grid.Column="2" Padding="0" Width="48">
+                                Grid.Column="2" Padding="0" Width="48" HorizontalAlignment="Right" MinWidth="50">
                             <Label FontFamily="RNav" Content="&#xE704;" FontSize="24" FontWeight="Light" Padding="0"/>
                         </Button>
                         <TextBlock Text="Fill Color:"
                                     Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
                         <mah:ColorPicker Background="{x:Null}" SelectedColor="{Binding MapSettings.BoatShape.Fill}" MaxWidth="50" 
                                          Grid.Column="2" Grid.Row="1" 
-                                         HorizontalAlignment="Center">
+                                         HorizontalAlignment="Right">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="SelectedColorChanged">
                                     <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}"/>
@@ -257,7 +259,7 @@
                                     Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
                         <mah:ColorPicker Background="{x:Null}" SelectedColor="{Binding MapSettings.BoatShape.Outline}" MaxWidth="50" 
                                          Grid.Column="2" Grid.Row="2" 
-                                         HorizontalAlignment="Center">
+                                         HorizontalAlignment="Right">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="SelectedColorChanged">
                                     <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}"/>
@@ -267,8 +269,30 @@
                         <TextBlock Text="Heading Offset (Deg):" 
                                    Grid.ColumnSpan="2" Grid.Row="3" Grid.Column="0" 
                                    VerticalAlignment="Center"/>
-                        <TextBox Text="{Binding MapSettings.HeadingOffset}" 
-                                 Grid.Row="3" Grid.Column="2">
+                        <TextBox Text="{Binding MapSettings.HeadingOffset}"  TextAlignment="Center"
+                                 Grid.Row="3" Grid.Column="2" HorizontalAlignment="Right" MinWidth="50">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="LostFocus">
+                                    <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </TextBox>
+                        <TextBlock Text="Depth Offset (m):" 
+                                   Grid.ColumnSpan="2" Grid.Row="4" Grid.Column="0" 
+                                   VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding MapSettings.DepthOffset}" TextAlignment="Center"
+                                 Grid.Row="4" Grid.Column="2" HorizontalAlignment="Right" MinWidth="50">
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="LostFocus">
+                                    <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </TextBox>
+                        <TextBlock Text="GNSS X,Y Offset (m,m):"
+                                   Grid.ColumnSpan="2" Grid.Row="5" Grid.Column="0" 
+                                   VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding MapSettings.PositionOffset}" TextAlignment="Center"
+                                 Grid.Row="5" Grid.Column="2" HorizontalAlignment="Right" MinWidth="50">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="LostFocus">
                                     <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}"/>
@@ -276,10 +300,10 @@
                             </i:Interaction.Triggers>
                         </TextBox>
                         <TextBlock Text="Trail Duration (Min):" 
-                                   Grid.ColumnSpan="2" Grid.Row="4" Grid.Column="0" 
+                                   Grid.ColumnSpan="2" Grid.Row="6" Grid.Column="0" 
                                    VerticalAlignment="Center"/>
-                        <TextBox Text="{Binding MapSettings.TrailDuration}" 
-                                 Grid.Row="4" Grid.Column="2">
+                        <TextBox Text="{Binding MapSettings.TrailDuration}" TextAlignment="Center"
+                                 Grid.Row="6" Grid.Column="2" HorizontalAlignment="Right" MinWidth="50">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="LostFocus">
                                     <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}"/>
@@ -287,15 +311,15 @@
                             </i:Interaction.Triggers>
                         </TextBox>
                         <TextBlock Text="Trail Log Location:" 
-                                   Grid.Row="5" Grid.Column="0" 
+                                   Grid.Row="7" Grid.Column="0" 
                                    VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding MapSettings.LogDirectory}"
-                                   Grid.Row="5" Grid.Column="1" 
+                                   Grid.Row="7" Grid.Column="1" 
                                    Margin="{StaticResource SmallLeftRightMargin}" VerticalAlignment="Center">
                             
                         </TextBlock>
                         <Button Command="{Binding BrowseLogDirectoryCommand}" Style="{StaticResource MahApps.Styles.Button.ToolBar}"
-                                Grid.Row="5" Grid.Column="2" Padding="0" Width="48">
+                                Grid.Row="7" Grid.Column="2" Padding="0" Width="48" HorizontalAlignment="Right" MinWidth="50">
                             <Label FontFamily="RNav" Content="&#xE711;" FontSize="24" FontWeight="Light" Padding="0"/>
                         </Button>
                     </Grid>

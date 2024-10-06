@@ -6,7 +6,6 @@ namespace Mapper_v1.Models;
 
 public class ProjectionCfg
 {
-    //public Dictionary<int, string> Projections { get; set; } = new Dictionary<int, string>();
     public List<IInfo> CoordinateSystems { get; set; } = new();
     public ProjectionCfg(string path)
     {

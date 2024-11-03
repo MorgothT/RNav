@@ -205,7 +205,11 @@ public partial class MapPage : Page
                 Line = { Color = colorConvertor.WMColorToMapsui(mapSettings.BoatShape.Outline) }
             }
         };
-        MyMeasurementLayer = new WritableLayer() { Name = "Measurement", Opacity = 0.7f };
+        MyMeasurementLayer = new WritableLayer()
+        {
+            Name = "Measurement",
+            Opacity = 0.7f
+        };
         MyTargets = new GenericCollectionLayer<List<IFeature>>
         {
             Name = "Targets",

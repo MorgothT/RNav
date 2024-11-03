@@ -8,6 +8,8 @@ namespace Mapper_v1.Models;
 
 public partial class VesselData : ObservableObject
 {
+    // TODO: Change vessel to "Mobile" add the Offsets to the Device, add type of device ?
+    // TODO: Gibor fix ?
     // TODO: Structure properties such as Location,Depth,MRU
     [ObservableProperty]
     private double latitude = double.NaN;
@@ -130,14 +132,12 @@ public partial class VesselData : ObservableObject
         if (type == typeof(GGA))
         {
             point = new MPoint(GetGGA.Longitude.Degrees, GetGGA.Latitude.Degrees);
-            //MPoint offsetPoint = GeoMath.AddOffsetToWgsPoint(point, PositionOffset.X, PositionOffset.Y);
-            //Lattitude = offsetPoint.X; //GetGGA.Latitude.Degrees;
-            //Longitude = offsetPoint.Y; //GetGGA.Longitude.Degrees;
         }
         if (type == typeof(RMC))
         {
             point = new MPoint(GetRMC.Longitude.Degrees, GetRMC.Latitude.Degrees);
         }
+
         offsetPoint = GeoMath.AddOffsetToWgsPoint(point, PositionOffset.X, PositionOffset.Y);
         Longitude = offsetPoint.X;
         Latitude = offsetPoint.Y;

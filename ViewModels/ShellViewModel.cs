@@ -32,13 +32,13 @@ public class ShellViewModel : ObservableObject
     // TODO: Change the icons and titles for all HamburgerMenuItems here.
     public ObservableCollection<HamburgerMenuItem> MenuItems { get; } = new ObservableCollection<HamburgerMenuItem>()
     {
-        new HamburgerMenuGlyphItem() { Label = Resources.ShellMapPage, Glyph = "\uE722", TargetPageType = typeof(MapViewModel) },
-        new HamburgerMenuGlyphItem() { Label = Resources.ShellChartsPage, Glyph = "\ue71c", TargetPageType = typeof(ChartsViewModel) },
-        new HamburgerMenuGlyphItem() { Label = Resources.ShellTargetsPage, Glyph = "\ue701", TargetPageType = typeof(TargetsViewModel) },
+        new HamburgerMenuGlyphItem() { Label = Resources.ShellMapPage, Glyph = "\uE722", TargetPageType = typeof(MapViewModel),ToolTip = "Map" },
+        new HamburgerMenuGlyphItem() { Label = Resources.ShellChartsPage, Glyph = "\ue71c", TargetPageType = typeof(ChartsViewModel), ToolTip = "Charts" },
+        new HamburgerMenuGlyphItem() { Label = Resources.ShellTargetsPage, Glyph = "\ue701", TargetPageType = typeof(TargetsViewModel), ToolTip = "Targets" },
     };
     public ObservableCollection<HamburgerMenuItem> OptionMenuItems { get; } = new ObservableCollection<HamburgerMenuItem>()
     {
-        new HamburgerMenuGlyphItem() { Label = Resources.ShellSettingsPage, Glyph = "\uE720", TargetPageType = typeof(SettingsViewModel) }
+        new HamburgerMenuGlyphItem() { Label = Resources.ShellSettingsPage, Glyph = "\uE720", TargetPageType = typeof(SettingsViewModel), ToolTip = "Settings" }
     };
     public RelayCommand GoBackCommand => _goBackCommand ?? (_goBackCommand = new RelayCommand(OnGoBack, CanGoBack));
     public ICommand MenuItemInvokedCommand => _menuItemInvokedCommand ?? (_menuItemInvokedCommand = new RelayCommand(OnMenuItemInvoked));

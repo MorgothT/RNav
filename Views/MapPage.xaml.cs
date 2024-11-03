@@ -231,19 +231,22 @@ public partial class MapPage : Page
         {
             MapControl.Renderer.StyleRenderers.Add(typeof(TargetStyle), new TargetRenderer());
         }
-        // Adding the features
+
+
+        // Adding the layers to the map
         if (mapSettings.MapOverlay == true)
         {
             var osm = OpenStreetMap.CreateTileLayer("RNav_OSM");
             osm.Name = "MapOvelay";
             MapControl.Map.Layers.Add(osm);
         }
-        LoadSavedTargets();
         AddCharts();
         LoadLastTrail();
-        // Adding the layers to the map
-
-        MapControl.Map.Layers.Add(MyTargets);
+        if (mapSettings.ShowTargets == true) 
+        {
+            LoadSavedTargets();
+            MapControl.Map.Layers.Add(MyTargets);
+        }
         MapControl.Map.Layers.Add(MyMeasurementLayer);
         MapControl.Map.Layers.Add(BoatTrailLayer);
         MapControl.Map.Layers.Add(MyBoatLayer);
@@ -624,6 +627,23 @@ public partial class MapPage : Page
         var line = new WKTReader().Read($"LINESTRING ({measureStart.X} {measureStart.Y},{to.X} {to.Y})");
         var feature = new GeometryFeature(line);
         ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
+        feature.Styles.Add(new CalloutStyle()
+        {
+            Offset = new Offset(0, 10),
+            Type = CalloutType.Single,
+            Enabled = true,
+            Title = "test",
+            TitleFont = new Font { FontFamily = null, Size = 12, Italic = false, Bold = true },
+            TitleFontColor = Color.Gray,
+            BackgroundColor = Color.Transparent,
+            TitleTextAlignment = Mapsui.Widgets.Alignment.Center,
+            ShadowWidth = 0,
+            StrokeWidth = 0,
+            
+
+
+
+        });
         MyMeasurementLayer.Add(feature);
     }
     private void TurnCalloutOff(CalloutStyle currentCallout = null)
@@ -717,20 +737,21 @@ public partial class MapPage : Page
             switch (measureStart is null)
             {
                 case true:
-                    //StartMeasurement(e.MapInfo.ScreenPosition);
                     StartMeasurement(e.MapInfo.WorldPosition);  // world pos is Map CRS
+                    MyMeasurementLayer.Enabled = true;
                     break;
                 case false:
                     StopMeasurement();
+                    MyMeasurementLayer.Enabled = false;
                     break;
             }
         }
         if (vm.TargetMode)
         {
             int id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
-            MPoint tr = e.MapInfo.WorldPosition;
+            MPoint tr = new(e.MapInfo.WorldPosition);
             ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, tr);
-            MPoint wgs = tr;
+            MPoint wgs = new(tr);
             ProjectionDefaults.Projection.Project(ProjectCRS, "EPSG:4326", wgs);
             Target target = Target.CreateTarget(tr, id, wgs);
             mapSettings.TargetList.Add(target);
@@ -803,6 +824,9 @@ public partial class MapPage : Page
         {
             double bearing = GeoMath.CalcBearing(measureStart, worldPosition);
             double distance = measureStart.Distance(worldPosition);
+            {
+                //MyMeasurementLayer.
+            }
             Distance.Text = $"{distance:F2}";
             Bearing.Text = $"{bearing:F2}";
             DrawLine(worldPosition);

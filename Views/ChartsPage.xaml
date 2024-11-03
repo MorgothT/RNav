@@ -26,10 +26,6 @@
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
                 <CheckBox x:Name="EnabledCheckbox" IsChecked="{Binding Enabled}" Margin="3,0" Grid.Column="0"/>
                 <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center" ToolTip="{Binding Path}"/>
@@ -151,14 +147,14 @@
                 <Border BorderBrush="{StaticResource MahApps.Brushes.Accent3}"
                         BorderThickness="2">
                     <StackPanel>
-                        <CheckBox IsChecked="{Binding MapSettings.MapOverlay}" Content="OSM Map Overlay"
-                           Margin="5"/>
+                        <CheckBox IsChecked="{Binding MapSettings.MapOverlay}" Content="OSM Map Overlay" Margin="7,5"/>
+                        <CheckBox IsChecked="{Binding MapSettings.ShowTargets}" Content="Targets" Margin="7,5"/>
+                        <Separator Background="{StaticResource MahApps.Brushes.Accent3}"/>
                         <ListView x:Name="ChartTable"
                           IsSynchronizedWithCurrentItem="True"
                           ItemsSource="{Binding MapSettings.ChartItems}"
                           SelectedItem="{Binding SelectedChart}"
-                          Grid.Column="0" d:ItemsSource="{d:SampleData ItemCount=5}">
-                        </ListView>
+                          Grid.Column="0" d:ItemsSource="{d:SampleData ItemCount=5}"/>
                     </StackPanel>
                 </Border>
                 <StackPanel Orientation="Vertical" Grid.Column="2">

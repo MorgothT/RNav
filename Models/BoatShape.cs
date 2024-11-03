@@ -6,6 +6,8 @@ using System.Windows.Media;
 
 namespace Mapper_v1.Models;
 
+//TODO: Add Anchors, Drawing shapes...
+
 public partial class BoatShape : ObservableObject
 {
     [ObservableProperty]

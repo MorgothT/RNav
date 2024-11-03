@@ -42,6 +42,8 @@ public partial class MapSettings : ObservableObject
     [ObservableProperty]
     private bool mapOverlay;
     [ObservableProperty]
+    private bool showTargets = true;
+    [ObservableProperty]
     private int selectedTargetId;
 
     public double[] GetFontSizes
@@ -91,6 +93,7 @@ public partial class MapSettings : ObservableObject
             TrailDuration = Properties.Map.Default.TrailDuration;
             LogDirectory = Properties.Map.Default.LogDirectory;
             MapOverlay = Properties.Map.Default.MapOverlay;
+            ShowTargets = Properties.Map.Default.ShowTargets;
             SelectedTargetId = Properties.Map.Default.LastTargetId;
             if (ProjectionList is null) InitializeMapSettings();
         }
@@ -115,6 +118,7 @@ public partial class MapSettings : ObservableObject
         Properties.Map.Default.TrailDuration = TrailDuration;
         Properties.Map.Default.LogDirectory = LogDirectory;
         Properties.Map.Default.MapOverlay = MapOverlay;
+        Properties.Map.Default.ShowTargets = ShowTargets;
         Properties.Map.Default.LastTargetId = SelectedTargetId;
 
         Properties.Map.Default.Save();

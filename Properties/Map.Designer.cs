@@ -214,5 +214,17 @@ namespace Mapper_v1.Properties {
                 this["PositionOffset"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowTargets {
+            get {
+                return ((bool)(this["ShowTargets"]));
+            }
+            set {
+                this["ShowTargets"] = value;
+            }
+        }
     }
 }

@@ -28,8 +28,10 @@ public partial class ChartsViewModel : ObservableObject
     [RelayCommand]
     private void AddChart()
     {
-        OpenFileDialog ofd = new OpenFileDialog();
-        ofd.Filter = @"Vector files (*.shp;*.dxf)|*.shp;*.dxf|Raster files (*.tif;*.ecw)|*.tif;*.ecw|All files (*.*)|*.*";   // TODO: add more file types
+        OpenFileDialog ofd = new OpenFileDialog
+        {
+            Filter = @"Vector files (*.shp;*.dxf)|*.shp;*.dxf|Raster files (*.tif;*.ecw)|*.tif;*.ecw|All files (*.*)|*.*"   // TODO: add more Chart types
+        };
         if (ofd.ShowDialog() == true)
         {
             if (!MapSettings.ChartItems.Any(x => x.Path == ofd.FileName))

@@ -1,6 +1,9 @@
-﻿using Mapsui;
+﻿using Mapper_v1.Converters;
+using Mapper_v1.Models;
+using Mapsui;
 using Mapsui.Layers;
 using Mapsui.Nts;
+using Mapsui.Styles;
 using netDxf;
 using netDxf.Entities;
 using netDxf.Header;
@@ -9,6 +12,7 @@ using NetTopologySuite.Geometries;
 using System.IO;
 using System.Windows;
 using IFeature = Mapsui.IFeature;
+using Style = Mapsui.Styles.Style;
 
 namespace Mapper_v1.Layers
 {
@@ -16,14 +20,19 @@ namespace Mapper_v1.Layers
     {
         private List<IFeature> _features;
         private string _path;
-
+        private LabelStyle labelStyle;
+        private static readonly ColorConvertor colorConvertor = new();
         public string CRS { get; set; }
 
-        public DxfLayer(string path)
+        public DxfLayer(ChartItem chart)
         {
             //_map = map ?? throw new ArgumentNullException("Map shouldn't be null");
-            _path = Path.Exists(path) ? path : throw new ArgumentException("Path does not exist");
+            _path = Path.Exists(chart.Path) ? chart.Path : throw new ArgumentException("Path does not exist");
             _features = new List<IFeature>();
+            Style = GetVectorStyle(chart);
+            labelStyle = GetLabelStyle(chart);
+            
+            //_styles = (StyleCollection)Style;
             // dxf checks
             DxfVersion version = DxfDocument.CheckDxfFileVersion(_path);
             if (version == DxfVersion.Unknown)
@@ -32,20 +41,83 @@ namespace Mapper_v1.Layers
             }
             if (version < DxfVersion.AutoCad2000)
             {
-
+                MessageBox.Show("Minimum DXF version is AutoCad2000 !");
             }
             try
             {
                 DxfDocument dxfDocument = DxfDocument.Load(_path);
                 AddFeatures(dxfDocument);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                MessageBox.Show("Minimum DXF version is AutoCad2000 !");
+                MessageBox.Show($"Error opening file: {_path}{Environment.NewLine}{ex.Message}");
             }
-
+            
         }
-
+        private static VectorStyle GetVectorStyle(ChartItem chart)
+        {
+            return new VectorStyle
+            {
+                Outline = new Pen   // Outline of Areas and Points
+                {
+                    Width = chart.LineWidth,
+                    Color = colorConvertor.WMColorToMapsui(chart.OutlineColor)//new Color(255, 0, 0, 0)
+                },
+                Fill = new Brush { Color = colorConvertor.WMColorToMapsui(chart.FillColor) },   // Fill of Areas and Points
+                Line = new Pen  //Polyline Style
+                {
+                    Width = chart.LineWidth,
+                    Color = colorConvertor.WMColorToMapsui(chart.LineColor)
+                }
+            };
+        }
+        private static LabelStyle GetLabelStyle(ChartItem chart)
+        {
+            return new LabelStyle
+            {
+                ForeColor = colorConvertor.WMColorToMapsui(chart.LabelColor),
+                BackColor = new Brush(colorConvertor.WMColorToMapsui(chart.BackroundColor)),
+                Font = new Font { FontFamily = "GenericSerif", Size = (double)chart.LabelFontSize },
+                HorizontalAlignment = (LabelStyle.HorizontalAlignmentEnum)chart.HorizontalAlignment, //LabelStyle.HorizontalAlignmentEnum.Center,
+                VerticalAlignment = (LabelStyle.VerticalAlignmentEnum)chart.VerticalAlignment, //LabelStyle.VerticalAlignmentEnum.Center,
+                Offset = new Offset { X = 0, Y = 0 },
+                Halo = new Pen { Color = colorConvertor.WMColorToMapsui(chart.HaloColor), Width = 1 },
+                CollisionDetection = true,
+                LabelColumn = chart.LabelAttributeName
+            };
+        }
+        //private static StyleCollection GetDxfStyles(ChartItem chart)
+        //{
+        //    //ColorConvertor colorConvertor = new ColorConvertor();
+        //    StyleCollection styles = new StyleCollection();
+        //    styles.Styles.Add(new VectorStyle
+        //    {
+        //        Outline = new Pen   // Outline of Areas and Points
+        //        {
+        //            Width = chart.LineWidth,
+        //            Color = colorConvertor.WMColorToMapsui(chart.OutlineColor)//new Color(255, 0, 0, 0)
+        //        },
+        //        Fill = new Brush { Color = colorConvertor.WMColorToMapsui(chart.FillColor) },   // Fill of Areas and Points
+        //        Line = new Pen  //Polyline Style
+        //        {
+        //            Width = chart.LineWidth,
+        //            Color = colorConvertor.WMColorToMapsui(chart.LineColor)
+        //        }
+        //    });
+        //    styles.Styles.Add(new LabelStyle
+        //    {
+        //        ForeColor = colorConvertor.WMColorToMapsui(chart.LabelColor),
+        //        BackColor = new Brush(colorConvertor.WMColorToMapsui(chart.BackroundColor)),
+        //        Font = new Font { FontFamily = "GenericSerif", Size = (double)chart.LabelFontSize },
+        //        HorizontalAlignment = (LabelStyle.HorizontalAlignmentEnum)chart.HorizontalAlignment, //LabelStyle.HorizontalAlignmentEnum.Center,
+        //        VerticalAlignment = (LabelStyle.VerticalAlignmentEnum)chart.VerticalAlignment, //LabelStyle.VerticalAlignmentEnum.Center,
+        //        Offset = new Offset { X = 0, Y = 0 },
+        //        Halo = new Pen { Color = colorConvertor.WMColorToMapsui(chart.HaloColor), Width = 1 },
+        //        CollisionDetection = true,
+        //        LabelColumn = chart.LabelAttributeName
+        //    });
+        //    return styles;
+        //}
         private void AddFeatures(DxfDocument dxfDocument)
         {
             var ent = dxfDocument.Entities;
@@ -53,70 +125,71 @@ namespace Mapper_v1.Layers
             {
                 switch (feature.Type)
                 {
-                    case netDxf.Entities.EntityType.Arc:
+                    case EntityType.Arc:
                         _features.Add(CreateFeatureFromArc(feature));
                         break;
-                    case netDxf.Entities.EntityType.Circle:
+                    case EntityType.Circle:
                         _features.Add(CreateFeatureFromCircle(feature));
                         break;
-                    case netDxf.Entities.EntityType.Dimension:
-                        break;
-                    case netDxf.Entities.EntityType.Ellipse:
-                        break;
-                    case netDxf.Entities.EntityType.Face3D:
-                        break;
-                    case netDxf.Entities.EntityType.Hatch:
-                        break;
-                    case netDxf.Entities.EntityType.Image:
-                        break;
-                    case netDxf.Entities.EntityType.Insert:
-                        break;
-                    case netDxf.Entities.EntityType.Leader:
-                        break;
-                    case netDxf.Entities.EntityType.Line:
+                    case EntityType.Line:
                         _features.Add(CreateFeatureFromLine(feature));
                         break;
-                    case netDxf.Entities.EntityType.Mesh:
-                        break;
-                    case netDxf.Entities.EntityType.MLine:
-                        break;
-                    case netDxf.Entities.EntityType.MText:
-                        break;
-                    case netDxf.Entities.EntityType.Point:
+                    case EntityType.Point:
                         _features.Add(CreateFeatureFromPoint(feature));
                         break;
-                    case netDxf.Entities.EntityType.PolyfaceMesh:
-                        break;
-                    case netDxf.Entities.EntityType.PolygonMesh:
-                        break;
-                    case netDxf.Entities.EntityType.Polyline2D:
+                    case EntityType.Polyline2D:
                         _features.Add(CreateFeatureFromPoly2D(feature));
                         break;
-                    case netDxf.Entities.EntityType.Polyline3D:
+                    case EntityType.Polyline3D:
                         _features.Add(CreateFeatureFromPoly3D(feature));
                         break;
-                    case netDxf.Entities.EntityType.Ray:
-                        break;
-                    case netDxf.Entities.EntityType.Shape:
-                        break;
-                    case netDxf.Entities.EntityType.Solid:
-                        break;
-                    case netDxf.Entities.EntityType.Spline:
-                        break;
-                    case netDxf.Entities.EntityType.Text:
+                    case EntityType.Text:
                         _features.Add(CreateFeatureFromText(feature));
                         break;
-                    case netDxf.Entities.EntityType.Tolerance:
+                    case EntityType.MText:
+                        _features.Add(CreateFeatureFromMText(feature));
                         break;
-                    case netDxf.Entities.EntityType.Trace:
+                    case EntityType.Dimension:
                         break;
-                    case netDxf.Entities.EntityType.Underlay:
+                    case EntityType.Ellipse:
                         break;
-                    case netDxf.Entities.EntityType.Viewport:
+                    case EntityType.Face3D:
                         break;
-                    case netDxf.Entities.EntityType.Wipeout:
+                    case EntityType.Hatch:
                         break;
-                    case netDxf.Entities.EntityType.XLine:
+                    case EntityType.Image:
+                        break;
+                    case EntityType.Insert:
+                        break;
+                    case EntityType.Leader:
+                        break;
+                    case EntityType.Mesh:
+                        break;
+                    case EntityType.MLine:
+                        break;
+                    case EntityType.PolyfaceMesh:
+                        break;
+                    case EntityType.PolygonMesh:
+                        break;
+                    case EntityType.Ray:
+                        break;
+                    case EntityType.Shape:
+                        break;
+                    case EntityType.Solid:
+                        break;
+                    case EntityType.Spline:
+                        break;
+                    case EntityType.Tolerance:
+                        break;
+                    case EntityType.Trace:
+                        break;
+                    case EntityType.Underlay:
+                        break;
+                    case EntityType.Viewport:
+                        break;
+                    case EntityType.Wipeout:
+                        break;
+                    case EntityType.XLine:
                         break;
                     default:
                         break;
@@ -125,10 +198,56 @@ namespace Mapper_v1.Layers
             Features = _features;
         }
 
+        private IFeature CreateFeatureFromMText(EntityObject feature)
+        {
+            var text = feature as MText;
+            var geofac = NtsGeometryServices.Instance.CreateGeometryFactory();
+            var circfeature = geofac.CreatePoint(ToCoord(text.Position)).Buffer(0.001);
+            var textFeature = new GeometryFeature
+            {
+                Geometry = circfeature,
+            };
+            text.Value = text.Value.Replace(@"\P", Environment.NewLine.ToString()); //TODO: MTEXT - deal with other formating
+            textFeature.Styles.Add(new LabelStyle()
+            {
+                Text = text.Value,
+                BackColor = labelStyle.BackColor,
+                CollisionDetection = true,
+                Font = labelStyle.Font,
+                ForeColor = labelStyle.ForeColor,
+                Halo = labelStyle.Halo,
+                HorizontalAlignment = labelStyle.HorizontalAlignment,
+                VerticalAlignment = labelStyle.VerticalAlignment,
+                //Offset = new Offset(1, -1),
+                //MaxVisible = 100
+            });
+            return textFeature;
+        }
+
         private IFeature CreateFeatureFromText(EntityObject feature)
         {
             var text = feature as Text;
-            return null;
+            var geofac = NtsGeometryServices.Instance.CreateGeometryFactory();
+            var circfeature = geofac.CreatePoint(ToCoord(text.Position)).Buffer(0.001);
+            var textFeature = new GeometryFeature
+            {
+                Geometry = circfeature,
+            }; 
+
+            textFeature.Styles.Add(new LabelStyle()
+            {
+                Text = text.Value,
+                BackColor = labelStyle.BackColor,
+                CollisionDetection = true,
+                Font = labelStyle.Font,
+                ForeColor = labelStyle.ForeColor,
+                Halo = labelStyle.Halo,
+                HorizontalAlignment = labelStyle.HorizontalAlignment,
+                VerticalAlignment = labelStyle.VerticalAlignment,
+                //Offset = new Offset(1, -1),
+                //MaxVisible = 100
+            });
+            return textFeature;
         }
 
         private IFeature CreateFeatureFromCircle(EntityObject feature)

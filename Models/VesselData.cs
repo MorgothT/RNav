@@ -3,6 +3,8 @@ using InvernessPark.Utilities.NMEA;
 using InvernessPark.Utilities.NMEA.Sentences;
 using Mapper_v1.Helpers;
 using Mapsui;
+using System.CodeDom;
+using System.Runtime.CompilerServices;
 
 namespace Mapper_v1.Models;
 
@@ -11,6 +13,10 @@ public partial class VesselData : ObservableObject
     // TODO: Change vessel to "Mobile" add the Offsets to the Device, add type of device ?
     // TODO: Gibor fix ?
     // TODO: Structure properties such as Location,Depth,MRU
+    [ObservableProperty]
+    private DateTime lastFixTime;
+    //[ObservableProperty]
+    //private DateOnly date;
     [ObservableProperty]
     private double latitude = double.NaN;
     [ObservableProperty]
@@ -95,9 +101,28 @@ public partial class VesselData : ObservableObject
                 break;
             case "ZDA":
                 GetZDA = (ZDA)msg;
+                UpdateTime(typeof(ZDA));
                 break;
             default:
                 break;
+        }
+    }
+
+    // Test Logic !!!
+    private void UpdateTime(Type type)
+    {   
+        if (type == null) { return; }
+        if (type == typeof(ZDA))
+        {
+            LastFixTime = GetZDA.UtcTime.Date.Add(LastFixTime.TimeOfDay);
+        }
+        if (type == typeof(GGA))
+        {
+            LastFixTime = LastFixTime.Date.Add(GetGGA.UTC);
+        }
+        if (type == typeof(RMC))
+        {
+            LastFixTime = LastFixTime.Date.Add(GetRMC.UTC.TimeOfDay);
         }
     }
 
@@ -116,7 +141,10 @@ public partial class VesselData : ObservableObject
     {
         Heading = (GetHDT.HeadingTrue + HeadingOffset) % 360;
     }
-
+    /// <summary>
+    /// Updates the depth, converting from feet to meters for better resolusion
+    /// </summary>
+    /// <param name="type">Type of NMEA sentence recieved</param>
     private void UpdateDepth(Type type)
     {
         if (type == typeof(DBT))

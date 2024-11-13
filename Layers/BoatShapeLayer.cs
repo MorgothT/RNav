@@ -167,7 +167,7 @@ public class BoatShapeLayer : BaseLayer, IModifyFeatureLayer, IDisposable
 
         _feature.Styles.Clear();
         _feature.Styles.Add(_locStyle);
-        _feature.Styles.Add(_coStyle);
+        //_feature.Styles.Add(_coStyle);
 
         _features = new List<IFeature> { _feature };
         Style = null;

@@ -11,6 +11,7 @@ namespace Mapper_v1.Models;
 
 public partial class Target : ObservableObject
 {
+    // REDO: Add desctiption and more...
 
     [ObservableProperty]
     private int id;
@@ -24,6 +25,8 @@ public partial class Target : ObservableObject
     private double lat;
     [ObservableProperty]
     private double lon;
+    [ObservableProperty]
+    private string notes = "";
 
     /// <summary>
     /// Target point (unaware of EPSG !)
@@ -34,7 +37,7 @@ public partial class Target : ObservableObject
 
     public override string ToString()   //for export
     {
-        return $"{Id},{Name},{X},{Y},{Lat},{Lon}";
+        return $"{Id},{Name},{X},{Y},{Lat},{Lon},{Notes}";
     }
     public static Target Parse(string line)
     {
@@ -48,7 +51,8 @@ public partial class Target : ObservableObject
                 X = double.Parse(fields[2]),
                 Y = double.Parse(fields[3]),
                 Lat = double.Parse(fields[4]),
-                Lon = double.Parse(fields[5])
+                Lon = double.Parse(fields[5]),
+                Notes = fields[6]
             };
             return target;
         }
@@ -67,7 +71,7 @@ public partial class Target : ObservableObject
             X = point.X,
             Y = point.Y,
             Lat = wgsPoint.Y,
-            Lon = wgsPoint.X
+            Lon = wgsPoint.X,
         };
         return target;
     }
@@ -81,7 +85,7 @@ public partial class Target : ObservableObject
             X = point.X,
             Y = point.Y,
             Lat = latlon.Y,
-            Lon = latlon.X
+            Lon = latlon.X,
         };
         return target;
     }

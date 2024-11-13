@@ -1,4 +1,5 @@
-﻿using System.Drawing.Text;
+﻿using System.Diagnostics;
+using System.Drawing.Text;
 using System.Runtime.InteropServices;
 using System.Windows;
 using Velopack;
@@ -22,7 +23,8 @@ namespace Mapper_v1
                 if (IsFontInstalled("RNav") == false)
                 {
                     var result = AddFontResource(@"./Fonts/RNav.ttf");
-                    MessageBox.Show($"Added {result} new font");
+                    //MessageBox.Show($"Added {result} new font");
+                    //Trace.WriteLine($"Added {result} new font");
                 }
                 _ = UpdateMyApp();
                 var app = new App();
@@ -64,6 +66,7 @@ namespace Mapper_v1
                                         icon: MessageBoxImage.Question,
                                         defaultResult: MessageBoxResult.No);
             if (result == MessageBoxResult.Yes)
+
                 mgr.ApplyUpdatesAndRestart(newVersion);
             else
                 mgr.WaitExitThenApplyUpdates(newVersion.TargetFullRelease, restart: false);

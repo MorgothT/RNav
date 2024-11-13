@@ -10,7 +10,7 @@ using System.Windows.Input;
 
 namespace Mapper_v1.ViewModels;
 
-// TODO: Change the URL for your privacy policy in the appsettings.json file, currently set to https://YourPrivacyUrlGoesHere
+// Change the URL for your privacy policy in the appsettings.json file, currently set to https://YourPrivacyUrlGoesHere
 public partial class SettingsViewModel : ObservableObject, INavigationAware
 {
     private readonly AppConfig _appConfig;

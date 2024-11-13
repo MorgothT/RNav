@@ -26,6 +26,7 @@ using netDxf;
 using netDxf.Header;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
+using NetTopologySuite.Operation.Buffer;
 using Newtonsoft.Json;
 using SkiaSharp;
 using System.Collections.ObjectModel;
@@ -78,7 +79,8 @@ public partial class MapPage : Page
         InitMapControl();
         InitUIControls();
         ConnectToGps();
-    }
+        //MapControl.Focus();
+}
 
     private void InitVessel()
     {
@@ -98,15 +100,18 @@ public partial class MapPage : Page
         MapControl.UnSnapRotationDegrees = 30;
         MapControl.ReSnapRotationDegrees = 5;
         MapControl.Renderer.WidgetRenders[typeof(CustomWidget)] = new CustomWidgetSkiaRenderer();
+        //Scale Bar
         MapControl.Map.Widgets.Add(new ScaleBarWidget(MapControl.Map)
         {
             MaxWidth = 100,
             ScaleBarMode = ScaleBarMode.Both,
             MarginX = 0,
-            MarginY = 10,
+            MarginY = 25,
             HorizontalAlignment = Mapsui.Widgets.HorizontalAlignment.Right,
             SecondaryUnitConverter = NauticalUnitConverter.Instance
         });
+        MapControl.Map.Navigator.OverrideZoomBounds = new MMinMax(1000000, 0.0149); // zoom to about 1m (depens on Lattitude)
+        
         try
         {
             SetCRS();
@@ -117,6 +122,7 @@ public partial class MapPage : Page
             throw;
         }
     }
+
     private void InitUIControls()
     {
         ColorSelector.SelectedColor = colorConvertor.WMColorFromMapsui(MapControl.Map.BackColor);
@@ -202,7 +208,7 @@ public partial class MapPage : Page
             {
                 Fill = null,
                 Outline = null,
-                Line = { Color = colorConvertor.WMColorToMapsui(mapSettings.BoatShape.Outline) }
+                Line = { Color = colorConvertor.WMColorToMapsui(mapSettings.BoatShape.OutlineColor) }
             }
         };
         MyMeasurementLayer = new WritableLayer()
@@ -231,7 +237,6 @@ public partial class MapPage : Page
         {
             MapControl.Renderer.StyleRenderers.Add(typeof(TargetStyle), new TargetRenderer());
         }
-
 
         // Adding the layers to the map
         if (mapSettings.MapOverlay == true)
@@ -356,9 +361,6 @@ public partial class MapPage : Page
         }
         vm.UpdateDataView(VesselData, ProjectCRS, SelectedTarget);
     }
-
-    
-
     private void UpdateTrail()
     {
         if (mapSettings.TrailDuration == 0) return;
@@ -552,16 +554,18 @@ public partial class MapPage : Page
     }
     private ILayer CreateDxfLayer(ChartItem chart)
     {
-        var layer = new DxfLayer(chart.Path)
+        var layer = new DxfLayer(chart)
         {
             Opacity = chart.Opacity,
             Enabled = chart.Enabled,
             Name = chart.Name,
-            Style = GetShapefileStyles(chart),   // need to change
+            //Style = GetDxfStyles(chart),   //TODO: Change styles so labels don't have circles !
         };
+        
         ProjectionDefaults.Projection.Project($"EPSG:{chart.Projection.Split(':')[1]}", MapControl.Map.CRS, layer.Features);
         return layer;
     }
+
     #endregion
 
     #region Helpers
@@ -589,7 +593,7 @@ public partial class MapPage : Page
             MapControl.Map.Navigator.OverridePanBounds = ext;
         }
     }
-    private StyleCollection GetShapefileStyles(ChartItem chart)
+    private static StyleCollection GetShapefileStyles(ChartItem chart)
     {
         var styles = new StyleCollection();
         styles.Styles.Add(new VectorStyle
@@ -620,31 +624,25 @@ public partial class MapPage : Page
         });
         return styles;
     }
-
     private void DrawLine(MPoint to)
     {
         MyMeasurementLayer.Clear();
         var line = new WKTReader().Read($"LINESTRING ({measureStart.X} {measureStart.Y},{to.X} {to.Y})");
         var feature = new GeometryFeature(line);
         ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
-        feature.Styles.Add(new CalloutStyle()
+        ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, to);
+        var label = new GeometryFeature(new GeometryFactory().CreatePoint(to.ToCoordinate()).Buffer(0.001));
+        label.Styles.Add(new LabelStyle
         {
-            Offset = new Offset(0, 10),
-            Type = CalloutType.Single,
-            Enabled = true,
-            Title = "test",
-            TitleFont = new Font { FontFamily = null, Size = 12, Italic = false, Bold = true },
-            TitleFontColor = Color.Gray,
-            BackgroundColor = Color.Transparent,
-            TitleTextAlignment = Mapsui.Widgets.Alignment.Center,
-            ShadowWidth = 0,
-            StrokeWidth = 0,
-            
-
-
-
+            BackColor = null,
+            BorderThickness = 0,
+            Text = $"{Distance.Text}m\n{Bearing.Text}°",
+            Font = new Font { Bold = true, Size = 12 },
+            VerticalAlignment = LabelStyle.VerticalAlignmentEnum.Bottom,
+            Halo = new Pen { Color = Color.Wheat, Width = 1 },
         });
         MyMeasurementLayer.Add(feature);
+        MyMeasurementLayer.Add(label);
     }
     private void TurnCalloutOff(CalloutStyle currentCallout = null)
     {
@@ -703,6 +701,8 @@ public partial class MapPage : Page
     private void Page_Loaded(object sender, RoutedEventArgs e)
     {
         LoadViewport();
+        Focusable = true;
+        Focus();
     }
     private void Page_Unloaded(object sender, RoutedEventArgs e)
     {
@@ -875,8 +875,41 @@ public partial class MapPage : Page
     {
         ClearTrail();
     }
-    #endregion
+    private void Grid_KeyDown(object sender, KeyEventArgs e)
+    {
+        //TODO: add controls and try to stop from losing focus
+        Trace.WriteLine(e.Key);
+        var vp = MapControl.Map.Navigator.Viewport;
+        if (e.Key == Key.OemPlus || e.Key == Key.Add)
+        {
+            MapControl.Map.Navigator.ZoomIn();
+        }
+        if (e.Key == Key.OemMinus || e.Key == Key.Subtract)
+        {
+            MapControl.Map.Navigator.ZoomOut();
+        }
+        if (e.Key == Key.Left || e.Key == Key.NumPad4)
+        {
+            MapControl.Map.Navigator.CenterOn(vp.CenterX - vp.Resolution*64, vp.CenterY);
+        }
+        if (e.Key == Key.Right || e.Key == Key.NumPad6)
+        {
+            MapControl.Map.Navigator.CenterOn(vp.CenterX + vp.Resolution * 64, vp.CenterY);
+        }
+        if (e.Key == Key.Up || e.Key == Key.NumPad8)
+        {
+            MapControl.Map.Navigator.CenterOn(vp.CenterX, vp.CenterY + vp.Resolution * 64);
+        }
+        if (e.Key == Key.Down || e.Key == Key.NumPad2)
+        {
+            MapControl.Map.Navigator.CenterOn(vp.CenterX, vp.CenterY - vp.Resolution * 64);
+        }
+        else
+        {
+        }
+        e.Handled = true;
+    }
 
-    
+    #endregion
 }
 

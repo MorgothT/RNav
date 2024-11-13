@@ -6,20 +6,21 @@ using System.Windows.Media;
 
 namespace Mapper_v1.Models;
 
-//TODO: Add Anchors, Drawing shapes...
-
 public partial class BoatShape : ObservableObject
 {
     [ObservableProperty]
     private string path;
-    //public float Rotation { get; set; } = 0;
-    public List<SKPoint> SKPoints { get; private set; } = new();
     [ObservableProperty]
-    private Color fill = Colors.Orange;
+    private Color fillColor = Colors.Orange;
     [ObservableProperty]
-    private Color outline = Colors.Black;
-    public SKPaint SKFill { get => new() { Color = Fill.ToSKColor() }; }
-    public SKPaint SKOutline { get => new() { Color = Outline.ToSKColor() }; }
+    private Color outlineColor = Colors.Black;
+    
+    public List<SKPoint> VesselOutline { get; private set; } = new();
+    public List<VesselAnchor> VesselAnchors { get; private set; } = new();
+    public List<VesselArc> VesselObjects { get; private set; } = new();
+
+    public SKPaint SKFillColor { get => new() { Color = FillColor.ToSKColor() }; }
+    public SKPaint SKOutlineColor { get => new() { Color = OutlineColor.ToSKColor() }; }
     public float Opacity { get; set; } = 0.7f;
 
     /// <summary>
@@ -27,7 +28,9 @@ public partial class BoatShape : ObservableObject
     /// </summary>
     public BoatShape()
     {
-        SKPoints = new() { new SKPoint(0, 0) };
+        VesselOutline = new() { new SKPoint(0, 0) };
+        VesselAnchors = [];
+        VesselObjects = [];
     }
     public BoatShape(string path, Color fill, Color outline)
     {
@@ -37,6 +40,9 @@ public partial class BoatShape : ObservableObject
     }
     private void ReadBoatShapeFile()
     {
+        VesselOutline = [];
+        VesselObjects = [];
+        VesselAnchors = [];
         if (File.Exists(Path))
         {
             try
@@ -45,11 +51,24 @@ public partial class BoatShape : ObservableObject
                 foreach (var line in File.ReadAllLines(Path))
                 {
                     if (!line.Contains(' ')) continue;
-                    //line.TrimStart().TrimEnd();
-                    var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                    points.Add(new SKPoint(float.Parse(parts[0]), float.Parse(parts[1])));
+                    if (line.StartsWith("ANC")) 
+                    { 
+                        AddAnchor(line);
+                        continue;
+                    }
+                    if (line.StartsWith("ARC")) 
+                    {
+                        AddArc(line);
+                        continue;
+                    }
+                    else
+                    {
+                        var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        points.Add(new SKPoint(float.Parse(parts[0]), float.Parse(parts[1])));
+                    }
                 }
-                SKPoints = new(points);
+                if (points.Last() != points.First()) points.Add(points.First());
+                VesselOutline = new(points);
             }
             catch (Exception)
             {
@@ -58,9 +77,26 @@ public partial class BoatShape : ObservableObject
         }
         else
         {
-            SKPoints = CreateMarker();
+            VesselOutline = CreateMarker();
         }
     }
+
+    private void AddArc(string line)
+    {
+        var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 6) return;
+        VesselArc arc = new(double.Parse(parts[1]), double.Parse(parts[2]), double.Parse(parts[3]), double.Parse(parts[4]), double.Parse(parts[5]));
+        VesselObjects.Add(arc);
+    }
+
+    private void AddAnchor(string line)
+    {
+        var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 4) return;
+        VesselAnchor anchor = new(double.Parse(parts[1]), double.Parse(parts[2]), parts[3].Trim('"'));
+        VesselAnchors.Add(anchor);
+    }
+
     public List<SKPoint> CreateMarker()
     {
         //Default shape "ECDIS"
@@ -85,11 +121,11 @@ public partial class BoatShape : ObservableObject
     }
     public void ChangeFill(System.Windows.Media.Color color)
     {
-        Fill = color;
+        FillColor = color;
     }
     public void ChangeOutline(System.Windows.Media.Color color)
     {
-        Outline = color;
+        OutlineColor = color;
     }
     public void ChangeColors(System.Windows.Media.Color fill, System.Windows.Media.Color outline)
     {
@@ -102,3 +138,18 @@ public partial class BoatShape : ObservableObject
     }
 }
 
+// move to proper place
+public class VesselArc(double p1X = 0, double p1Y = 0, double p2X = 0, double p2Y = 0, double radius = 0)
+{
+    public double p1X = p1X;
+    public double p1Y = p1Y;
+    public double p2X = p2X;
+    public double p2Y = p2Y;
+    public double radius = radius;
+}
+public class VesselAnchor(double x = 0, double y = 0, string name = "" )
+{
+    public double X = x;
+    public double Y = y;
+    public string Name = name;
+}

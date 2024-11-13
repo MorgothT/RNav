@@ -1,4 +1,4 @@
-﻿<Page
+﻿<Page Focusable="True" KeyDown="Grid_KeyDown"
     x:Class="Mapper_v1.Views.MapPage"
     Style="{DynamicResource MahApps.Styles.Page}"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"

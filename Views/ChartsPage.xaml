@@ -45,6 +45,9 @@
                                 <DataTrigger Binding="{Binding Path=ChartType}" Value="Shapefile">
                                     <Setter Property="Visibility" Value="Visible"/>
                                 </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=ChartType}" Value="Dxf">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Expander.Style>

@@ -80,21 +80,20 @@ public partial class MapViewModel : ObservableObject
         lat = vessel.Latitude;     //vessel.GetGGA.Latitude.Degrees;
         MPoint p = new MPoint(lon,lat);
         Projection.Project("EPSG:4326",CRS,p);
-        //var p = converter.Convert(new(lon, lat, 0));
+
         Data["X"] = p.X.ToString("F2");
         Data["Y"] = p.Y.ToString("F2");
-        Data["Latitude"] = Formater.FormatLatLong(lat, MapSettings.DegreeFormat);
-        Data["Longitude"] = Formater.FormatLatLong(lon, MapSettings.DegreeFormat);
+        Data["Latitude"] = lat.FormatLatLong(MapSettings.DegreeFormat);
+        Data["Longitude"] = lon.FormatLatLong(MapSettings.DegreeFormat);
         Data["Heading"] = vessel.Heading.ToString("F2");    // Added offset
-        //Data["Heading"] = ((vessel.GetHDT.HeadingTrue + MapSettings.HeadingOffset) % 360).ToString("F2");    // Added offset
-        Data["Time (UTC)"] = vessel.GetGGA.UTC.ToString(@"hh\:mm\:ss");
+        Data["Time (UTC)"] = vessel.LastFixTime.ToString(@"hh\:mm\:ss\.fff");//GetGGA.UTC.ToString(@"hh\:mm\:ss");
         Data["No. of Sats"] = vessel.GetGGA.SatelliteCount;
         Data["Quality"] = vessel.GetGGA.FixQuality;
         Data["Speed (Kn)"] = vessel.SpeedInKnots.ToString("F2");
         Data["Speed Fw (Kn)"] = vessel.SpeedFw.ToString("F2");
         Data["Speed Sb (Kn)"] = vessel.SpeedSb.ToString("F2");
         Data["Depth"] = vessel.Depth.ToString("F2");
-        //Data["Depth"] = GeoMath.FeetToMeters(vessel.GetDBT.DepthInFeet).ToString("F2");
+
         if (CurrentTarget is null)
         {
             Data["Target Name"] = "N/A";
@@ -104,11 +103,10 @@ public partial class MapViewModel : ObservableObject
         else
         {
             Data["Target Name"] = CurrentTarget.Name;
-            MPoint vesselPoint = new MPoint(p.X, p.Y);
-            MPoint targetPoint = new MPoint(CurrentTarget.X, CurrentTarget.Y);
-            Data["Bearing"] = GeoMath.CalcBearing(vesselPoint, targetPoint).ToString("F1");
-            Data["Distance"] = vesselPoint.Distance(targetPoint).ToString("F1");
-
+            //MPoint vesselPoint = new MPoint(p.X, p.Y);
+            //MPoint targetPoint = CurrentTarget.ToMPoint();
+            Data["Bearing"] = p.CalcBearing(CurrentTarget).ToString("F1");
+            Data["Distance"] = p.Distance(CurrentTarget).ToString("F1");
         }
         Data = new Dictionary<string, object>(Data);
     }

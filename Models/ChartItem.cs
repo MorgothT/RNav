@@ -56,8 +56,6 @@ public partial class ChartItem : ObservableObject
         Enabled = true;
         Name = System.IO.Path.GetFileNameWithoutExtension(path);
         Path = path;
-        //Projections = ProjectProjections.GetProjections();
-        //Projection = ProjectProjections.ITM;
         Opacity = 1;
         LineColor = linecolor ?? Colors.Black;
         OutlineColor = outlinecolor ?? Colors.Black;

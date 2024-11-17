@@ -1,9 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GeoConverter;
+using Mapper_v1.Helpers;
 using Mapper_v1.Models;
 using Mapsui;
+using Mapsui.Projections;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 using System.IO;
 using System.Windows;
 
@@ -12,7 +15,7 @@ namespace Mapper_v1.ViewModels;
 public partial class TargetsViewModel : ObservableObject
 {
     #region Fields
-    private Converter toWgs;
+    //private Converter toWgs;
     #endregion
 
     #region Observable Properties
@@ -29,20 +32,21 @@ public partial class TargetsViewModel : ObservableObject
 
     #region Constractor
     public TargetsViewModel()
-    {
-        int epsg = int.Parse(mapSettings.CurrentProjection.Split(':')[1]);
-        switch (epsg)
-        {
-            case 6991:
-                toWgs = new(Converter.Projections.ITM, Converter.Ellipsoids.WGS_84);
-                break;
-            case 32636:
-                toWgs = new(Converter.Projections.UTM_36N, Converter.Ellipsoids.WGS_84);
-                break;
-            default:
-                toWgs = new(Converter.Ellipsoids.WGS_84, Converter.Ellipsoids.WGS_84);
-                break;
-        }
+    {   
+        //REDO: projections of target
+        //int epsg = int.Parse(mapSettings.CurrentProjection.Split(':')[1]);
+        //switch (epsg)
+        //{
+        //    case 6991:
+        //        toWgs = new(Converter.Projections.ITM, Converter.Ellipsoids.WGS_84);
+        //        break;
+        //    case 32636:
+        //        toWgs = new(Converter.Projections.UTM_36N, Converter.Ellipsoids.WGS_84);
+        //        break;
+        //    default:
+        //        toWgs = new(Converter.Ellipsoids.WGS_84, Converter.Ellipsoids.WGS_84);
+        //        break;
+        //}
     }
     #endregion
 
@@ -51,19 +55,24 @@ public partial class TargetsViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanExportTargets))]
     private void ExportTargets()
     {
-        var sfd = new SaveFileDialog();
-        sfd.AddExtension = true;
-        sfd.Filter = "csv file (*.csv) | *.csv | target file (*.trg) | *.trg";
+        var sfd = new SaveFileDialog
+        {
+            AddExtension = true,
+            Filter = "csv file (*.csv) | *.csv | target file (*.trg) | *.trg",
+            FilterIndex = 2,
+        };
         if (sfd.ShowDialog() == true)
         {
             if (File.Exists(sfd.FileName)) { File.Delete(sfd.FileName); }
-            foreach (Target target in MapSettings.TargetList)
-            {
-                //if (sfd.FileName.EndsWith(".csv"))    //if there is a need for another format
-                //{
-                File.AppendAllText(sfd.FileName, $"{target}{Environment.NewLine}");
-                //}
-            }
+            //foreach (Target target in MapSettings.TargetList)
+            //{
+            //    //if (sfd.FileName.EndsWith(".csv"))    //if there is a need for another format
+            //    //{
+            //    File.AppendAllText(sfd.FileName, $"{target}{Environment.NewLine}");
+            //    //}
+            //}
+            string targets = JsonConvert.SerializeObject(MapSettings.TargetList);
+            File.WriteAllText(sfd.FileName, targets);
         }
 
     }
@@ -87,17 +96,32 @@ public partial class TargetsViewModel : ObservableObject
                 {
                     maxId = MapSettings.TargetList.MaxBy(t => t.Id).Id;
                 }
-                string[] file = File.ReadAllLines(ofd.FileName);
-                foreach (string line in file)
+                string targets = File.ReadAllText(ofd.FileName);
+                List<Target> importedTargets = JsonConvert.DeserializeObject<List<Target>>(targets);
+                foreach (Target target in importedTargets)
                 {
-                    Target target = Target.Parse(line);
-                    if (target is not null)
+                    if (MapSettings.TargetList.Where(x=> x.Equals(target)).Any())    //Skip if same target allready exists
+                    {
+                        continue; 
+                    }
+                    if (MapSettings.TargetList.Where(x => x.Id == target.Id).Any() == true) //found target with same Id
                     {
                         maxId++;
                         target.Id = maxId;
-                        MapSettings.TargetList.Add(target);
                     }
+                    MapSettings.TargetList.Add(target);
                 }
+                //string[] file = File.ReadAllLines(ofd.FileName);
+                //foreach (string line in file)
+                //{
+                //    Target target = Target.Parse(line);
+                //    if (target is not null)
+                //    {
+                //        maxId++;
+                //        target.Id = maxId;
+                //        MapSettings.TargetList.Add(target);
+                //    }
+                //}
                 SaveTargets();
             }
             catch (Exception)
@@ -166,7 +190,9 @@ public partial class TargetsViewModel : ObservableObject
             MapSettings.TargetList = new();
         }
         id = MapSettings.TargetList.Count == 0 ? 0 : MapSettings.TargetList.Max(x => x.Id) + 1;
-        Target target = Target.CreateTarget(point, id, toWgs);
+        //MPoint wgsPoint = new(point);
+        //wgsPoint.ToWgs($"EPSG:{MapSettings.CurrentProjection.Split(':')[1]}");
+        Target target = Target.CreateTarget(point, id, point.ToWgs($"EPSG:{MapSettings.CurrentProjection.Split(':')[1]}"));
         MapSettings.TargetList.Add(target);
         MapSettings.SaveMapSettings();
         return target;
@@ -174,10 +200,14 @@ public partial class TargetsViewModel : ObservableObject
 
     private void RecalculateLatLon(Target target)
     {
-        var ll = toWgs.Convert(new Converter.Point3d(target.X, target.Y, 0));
+        MPoint wgs = target.ToMPoint().ToWgs($"EPSG:{MapSettings.CurrentProjection.Split(':')[1]}");
+        //ProjectionDefaults.Projection.Project($"EPSG:{MapSettings.CurrentProjection.Split(':')[1]}", "EPSG:4326",wgs);
         var t = MapSettings.TargetList.Where(t => t.Equals(target)).FirstOrDefault();
-        t.Lat = ll.Y;
-        t.Lon = ll.X;
+        //var ll = toWgs.Convert(new Converter.Point3d(target.X, target.Y, 0));
+        //t.Lat = ll.Y;
+        //t.Lon = ll.X;
+        t.Lon = wgs.X; 
+        t.Lat = wgs.Y;
     }
     #endregion
 }

@@ -1,9 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Mapper_v1.Projections;
-
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
 using System.Drawing;
+using System.IO;
+using System.Windows;
 
 namespace Mapper_v1.Models;
 
@@ -31,7 +33,7 @@ public partial class MapSettings : ObservableObject
     [ObservableProperty]
     private double depthOffset = 0;
     [ObservableProperty]
-    private Point positionOffset = new(0,0);
+    private System.Drawing.Point positionOffset = new(0,0);
 
     [ObservableProperty]
     private ushort trailDuration;
@@ -130,5 +132,43 @@ public partial class MapSettings : ObservableObject
     public void SaveTrail(List<TimedPoint> myTrail)
     {
         Properties.Map.Default.LastTrail = JsonConvert.SerializeObject(myTrail);
+    }
+    public void SaveCharts()
+    {
+        string charts = JsonConvert.SerializeObject(ChartItems);
+        var sfd = new SaveFileDialog()
+        {
+            AddExtension = true,
+            AddToRecent = true,
+            Filter = "Chart collection (*.chc)| *.chc",
+            InitialDirectory = @"C:\RNav",
+            OverwritePrompt = true
+        };
+        if (sfd.ShowDialog() == true)
+        {
+            File.WriteAllText(sfd.FileName, charts);
+        }
+    }
+    public void LoadCharts()
+    {
+        var ofd = new OpenFileDialog()
+        {
+            Filter = "Chart collection (*.chc)| *.chc",
+            InitialDirectory = @"C:\RNav",
+            CheckFileExists = true,
+            Multiselect = false,
+        };
+        if (ofd.ShowDialog() == true)
+        {
+            string charts = File.ReadAllText(ofd.FileName);
+            try
+            {
+                ChartItems = JsonConvert.DeserializeObject<ObservableCollection<ChartItem>>(charts);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading charts collection.\n{ex.Message}");
+            }
+        }
     }
 }

@@ -13,7 +13,7 @@ public partial class ChartsViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(MoveDownCommand), nameof(MoveUpCommand),
-        nameof(MoveTopCommand), nameof(MoveButtomCommand), nameof(RemoveChartCommand))]
+        nameof(MoveTopCommand), nameof(MoveButtomCommand), nameof(RemoveChartCommand), nameof(ExportChartsCommand))]
     private ChartItem selectedChart;
 
     public ChartsViewModel()
@@ -106,4 +106,20 @@ public partial class ChartsViewModel : ObservableObject
     {
         return SelectedChart is not null;
     }
+
+    [RelayCommand]
+    private void ImportCharts()
+    {
+        MapSettings.LoadCharts();
+    }
+    [RelayCommand(CanExecute = nameof(CanExportCharts))]
+    private void ExportCharts()
+    {
+        MapSettings.SaveCharts();
+    }
+    private bool CanExportCharts()
+    {
+        return MapSettings.ChartItems.Count > 0;
+    }
+
 }

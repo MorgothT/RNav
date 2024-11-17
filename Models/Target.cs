@@ -35,6 +35,15 @@ public partial class Target : ObservableObject
     {
     }
 
+    public override bool Equals(object obj)
+    {
+        if (obj is null || !(obj is Target)) return false;
+        else
+        {
+            Target other = obj as Target;
+            return X == other.X && Y == other.Y && Name == other.Name && Notes == other.Notes;
+        }
+    }
     public override string ToString()   //for export
     {
         return $"{Id},{Name},{X},{Y},{Lat},{Lon},{Notes}";
@@ -52,7 +61,7 @@ public partial class Target : ObservableObject
                 Y = double.Parse(fields[3]),
                 Lat = double.Parse(fields[4]),
                 Lon = double.Parse(fields[5]),
-                Notes = fields[6]
+                Notes = fields[6].Trim('"')
             };
             return target;
         }
@@ -117,8 +126,8 @@ public partial class Target : ObservableObject
         feature[nameof(Name)] = target.Name;
         feature[nameof(X)] = target.X.ToString("F2");
         feature[nameof(Y)] = target.Y.ToString("F2");
-        feature[nameof(Lat)] = Formater.FormatLatLong(target.Lat, degreeFormat);
-        feature[nameof(Lon)] = Formater.FormatLatLong(target.Lon, degreeFormat);
+        feature[nameof(Lat)] = target.Lat.FormatLatLong(degreeFormat);
+        feature[nameof(Lon)] = target.Lon.FormatLatLong(degreeFormat);
         feature.Styles.Add(CreateTargetCalloutStyle(feature.ToStringOfKeyValuePairs(), radius));
         feature["IsSelected"] = false;
         return feature;
@@ -134,5 +143,29 @@ public partial class Target : ObservableObject
             target.Y = double.Parse(feature["Y"].ToString());
         }
         return target;
+    }
+
+    public bool Equals(Target other)
+    {
+        return other is not null &&
+               Name == other.Name &&
+               X == other.X &&
+               Y == other.Y &&
+               Notes == other.Notes;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Id, Name, X, Y, Lat, Lon, Notes);
+    }
+
+    public static bool operator ==(Target left, Target right)
+    {
+        return EqualityComparer<Target>.Default.Equals(left, right);
+    }
+
+    public static bool operator !=(Target left, Target right)
+    {
+        return !(left == right);
     }
 }

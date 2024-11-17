@@ -2,9 +2,9 @@
 
 namespace Mapper_v1.Helpers;
 
-public class Formater
+public static class Formater
 {
-    public static string FormatLatLong(double ll, DegreeFormat degreeFormat)
+    public static string FormatLatLong(this double ll, DegreeFormat degreeFormat)
     {
         int d, m = 0;
         double mm, ss = 0;

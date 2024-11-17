@@ -70,6 +70,7 @@ public partial class VesselData : ObservableObject
             case "GGA":
                 GetGGA = (GGA)msg;
                 UpdateLocation(typeof(GGA));
+                UpdateTime(typeof(GGA));
                 break;
             case "GSA":
                 GetGSA = (GSA)msg;
@@ -86,6 +87,8 @@ public partial class VesselData : ObservableObject
                 break;
             case "RMC":
                 GetRMC = (RMC)msg;
+                UpdateLocation(typeof(RMC));
+                UpdateTime(typeof(RMC));
                 break;
             case "VTG":
                 GetVTG = (VTG)msg;
@@ -108,7 +111,6 @@ public partial class VesselData : ObservableObject
         }
     }
 
-    // Test Logic !!!
     private void UpdateTime(Type type)
     {   
         if (type == null) { return; }
@@ -122,10 +124,9 @@ public partial class VesselData : ObservableObject
         }
         if (type == typeof(RMC))
         {
-            LastFixTime = LastFixTime.Date.Add(GetRMC.UTC.TimeOfDay);
+            LastFixTime = LastFixTime.Date.Add(GetRMC.UTC.ToUniversalTime().TimeOfDay);
         }
     }
-
     private void UpdateSpeed(Type type)
     {
         if (type == typeof(VTG))
@@ -136,7 +137,6 @@ public partial class VesselData : ObservableObject
             SpeedSb = -SpeedInKnots * Math.Sin(direction * double.Pi / 180);
         }
     }
-
     private void UpdateHeading(Type type)
     {
         Heading = (GetHDT.HeadingTrue + HeadingOffset) % 360;
@@ -148,11 +148,10 @@ public partial class VesselData : ObservableObject
     private void UpdateDepth(Type type)
     {
         if (type == typeof(DBT))
-            Depth = (GetDBT.DepthInFeet * 0.3048) + DepthOffset;
+            Depth = GetDBT.DepthInFeet.FeetToMeters() + DepthOffset;
         if (type == typeof(DPT))
             Depth = GetDPT.DepthInMeters + DepthOffset; // if offset in DPT and MapSettings is not 0, Depth will include BOTH
     }
-
     private void UpdateLocation(Type type)
     {
         MPoint point = new();
@@ -166,7 +165,7 @@ public partial class VesselData : ObservableObject
             point = new MPoint(GetRMC.Longitude.Degrees, GetRMC.Latitude.Degrees);
         }
 
-        offsetPoint = GeoMath.AddOffsetToWgsPoint(point, PositionOffset.X, PositionOffset.Y);
+        offsetPoint = point.AddOffsetToWgsPoint(PositionOffset);
         Longitude = offsetPoint.X;
         Latitude = offsetPoint.Y;
     }

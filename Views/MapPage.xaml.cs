@@ -26,7 +26,6 @@ using netDxf;
 using netDxf.Header;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
-using NetTopologySuite.Operation.Buffer;
 using Newtonsoft.Json;
 using SkiaSharp;
 using System.Collections.ObjectModel;
@@ -344,15 +343,13 @@ public partial class MapPage : Page
                 Dispatcher.BeginInvoke(UpdateLocation);
                 Dispatcher.BeginInvoke(DispatcherPriority.Background, LogLocation);
                 Dispatcher.BeginInvoke(DispatcherPriority.Background, UpdateTrail);
-                //Dispatcher.BeginInvoke(DispatcherPriority.Background, LogNMEA);
                 break;
             case "HDT":
                 Dispatcher.BeginInvoke(UpdateDirection);
                 break;
             case "DBT":
             case "DPT":
-                //Dispatcher.BeginInvoke(DispatcherPriority.Background, LogNMEA);
-                //Dispatcher.BeginInvoke(UpdateDepth);
+                Dispatcher.BeginInvoke(UpdateDepth);
                 break;
             case "ZDA":
                 break;
@@ -368,8 +365,7 @@ public partial class MapPage : Page
         //MPoint gpsPoint = new MPoint(VesselData.GetGGA.Latitude.Degrees,VesselData.GetGGA.Longitude.Degrees);
         MPoint gpsPoint = new MPoint(VesselData.Longitude, VesselData.Latitude);
         ProjectionDefaults.Projection.Project("EPSG:4326", ProjectCRS, gpsPoint);
-        //TODO: Add lastfixtime to vessel data
-        TimedPoint point = new TimedPoint(gpsPoint.X,gpsPoint.Y,DateTime.Today.AddSeconds(VesselData.GetGGA.UTC.TotalSeconds));
+        TimedPoint point = new TimedPoint(gpsPoint.X,gpsPoint.Y,VesselData.LastFixTime);
         MyTrail.Add(point);
         if (MyTrail.Count < 2)
         {
@@ -419,8 +415,7 @@ public partial class MapPage : Page
         //TimedPoint point = new TimedPoint(VesselData.GetGGA, fromWGS84);
         MPoint gpsPoint = new MPoint(VesselData.Longitude,VesselData.Latitude);
         ProjectionDefaults.Projection.Project("EPSG:4326", ProjectCRS, gpsPoint);
-        //TODO: Add lastfixtime to vessel data
-        TimedPoint point = new TimedPoint(gpsPoint.X, gpsPoint.Y, DateTime.Today.AddSeconds(VesselData.GetGGA.UTC.TotalSeconds));
+        TimedPoint point = new TimedPoint(gpsPoint.X, gpsPoint.Y, VesselData.LastFixTime);
         File.AppendAllText(logPath, $"{point.ToLocalTime()}\n");
     }
     //TODO: add Log for Hypack ?
@@ -822,7 +817,7 @@ public partial class MapPage : Page
         MousePosY.Text = $"{worldPosition.Y:F2}";
         if (vm.MeasurementMode && measureStart is not null)
         {
-            double bearing = GeoMath.CalcBearing(measureStart, worldPosition);
+            double bearing = measureStart.CalcBearing(worldPosition);
             double distance = measureStart.Distance(worldPosition);
             {
                 //MyMeasurementLayer.

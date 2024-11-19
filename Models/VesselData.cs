@@ -3,8 +3,6 @@ using InvernessPark.Utilities.NMEA;
 using InvernessPark.Utilities.NMEA.Sentences;
 using Mapper_v1.Helpers;
 using Mapsui;
-using System.CodeDom;
-using System.Runtime.CompilerServices;
 
 namespace Mapper_v1.Models;
 

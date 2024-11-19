@@ -9,7 +9,7 @@ namespace Mapper_v1.Models;
 public partial class CommSettings : ObservableObject
 {
     [ObservableProperty]
-    public ObservableCollection<DeviceSettings> devices;
+    public ObservableCollection<PortConfig> devices;
     //public DeviceSettings SelectedDevice { get; set; }
 
     //public ConnectionType CommType { get; set; }
@@ -40,7 +40,7 @@ public partial class CommSettings : ObservableObject
         }
         else
         {
-            Devices = JsonConvert.DeserializeObject<ObservableCollection<DeviceSettings>>(Properties.Comm.Default.Devices);
+            Devices = JsonConvert.DeserializeObject<ObservableCollection<PortConfig>>(Properties.Comm.Default.Devices);
         }
 
         //AutoConnect = Properties.Comm.Default.AutoConnect;

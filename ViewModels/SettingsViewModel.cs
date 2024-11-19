@@ -43,13 +43,13 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RemoveDeviceCommand))]
-    private DeviceSettings selectedDevice;
+    private PortConfig selectedDevice;
 
 
     [RelayCommand]
     private void AddDevice()
     {
-        CommSettings.Devices.Add(new DeviceSettings());
+        CommSettings.Devices.Add(new PortConfig());
         CommSettings.SaveSettings();
     }
 

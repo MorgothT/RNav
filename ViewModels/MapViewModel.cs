@@ -1,9 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapper_v1.Core;
 using Mapper_v1.Helpers;
 using Mapper_v1.Models;
 using Mapper_v1.Projections;
-using Mapper_v1.Properties;
 using Mapsui;
 
 namespace Mapper_v1.ViewModels;

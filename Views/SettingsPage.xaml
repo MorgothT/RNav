@@ -22,7 +22,7 @@
     <Page.Resources>
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" EnumType="models:AppTheme"/>
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConnectionType" EnumType="models:ConnectionType"/>
-        <DataTemplate DataType="{x:Type models:DeviceSettings}">
+        <DataTemplate DataType="{x:Type models:PortConfig}">
 
             <GroupBox BorderThickness="3,0,3,3" UseLayoutRounding="True" >
                 <StackPanel Name="Device" Orientation="Horizontal">

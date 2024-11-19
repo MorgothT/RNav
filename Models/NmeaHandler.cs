@@ -15,32 +15,26 @@ public class NmeaHandler : INmeaHandler
     {
         OnLogNmeaMessage(msg);
     }
-
     public void HandleGSA(INmeaMessage msg)
     {
         OnLogNmeaMessage(msg);
     }
-
     public void HandleGST(INmeaMessage msg)
     {
         OnLogNmeaMessage(msg);
     }
-
     public void HandleGSV(INmeaMessage msg)
     {
         OnLogNmeaMessage(msg);
     }
-
     public void HandleHDT(INmeaMessage msg)
     {
         OnLogNmeaMessage(msg);
     }
-
     public void HandleRMC(INmeaMessage msg)
     {
         OnLogNmeaMessage(msg);
     }
-
     public void HandleVTG(INmeaMessage msg)
     {
         OnLogNmeaMessage(msg);
@@ -63,5 +57,20 @@ public class NmeaHandler : INmeaHandler
                 break;
         }
 
+    }
+
+    public void HandleDBT(INmeaMessage msg)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void HandleDPT(INmeaMessage msg)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void HandleZDA(INmeaMessage msg)
+    {
+        throw new NotImplementedException();
     }
 }

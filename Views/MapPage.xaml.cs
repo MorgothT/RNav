@@ -51,7 +51,7 @@ public partial class MapPage : Page
 
     private ObservableCollection<NmeaDevice> devices = new();
     private MPoint measureStart;
-    private WritableLayer MyMeasurementLayer;
+    private WritableLayer measurementLayer;
     private GenericCollectionLayer<List<IFeature>> MyTargets = new();
     private int SelectedTargetId = -1;
     private Target SelectedTarget;
@@ -210,7 +210,7 @@ public partial class MapPage : Page
                 Line = { Color = colorConvertor.WMColorToMapsui(mapSettings.BoatShape.OutlineColor) }
             }
         };
-        MyMeasurementLayer = new WritableLayer()
+        measurementLayer = new WritableLayer()
         {
             Name = "Measurement",
             Opacity = 0.7f
@@ -251,7 +251,7 @@ public partial class MapPage : Page
             LoadSavedTargets();
             MapControl.Map.Layers.Add(MyTargets);
         }
-        MapControl.Map.Layers.Add(MyMeasurementLayer);
+        MapControl.Map.Layers.Add(measurementLayer);
         MapControl.Map.Layers.Add(BoatTrailLayer);
         MapControl.Map.Layers.Add(MyBoatLayer);
     }
@@ -313,23 +313,24 @@ public partial class MapPage : Page
     private void SubscribeToNmea()
     {
         NmeaHandler nmeaHandler = new NmeaHandler();
+        //REDO: vessel/device need to have event callbacks
         nmeaHandler.LogNmeaMessage += NmeaMessageReceived;
-        foreach (DeviceSettings settings in commSettings.Devices)
+        foreach (PortConfig settings in commSettings.Devices)
         {
-            var dev = new NmeaDevice(nmeaHandler, settings);
-            dev.NmeaReceiver.NmeaMessageFailedChecksum += (bytes, index, count, expected, actual) =>
+            var device = new NmeaDevice(nmeaHandler, settings);
+            device.NmeaReceiver.NmeaMessageFailedChecksum += (bytes, index, count, expected, actual) =>
                 {
                     Trace.TraceError($"Failed Checksum: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray()).Trim()} expected {expected} but got {actual}");
                 };
-            dev.NmeaReceiver.NmeaMessageDropped += (bytes, index, count, reason) =>
+            device.NmeaReceiver.NmeaMessageDropped += (bytes, index, count, reason) =>
                 {
                     Trace.WriteLine($"Bad Syntax: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())} reason: {reason}");
                 };
-            dev.NmeaReceiver.NmeaMessageIgnored += (bytes, index, count) =>
+            device.NmeaReceiver.NmeaMessageIgnored += (bytes, index, count) =>
                 {
                     Trace.WriteLine($"Ignored: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())}");
                 };
-            devices.Add(dev);
+            devices.Add(device);
         }
     }
     private void NmeaMessageReceived(INmeaMessage msg)
@@ -621,7 +622,7 @@ public partial class MapPage : Page
     }
     private void DrawLine(MPoint to)
     {
-        MyMeasurementLayer.Clear();
+        measurementLayer.Clear();
         var line = new WKTReader().Read($"LINESTRING ({measureStart.X} {measureStart.Y},{to.X} {to.Y})");
         var feature = new GeometryFeature(line);
         ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
@@ -636,8 +637,8 @@ public partial class MapPage : Page
             VerticalAlignment = LabelStyle.VerticalAlignmentEnum.Bottom,
             Halo = new Pen { Color = Color.Wheat, Width = 1 },
         });
-        MyMeasurementLayer.Add(feature);
-        MyMeasurementLayer.Add(label);
+        measurementLayer.Add(feature);
+        measurementLayer.Add(label);
     }
     private void TurnCalloutOff(CalloutStyle currentCallout = null)
     {
@@ -665,7 +666,7 @@ public partial class MapPage : Page
     }
     private void StopMeasurement()
     {
-        MyMeasurementLayer.Clear();
+        measurementLayer.Clear();
         //MapControl.Map.Navigator.PanLock = false;
         measureStart = null;
         MapControl.Refresh();
@@ -733,11 +734,11 @@ public partial class MapPage : Page
             {
                 case true:
                     StartMeasurement(e.MapInfo.WorldPosition);  // world pos is Map CRS
-                    MyMeasurementLayer.Enabled = true;
+                    measurementLayer.Enabled = true;
                     break;
                 case false:
                     StopMeasurement();
-                    MyMeasurementLayer.Enabled = false;
+                    measurementLayer.Enabled = false;
                     break;
             }
         }

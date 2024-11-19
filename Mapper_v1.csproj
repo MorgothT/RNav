@@ -2,7 +2,7 @@
   
   <PropertyGroup>
     <!--TODO: Change Version here-->
-    <Version>1.3.3</Version>
+    <Version>1.4.0</Version>
     <StartupObject>Mapper_v1.Program</StartupObject>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-Windows</TargetFramework>
@@ -111,6 +111,7 @@
   <ItemGroup>
     <ProjectReference Include="..\InvernessPark.Utilities.NMEA\NMEA.csproj" />
     <ProjectReference Include="..\Mapper v1.Core\Mapper_v1.Core.csproj" />
+    <ProjectReference Include="..\NMEADevice\NMEADevice.csproj" />
   </ItemGroup>
 
   <ItemGroup>

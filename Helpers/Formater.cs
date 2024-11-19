@@ -1,4 +1,4 @@
-﻿using Mapper_v1.Models;
+﻿using Mapper_v1.Core;
 
 namespace Mapper_v1.Helpers;
 

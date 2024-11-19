@@ -1,4 +1,6 @@
 ﻿using InvernessPark.Utilities.NMEA;
+using Mapper_v1.Core;
+using Mapper_v1.Core.Models;
 using System.IO.Ports;
 using System.Net;
 using System.Net.Sockets;
@@ -10,12 +12,12 @@ public class NmeaDevice
 {
     public NmeaReceiver NmeaReceiver { get; }
     public NmeaHandler NmeaHandler { get; private set; }
-    public DeviceSettings DeviceSettings { get; private set; }
+    public PortConfig DeviceSettings { get; private set; }
     public object Port { get; private set; }
 
-    private CancellationTokenSource TokenSource = new();
+    private CancellationTokenSource tokenSource = new();
 
-    public NmeaDevice(NmeaHandler handler, DeviceSettings settings)
+    public NmeaDevice(NmeaHandler handler, PortConfig settings)
     {
         NmeaHandler = handler ?? throw new ArgumentNullException(nameof(handler));
         DeviceSettings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -42,6 +44,10 @@ public class NmeaDevice
             }
         }
     }
+    public void Dispose()
+    {
+        tokenSource.Cancel();
+    }
 
     private void ConnectSerial()
     {
@@ -51,7 +57,7 @@ public class NmeaDevice
             (Port as SerialPort).Open();
             (Port as SerialPort).DataReceived += DataReceived_Serial;
 
-            TokenSource.Token.Register(() => (Port as SerialPort).Close());   // Registering Cancellation token for Closing port by connection type
+            tokenSource.Token.Register(() => (Port as SerialPort).Close());   // Registering Cancellation token for Closing port by connection type
         }
         catch (UnauthorizedAccessException)
         {
@@ -74,9 +80,8 @@ public class NmeaDevice
             {
             }
             NmeaReceiver.Receive(buffer);
-        }, TokenSource.Token);
+        }, tokenSource.Token);
     }
-
     private void ConnectUDP()
     {
         try
@@ -86,8 +91,8 @@ public class NmeaDevice
             //IPEndPoint endPoint = new IPEndPoint(address, DeviceSettings.Port);
             Port = new UdpClient(DeviceSettings.Port);
 
-            Task.Run(ReceiveUDP, TokenSource.Token);
-            TokenSource.Token.Register(() => (Port as UdpClient).Close());
+            Task.Run(ReceiveUDP, tokenSource.Token);
+            tokenSource.Token.Register(() => (Port as UdpClient).Close());
         }
         catch (OperationCanceledException)
         {
@@ -105,12 +110,12 @@ public class NmeaDevice
     }
     private async Task ReceiveUDP()
     {
-        IPAddress.TryParse(DeviceSettings.IPAddress, out IPAddress address);
+        IPAddress.TryParse((string)DeviceSettings.IPAddress, out IPAddress address);
         while (true)
         {
             try
             {
-                UdpReceiveResult result = await (Port as UdpClient).ReceiveAsync(TokenSource.Token);
+                UdpReceiveResult result = await (Port as UdpClient).ReceiveAsync(tokenSource.Token);
                 if (result.RemoteEndPoint.Address.Equals(address))  // UDP listens to the port, this filters the address. not sure if neccesery.
                 {
                     NmeaReceiver.Receive(result.Buffer);
@@ -121,16 +126,15 @@ public class NmeaDevice
             }
         }
     }
-
     private async void ConnectTCP()
     {
         try
         {
-            IPAddress.TryParse(DeviceSettings.IPAddress, out IPAddress address);
+            IPAddress.TryParse((string)DeviceSettings.IPAddress, out IPAddress address);
             IPEndPoint endPoint = new IPEndPoint(address, DeviceSettings.Port);
             Port = new TcpClient();
-            await (Port as TcpClient).ConnectAsync(endPoint, TokenSource.Token);
-            _ = Task.Run(ReceiveTCP, TokenSource.Token);
+            await (Port as TcpClient).ConnectAsync(endPoint, tokenSource.Token);
+            _ = Task.Run(ReceiveTCP, tokenSource.Token);
         }
         catch (SocketException se)
         {
@@ -151,7 +155,7 @@ public class NmeaDevice
             {
                 try
                 {
-                    await client.GetStream().ReadAsync(buffer, TokenSource.Token);
+                    await client.GetStream().ReadAsync(buffer, tokenSource.Token);
                     NmeaReceiver.Receive(buffer);
                 }
                 catch (OperationCanceledException)
@@ -163,10 +167,5 @@ public class NmeaDevice
                 }
             }
         }
-    }
-
-    public void Dispose()
-    {
-        TokenSource.Cancel();
     }
 }

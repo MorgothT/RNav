@@ -1,10 +1,13 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Mapper_v1.Core.Models;
 using System.IO.Ports;
 
 namespace Mapper_v1.Models;
 
-public partial class DeviceSettings : ObservableObject, IDeviceSettings
+public partial class PortConfig : ObservableObject, IPortConfig
 {
+    [ObservableProperty]
+    private string name = "";
     [ObservableProperty]
     private ConnectionType commType;
     [ObservableProperty]
@@ -30,7 +33,7 @@ public partial class DeviceSettings : ObservableObject, IDeviceSettings
         }
     }
 
-    public static int[] AvailableBaudRates => new[] { 4800, 9600, 19200, 38400, 57600, 115200, 230400 };
+    public static int[] AvailableBaudRates => [4800, 9600, 19200, 38400, 57600, 115200, 230400];
 
     // UDP/TCP
     [ObservableProperty]

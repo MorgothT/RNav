@@ -1,5 +1,9 @@
-﻿using InvernessPark.Utilities.NMEA;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using InvernessPark.Utilities.NMEA;
 using Mapper_v1.Converters;
+using Mapper_v1.Core;
+using Mapper_v1.Core.Contracts;
+using Mapper_v1.Core.Models;
 using Mapper_v1.Helpers;
 using Mapper_v1.Layers;
 using Mapper_v1.Models;
@@ -27,11 +31,14 @@ using netDxf.Header;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 using Newtonsoft.Json;
+using NMEADevice;
 using SkiaSharp;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Ports;
+using System.Net.Sockets;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -49,7 +56,7 @@ public partial class MapPage : Page
     private MapSettings mapSettings = new();
     private CommSettings commSettings = new();
 
-    private ObservableCollection<NmeaDevice> devices = new();
+    //private ObservableCollection<NmeaDevice> devices = new();
     private MPoint measureStart;
     private WritableLayer measurementLayer;
     private GenericCollectionLayer<List<IFeature>> MyTargets = new();
@@ -63,7 +70,25 @@ public partial class MapPage : Page
     private static ColorConvertor colorConvertor = new();
     private readonly MapViewModel vm;
     private string ProjectCRS;
-    
+
+    private static PortConfig debugPortConfig = new PortConfig()
+    {
+        IPAddress = "127.0.0.1",
+        Port = 5763,
+        Type = ConnectionType.TCP
+    };
+    private List<IPortConfig> PortConfigs = [debugPortConfig];
+    private Dictionary<string, object> Ports = [];
+    private static NmeaDeviceConfig debugDeviceConfig = new NmeaDeviceConfig()
+    {
+        PortName = debugPortConfig.PortName,
+        SentencesToUse = SentencesToUse.Default,
+        DataTypes = DataTypes.Position | DataTypes.Speed | DataTypes.Heading,
+        DeviceName = "debug NMEA",
+    };
+    private List<IDeviceConfig> DeviceConfigs = [debugDeviceConfig];
+    private Dictionary<object, string> Devices = [];
+
     public MapPage(MapViewModel viewModel)
     {
         InitializeComponent();
@@ -73,14 +98,77 @@ public partial class MapPage : Page
         vm = viewModel;
 
         InitVessel();
+        
+        //InitPorts();
+        //InitDevices();
 
-        SubscribeToNmea();
+        ConnectDevices();
+        //OpenPorts();
+        //SubscribeToNmea();
         InitMapControl();
         InitUIControls();
-        ConnectToGps();
+        //ConnectToGps();
         //MapControl.Focus();
-}
+    }
+    //private void InitDevices()
+    //{
+    //    foreach (var deviceConfig in DeviceConfigs)
+    //    {
+    //        Type type = deviceConfig.DeviceType;
+    //        var port = Ports.Where(x => x.Key == deviceConfig.PortName).First().Value;
+    //        var portConfig = PortConfigs.Where(x => x.PortName == deviceConfig.PortName).First();
 
+    //        var device = Activator.CreateInstance(type, [portConfig, port, deviceConfig]);
+    //        //Type type = device.GetType();]
+    //        Devices.Add(device, deviceConfig.DeviceName);
+    //    }
+
+    //}
+
+    //private void InitPorts()
+    //{
+    //    foreach (var portConfig in PortConfigs)
+    //    {
+    //        try
+    //        {
+    //            object port;
+    //            switch (portConfig.Type)
+    //            {
+    //                case ConnectionType.Serial:
+    //                    port = new SerialPort(portConfig.ComPort, portConfig.BaudRate);
+    //                    break;
+    //                case ConnectionType.UDP:
+    //                    port = new UdpClient(portConfig.Port);
+    //                    break;
+    //                case ConnectionType.TCP:
+    //                    port = new TcpClient(portConfig.IPAddress, portConfig.Port);
+    //                    break;
+    //                default:
+    //                    throw new ArgumentException();
+    //            }
+    //            Ports.Add(portConfig.PortName, port);
+    //        }
+    //        catch (System.Exception)
+    //        {
+    //            throw;
+    //        }
+    //    }
+    //}
+
+    private void ConnectDevices()
+    {
+        foreach ((var device ,string name) in vm.Devices)
+        {
+            dynamic dev = device;
+            if (dev.Port is null)
+            {
+            }
+            else
+            {
+                dev.Connect();
+            }
+        }
+    }
     private void InitVessel()
     {
         VesselData.HeadingOffset = mapSettings.HeadingOffset;
@@ -312,26 +400,26 @@ public partial class MapPage : Page
     #region GNSS_Methods
     private void SubscribeToNmea()
     {
-        NmeaHandler nmeaHandler = new NmeaHandler();
-        //REDO: vessel/device need to have event callbacks
-        nmeaHandler.LogNmeaMessage += NmeaMessageReceived;
-        foreach (PortConfig settings in commSettings.Devices)
-        {
-            var device = new NmeaDevice(nmeaHandler, settings);
-            device.NmeaReceiver.NmeaMessageFailedChecksum += (bytes, index, count, expected, actual) =>
-                {
-                    Trace.TraceError($"Failed Checksum: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray()).Trim()} expected {expected} but got {actual}");
-                };
-            device.NmeaReceiver.NmeaMessageDropped += (bytes, index, count, reason) =>
-                {
-                    Trace.WriteLine($"Bad Syntax: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())} reason: {reason}");
-                };
-            device.NmeaReceiver.NmeaMessageIgnored += (bytes, index, count) =>
-                {
-                    Trace.WriteLine($"Ignored: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())}");
-                };
-            devices.Add(device);
-        }
+        //NmeaHandler nmeaHandler = new NmeaHandler(Core.SentencesToUse.Default);
+        ////REDO: vessel/device need to have event callbacks
+        //nmeaHandler.LogNmeaMessage += NmeaMessageReceived;
+        //foreach (PortConfig settings in commSettings.Devices)
+        //{
+        //    var device = new NmeaDevice(nmeaHandler, settings);
+        //    device.NmeaReceiver.NmeaMessageFailedChecksum += (bytes, index, count, expected, actual) =>
+        //        {
+        //            Trace.TraceError($"Failed Checksum: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray()).Trim()} expected {expected} but got {actual}");
+        //        };
+        //    device.NmeaReceiver.NmeaMessageDropped += (bytes, index, count, reason) =>
+        //        {
+        //            Trace.WriteLine($"Bad Syntax: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())} reason: {reason}");
+        //        };
+        //    device.NmeaReceiver.NmeaMessageIgnored += (bytes, index, count) =>
+        //        {
+        //            Trace.WriteLine($"Ignored: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())}");
+        //        };
+        //    devices.Add(device);
+        //}
     }
     private void NmeaMessageReceived(INmeaMessage msg)
     {
@@ -432,20 +520,20 @@ public partial class MapPage : Page
         File.AppendAllText(logPath, $"{DateTime.UtcNow:HH:mm:ss},{msg.Payload}{Environment.NewLine}");
     }
 
-    private void ConnectToGps()
-    {
-        foreach (NmeaDevice dev in devices)
-        {
-            try
-            {
-                dev.Connect();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-    }
+    //private void ConnectToGps()
+    //{
+    //    foreach (NmeaDevice dev in devices)
+    //    {
+    //        try
+    //        {
+    //            dev.Connect();
+    //        }
+    //        catch (Exception)
+    //        {
+    //            throw;
+    //        }
+    //    }
+    //}
     private void UpdateDirection()
     {
         //double heading = (VesselData.GetHDT.HeadingTrue + mapSettings.HeadingOffset) % 360;
@@ -706,10 +794,10 @@ public partial class MapPage : Page
         {
             SaveMapControlState();
             SaveViewport();
-            foreach (var device in devices)
-            {
-                device.Dispose();
-            }
+            //foreach (var device in devices)
+            //{
+            //    device.Dispose();
+            //}
             MapControl.Dispose();
             Trace.WriteLine("Disposed of MapControl");
         }

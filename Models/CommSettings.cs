@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Mapper_v1.Core.Models;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
 using System.Net;

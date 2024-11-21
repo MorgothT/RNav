@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Mapper_v1.Contracts.Services;
 using Mapper_v1.Contracts.ViewModels;
+using Mapper_v1.Core.Models;
 using Mapper_v1.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.Win32;
@@ -11,6 +12,7 @@ using System.Windows.Input;
 namespace Mapper_v1.ViewModels;
 
 // Change the URL for your privacy policy in the appsettings.json file, currently set to https://YourPrivacyUrlGoesHere
+//TODO: Export Project Settings (map & comms) and load on startup
 public partial class SettingsViewModel : ObservableObject, INavigationAware
 {
     private readonly AppConfig _appConfig;

@@ -8,6 +8,8 @@
     xmlns:help="clr-namespace:Mapper_v1.Helpers"
     xmlns:converters="clr-namespace:Mapper_v1.Converters"
     xmlns:models="clr-namespace:Mapper_v1.Models"
+    xmlns:core="clr-namespace:Mapper_v1.Core;assembly=Mapper_v1.Core"
+    xmlns:cm="clr-namespace:Mapper_v1.Core.Models;assembly=Mapper_v1.Core"
     xmlns:properties="clr-namespace:Mapper_v1.Properties"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     
@@ -21,13 +23,13 @@
     </i:Interaction.Triggers>
     <Page.Resources>
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" EnumType="models:AppTheme"/>
-        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConnectionType" EnumType="models:ConnectionType"/>
-        <DataTemplate DataType="{x:Type models:PortConfig}">
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConnectionType" EnumType="core:ConnectionType"/>
+        <DataTemplate DataType="{x:Type cm:PortConfig}">
 
             <GroupBox BorderThickness="3,0,3,3" UseLayoutRounding="True" >
                 <StackPanel Name="Device" Orientation="Horizontal">
                     <ComboBox x:Name="commType" 
-                              ItemsSource="{help:Enum models:ConnectionType}" 
+                              ItemsSource="{help:Enum core:ConnectionType}" 
                               SelectedValue="{Binding CommType}" MinWidth="65" VerticalAlignment="Center" HorizontalAlignment="Left">
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="SelectionChanged">
@@ -346,7 +348,7 @@
                         </ComboBox>
                         <TextBlock Text="Degrees Format:" Grid.Column="0" Grid.Row="1"/>
                         <ComboBox  Grid.Column="3" Grid.Row="1"
-                              ItemsSource="{help:Enum models:DegreeFormat}" 
+                              ItemsSource="{help:Enum core:DegreeFormat}" 
                               SelectedValue="{Binding MapSettings.DegreeFormat}">
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="SelectionChanged">
@@ -389,3 +391,4 @@
         </Grid>
     </ScrollViewer>
 </Page>
+

@@ -64,4 +64,19 @@ public class NmeaHandler : INmeaHandler
         }
 
     }
+
+    public void HandleDBT(INmeaMessage msg)
+    {
+        OnLogNmeaMessage(msg);
+    }
+
+    public void HandleDPT(INmeaMessage msg)
+    {
+        OnLogNmeaMessage(msg);
+    }
+
+    public void HandleZDA(INmeaMessage msg)
+    {
+        OnLogNmeaMessage(msg);
+    }
 }

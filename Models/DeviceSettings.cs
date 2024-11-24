@@ -30,7 +30,7 @@ public partial class DeviceSettings : ObservableObject, IDeviceSettings
         }
     }
 
-    public static int[] AvailableBaudRates => new[] { 4800, 9600, 19200, 38400, 57600, 115200, 230400 };
+    public static int[] AvailableBaudRates => [4800, 9600, 19200, 38400, 57600, 115200, 230400];
 
     // UDP/TCP
     [ObservableProperty]

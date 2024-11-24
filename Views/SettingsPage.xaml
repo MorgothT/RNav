@@ -8,10 +8,13 @@
     xmlns:help="clr-namespace:Mapper_v1.Helpers"
     xmlns:converters="clr-namespace:Mapper_v1.Converters"
     xmlns:models="clr-namespace:Mapper_v1.Models"
+    xmlns:core="clr-namespace:Mapper_v1.Core;assembly=Mapper_v1.Core"
     xmlns:properties="clr-namespace:Mapper_v1.Properties"
     xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
     
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:viewmodels="clr-namespace:Mapper_v1.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewmodels:SettingsViewModel}"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="1000">
     <i:Interaction.Triggers>
@@ -21,7 +24,7 @@
     </i:Interaction.Triggers>
     <Page.Resources>
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" EnumType="models:AppTheme"/>
-        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConnectionType" EnumType="models:ConnectionType"/>
+        <converters:EnumToBooleanConverter x:Key="EnumToBooleanConnectionType" EnumType="core:ConnectionType"/>
         <DataTemplate DataType="{x:Type models:DeviceSettings}">
 
             <GroupBox BorderThickness="3,0,3,3" UseLayoutRounding="True" >

@@ -35,6 +35,7 @@ public class ShellViewModel : ObservableObject
         new HamburgerMenuGlyphItem() { Label = Resources.ShellMapPage, Glyph = "\uE722", TargetPageType = typeof(MapViewModel),ToolTip = "Map" },
         new HamburgerMenuGlyphItem() { Label = Resources.ShellChartsPage, Glyph = "\ue71c", TargetPageType = typeof(ChartsViewModel), ToolTip = "Charts" },
         new HamburgerMenuGlyphItem() { Label = Resources.ShellTargetsPage, Glyph = "\ue701", TargetPageType = typeof(TargetsViewModel), ToolTip = "Targets" },
+        new HamburgerMenuGlyphItem() { Label = Resources.ShellMobilesPage, Glyph = "\uE704", TargetPageType = typeof(MobilesViewModel), ToolTip = "Mobiles" },
     };
     public ObservableCollection<HamburgerMenuItem> OptionMenuItems { get; } = new ObservableCollection<HamburgerMenuItem>()
     {

@@ -1,0 +1,125 @@
+﻿<UserControl x:Class="Mapper_v1.Controls.DeviceSettings"  
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"  
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"  
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"   
+           xmlns:d="http://schemas.microsoft.com/expression/blend/2008"   
+           xmlns:help="clr-namespace:Mapper_v1.Helpers"  
+           xmlns:core="clr-namespace:Mapper_v1.Core;assembly=Mapper_v1.Core"  
+           xmlns:local="clr-namespace:Mapper_v1.Controls"   
+           xmlns:converters="clr-namespace:Mapper_v1.Converters"  
+           mc:Ignorable="d"   
+           d:DesignHeight="450" d:DesignWidth="800">  
+  <UserControl.Resources>  
+      <converters:EnumToBooleanConverter x:Key="EnumToBooleanConnctionType" EnumType="core:ConnectionType"/>  
+      <converters:EnumFlagValueConverter x:Key="DataTypeValueConverter" />  
+      <converters:EnumFlagValueConverter x:Key="NmeaSentencesValueConverter" />  
+   </UserControl.Resources>  
+   <UserControl.Style>  
+       <Style TargetType="UserControl">
+           <Style.Triggers>  
+               <DataTrigger Binding="{Binding}" Value="{x:Null}">  
+                   <Setter Property="Visibility" Value="Collapsed"/>  
+               </DataTrigger>  
+           </Style.Triggers>  
+       </Style>  
+   </UserControl.Style>  
+   <Border  
+       BorderBrush="{StaticResource MahApps.Brushes.Accent2}"  
+       BorderThickness="3" CornerRadius="5">  
+       <Grid Margin="5">  
+           <Grid.RowDefinitions>  
+               <RowDefinition Height="auto"/>  
+               <RowDefinition Height="auto"/>  
+               <RowDefinition Height="auto"/>  
+               <RowDefinition Height="auto"/>  
+               <RowDefinition Height="auto"/>  
+               <RowDefinition Height="*"/>  
+           </Grid.RowDefinitions>  
+           <TextBlock Text="{Binding DeviceType}" Style="{StaticResource ListTitleStyle}" VerticalAlignment="Center" HorizontalAlignment="Center"/>  
+           <StackPanel Orientation="Vertical" Grid.Row="1">  
+                   <StackPanel Orientation="Horizontal">  
+                       <TextBlock Text="Name:" Margin="0,3"/>  
+                       <TextBox Text="{Binding DeviceName}" Margin="5,0" Style="{DynamicResource ConnectionInput}"/>  
+                   </StackPanel>  
+                   <StackPanel Orientation="Horizontal">  
+                       <TextBlock Text="Connection Type:" Margin="0,3"/>  
+                       <ComboBox ItemsSource="{help:Enum core:ConnectionType}" SelectedItem="{Binding PortConfig.Type}" Margin="5,0" VerticalAlignment="Center"/>  
+                   </StackPanel>  
+               <local:SerialPortSettingsControl DataContext="{Binding PortConfig}">  
+                   <local:SerialPortSettingsControl.Style>  
+                       <Style TargetType="local:SerialPortSettingsControl">  
+                           <Setter Property="Visibility" Value="Collapsed"/>  
+                           <Style.Triggers>  
+                               <DataTrigger Binding="{Binding Type}" Value="{x:Static core:ConnectionType.Serial}">  
+                                   <Setter Property="Visibility" Value="Visible"/>  
+                               </DataTrigger>  
+                           </Style.Triggers>  
+                       </Style>  
+                   </local:SerialPortSettingsControl.Style>  
+               </local:SerialPortSettingsControl>  
+               <local:NetworkSettingsControl DataContext="{Binding PortConfig}">  
+                   <local:NetworkSettingsControl.Style>  
+                       <Style TargetType="local:NetworkSettingsControl">  
+                           <Setter Property="Visibility" Value="Collapsed"/>  
+                           <Style.Triggers>  
+                               <DataTrigger Binding="{Binding Type}" Value="{x:Static core:ConnectionType.UDP}">  
+                                   <Setter Property="Visibility" Value="Visible"/>  
+                               </DataTrigger>  
+                               <DataTrigger Binding="{Binding Type}" Value="{x:Static core:ConnectionType.TCP}">  
+                                   <Setter Property="Visibility" Value="Visible"/>  
+                               </DataTrigger>  
+                           </Style.Triggers>  
+                       </Style>  
+                   </local:NetworkSettingsControl.Style>  
+               </local:NetworkSettingsControl>  
+               <!-- For debug only 
+               <TextBlock Text="{Binding PortConfig.PortName}"/>  
+               -->
+            </StackPanel>  
+             
+           <!-- TODO: Move to NMEA specific control -->  
+           <Grid Grid.Row="5">  
+               <Grid.ColumnDefinitions>  
+                   <ColumnDefinition Width="*"/>  
+                   <ColumnDefinition Width="*"/>  
+               </Grid.ColumnDefinitions>  
+               <GroupBox Header="Data Types" Grid.Column="0">  
+                   <StackPanel Orientation="Vertical">  
+                       <CheckBox Content="Position" HorizontalAlignment="Left" IsChecked="{Binding Path=DataTypes, Converter={StaticResource DataTypeValueConverter},ConverterParameter={x:Static core:DataTypes.Position}}"/>  
+                       <CheckBox Content="Depth" HorizontalAlignment="Left" IsChecked="{Binding Path=DataTypes, Converter={StaticResource DataTypeValueConverter},ConverterParameter={x:Static core:DataTypes.Depth}}"/>  
+                       <CheckBox Content="Speed" HorizontalAlignment="Left" IsChecked="{Binding Path=DataTypes, Converter={StaticResource DataTypeValueConverter},ConverterParameter={x:Static core:DataTypes.Speed}}"/>  
+                       <CheckBox Content="Heading" HorizontalAlignment="Left" IsChecked="{Binding Path=DataTypes, Converter={StaticResource DataTypeValueConverter},ConverterParameter={x:Static core:DataTypes.Heading}}"/>  
+                       <CheckBox Content="Raw Data" HorizontalAlignment="Left" IsChecked="{Binding Path=DataTypes, Converter={StaticResource DataTypeValueConverter},ConverterParameter={x:Static core:DataTypes.Raw}}"/>  
+                   </StackPanel>  
+               </GroupBox>  
+               <GroupBox Header="NMEA sentences to use" Grid.Column="1">  
+                   <!--  
+                   <GroupBox.Header>  
+                       <TextBlock Text="NMEA sentences to use" VerticalAlignment="Center" HorizontalAlignment="Center"/>  
+                   </GroupBox.Header>   
+                   -->  
+                   <Grid>  
+                       <Grid.ColumnDefinitions>  
+                           <ColumnDefinition Width="*"/>  
+                           <ColumnDefinition Width="*"/>  
+                       </Grid.ColumnDefinitions>  
+                       <StackPanel Orientation="Vertical" Grid.Column="0">  
+                           <CheckBox Content="GGA" HorizontalAlignment="Left" IsChecked="{Binding SentencesToUse, Converter={StaticResource NmeaSentencesValueConverter},ConverterParameter={x:Static core:SentencesToUse.GGA}}"/>  
+                           <CheckBox Content="HDT" HorizontalAlignment="Left" IsChecked="{Binding SentencesToUse, Converter={StaticResource NmeaSentencesValueConverter},ConverterParameter={x:Static core:SentencesToUse.HDT}}"/>  
+                           <CheckBox Content="GSA" HorizontalAlignment="Left" IsChecked="{Binding SentencesToUse, Converter={StaticResource NmeaSentencesValueConverter},ConverterParameter={x:Static core:SentencesToUse.GSA}}"/>  
+                           <CheckBox Content="GST" HorizontalAlignment="Left" IsChecked="{Binding SentencesToUse, Converter={StaticResource NmeaSentencesValueConverter},ConverterParameter={x:Static core:SentencesToUse.GST}}"/>  
+                           <CheckBox Content="GSV" HorizontalAlignment="Left" IsChecked="{Binding SentencesToUse, Converter={StaticResource NmeaSentencesValueConverter},ConverterParameter={x:Static core:SentencesToUse.GSV}}"/>  
+                       </StackPanel>  
+                       <StackPanel Orientation="Vertical" Grid.Column="1">  
+                           <CheckBox Content="ZDA" HorizontalAlignment="Left" IsChecked="{Binding SentencesToUse, Converter={StaticResource NmeaSentencesValueConverter},ConverterParameter={x:Static core:SentencesToUse.ZDA}}"/>  
+                           <CheckBox Content="VTG" HorizontalAlignment="Left" IsChecked="{Binding SentencesToUse, Converter={StaticResource NmeaSentencesValueConverter},ConverterParameter={x:Static core:SentencesToUse.VTG}}"/>  
+                           <CheckBox Content="RMC" HorizontalAlignment="Left" IsChecked="{Binding SentencesToUse, Converter={StaticResource NmeaSentencesValueConverter},ConverterParameter={x:Static core:SentencesToUse.RMC}}"/>  
+                           <CheckBox Content="DBT" HorizontalAlignment="Left" IsChecked="{Binding SentencesToUse, Converter={StaticResource NmeaSentencesValueConverter},ConverterParameter={x:Static core:SentencesToUse.DBT}}"/>  
+                           <CheckBox Content="DPT" HorizontalAlignment="Left" IsChecked="{Binding SentencesToUse, Converter={StaticResource NmeaSentencesValueConverter},ConverterParameter={x:Static core:SentencesToUse.DPT}}"/>  
+                       </StackPanel>  
+                   </Grid>  
+               </GroupBox>  
+           </Grid>  
+       </Grid>  
+   </Border>  
+</UserControl>

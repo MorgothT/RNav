@@ -7,7 +7,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:properties="clr-namespace:Mapper_v1.Properties"
     xmlns:mapsui="clr-namespace:Mapsui.UI.Wpf;assembly=Mapsui.UI.Wpf"
-    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls" 
+    xmlns:viewmodels="clr-namespace:Mapper_v1.ViewModels"
+    d:DataContext="{d:DesignInstance Type=viewmodels:MapViewModel}"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800" Unloaded="Page_Unloaded" Loaded="Page_Loaded">
     <!--<Page.Resources>
@@ -171,7 +173,7 @@
                     <TextBlock Name="FeatureInfo" TextWrapping="Wrap"/>
                 </Border>-->
             </Grid>
-            <Expander x:Name="DataDisplay" ExpandDirection="Left" Grid.Column="1">
+            <Expander Name="DataDisplayPanel" ExpandDirection="Left" Grid.Column="1">
                 <Expander.Header>
                     <TextBlock Text="Data Display" FontSize="14" Margin="{StaticResource ExpanderHeaderThemePadding}" Foreground="{DynamicResource MahApps.Brushes.IdealForeground}">
                         <TextBlock.LayoutTransform>

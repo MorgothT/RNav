@@ -6,7 +6,7 @@ using Mapsui;
 
 namespace Mapper_v1.Models;
 
-public partial class VesselData : ObservableObject
+public partial class DataDisplay : ObservableObject
 {
     // TODO: Change vessel to "Mobile" add the Offsets to the Device, add type of device ?
     // TODO: Gibor fix ?

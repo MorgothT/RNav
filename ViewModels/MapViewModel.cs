@@ -1,20 +1,18 @@
-﻿using BruTile.Wms;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ControlzEx.Standard;
 using Mapper_v1.Core;
 using Mapper_v1.Core.Contracts;
 using Mapper_v1.Core.Models;
 using Mapper_v1.Core.Models.DataStruct;
+using Mapper_v1.Core.Models.Devices;
 using Mapper_v1.Helpers;
 using Mapper_v1.Models;
-using Mapper_v1.Projections;
+using Mapper_v1.Core.Projections;
 using Mapsui;
-using NMEADevice;
-using System.Dynamic;
-using System.IO.Ports;
-using System.Net.Sockets;
+using Mapper_v1.Views;
 using System.Windows;
+using System.Net.Sockets;
+using System.Collections.ObjectModel;
 
 namespace Mapper_v1.ViewModels;
 
@@ -25,6 +23,8 @@ public partial class MapViewModel : ObservableObject
     [ObservableProperty]
     private MapSettings mapSettings = new();
     [ObservableProperty]
+    private MobileSettings mobileSettings = new();
+    [ObservableProperty]
     private Dictionary<string, object> data = new();
     [ObservableProperty]
     private bool measurementMode = false;
@@ -32,130 +32,92 @@ public partial class MapViewModel : ObservableObject
     private bool targetMode = false;
     [ObservableProperty]
     private MapMode currentMapMode;
+    [ObservableProperty]
+    private ObservableCollection<Mobile> mobiles;
 
-    private static PortConfig debugPortConfig = new PortConfig()
-    {
-        IPAddress = "127.0.0.1",
-        Port = 5763,
-        Type = ConnectionType.TCP
-    }; //TODO: implanemt getting from settings
-    [ObservableProperty]
-    private List<IPortConfig> portConfigs = [debugPortConfig];
-    
-    [ObservableProperty]
-    private Dictionary<string, object> ports = [];
-    private static NmeaDeviceConfig debugDeviceConfig = new NmeaDeviceConfig()
-    {
-        PortName = debugPortConfig.PortName,
-        SentencesToUse = SentencesToUse.Default,
-        DataTypes = DataTypes.Position | DataTypes.Speed | DataTypes.Heading,
-        DeviceName = "debug NMEA",
-    };
-    [ObservableProperty]
-    private List<IDeviceConfig> deviceConfigs = [debugDeviceConfig];
-    [ObservableProperty]
-    private Dictionary<object,string> devices = [];
+    //TODO: implanemt getting from settings
+    //private static PortConfig debugPortConfig = new()
+    //{
+    //    Type = ConnectionType.TCP,
+    //    IPAddress = "127.0.0.1",
+    //    Port = 5763
+    //};
+    //private static PortConfig debugPortConfig2 = new()
+    //{
+    //    Type = ConnectionType.TCP,
+    //    IPAddress = "127.0.0.1",
+    //    Port = 5764
+    //};
+    //private static NmeaDeviceConfig debugDeviceConfig = new()
+    //{
+    //    PortConfig = debugPortConfig,
+    //    SentencesToUse = SentencesToUse.Default,
+    //    DataTypes = DataTypes.Position | DataTypes.Speed | DataTypes.Heading,
+    //    DeviceName = "debug NMEA",
+    //};
+    //private static NmeaDeviceConfig debugDeviceConfig2 = new()
+    //{
+    //    PortConfig = debugPortConfig2,
+    //    SentencesToUse = SentencesToUse.Default,
+    //    DataTypes = DataTypes.Position | DataTypes.Speed | DataTypes.Heading,
+    //    DeviceName = "debug NMEA",
+    //};
+    //private Mobile debugMobile = new()
+    //{
+    //    Name = "Debug Mobile",
+    //    IsPrimery = true,
+    //};
+    //private Mobile debugMobile2 = new()
+    //{
+    //    Name = "another Debug Mobile",
+    //    //IsPrimery = true,
+    //};
 
     public MapViewModel()
     {
-        InitPorts();
-        InitDevices();
+        InitMobiles();
         InitDataView();
     }
 
-    private void InitDevices()
+    private void InitMobiles()
     {
-        foreach (var deviceConfig in DeviceConfigs)
+        try
         {
-            Type type = deviceConfig.DeviceType;
-            var port = Ports.Where(x => x.Key == deviceConfig.PortName).First().Value;
-            var portConfig = PortConfigs.Where(x => x.PortName == deviceConfig.PortName).First();
+            // TODO: Load Mobiles from settings
+            // Mobiles.Add(debugMobile);
+            // Mobiles.Add(debugMobile2);
 
-            var device = Activator.CreateInstance(type, [portConfig, port, deviceConfig]);
-            //Type type = device.GetType();]
-            ((BaseDevice)device).DataUpdated += NewData;
-            Devices.Add(device, deviceConfig.DeviceName);
-        }
-
-    }
-
-    private void NewData(object data,Type type)
-    {
-        //double lon, lat;
-        //lon = vessel.Longitude;     //vessel.GetGGA.Longitude.Degrees;
-        //lat = vessel.Latitude;     //vessel.GetGGA.Latitude.Degrees;
-        //MPoint p = new MPoint(lon, lat);
-        //Projection.Project("EPSG:4326", CRS, p);
-
-
-        Data["X"] = ((NmeaDeviceData)data).Position.Longitude.ToString("F2");
-        //Data["Y"] = p.Y.ToString("F2");
-        //Data["Latitude"] = lat.FormatLatLong(MapSettings.DegreeFormat);
-        //Data["Longitude"] = lon.FormatLatLong(MapSettings.DegreeFormat);
-        //Data["Heading"] = vessel.Heading.ToString("F2");    // Added offset
-        //Data["Time (UTC)"] = vessel.LastFixTime.ToString(@"hh\:mm\:ss\.fff");//GetGGA.UTC.ToString(@"hh\:mm\:ss");
-        //Data["No. of Sats"] = vessel.GetGGA.SatelliteCount;
-        //Data["Quality"] = vessel.GetGGA.FixQuality;
-        //Data["Speed (Kn)"] = vessel.SpeedInKnots.ToString("F2");
-        //Data["Speed Fw (Kn)"] = vessel.SpeedFw.ToString("F2");
-        //Data["Speed Sb (Kn)"] = vessel.SpeedSb.ToString("F2");
-        //Data["Depth"] = vessel.Depth.ToString("F2");
-    }
-
-    private void InitPorts()
-    {
-        foreach (var portConfig in PortConfigs)
-        {
-            try
+            Mobiles = MobileSettings.Mobiles;
+            // there must be at least 1 mobile
+            if (Mobiles.Count < 1) throw new Exception("There must be at least 1 mobile !");
+            // there must be only 1 primery
+            if (Mobiles.Count(m => m.IsPrimery) > 1)
             {
-                object port;
-                switch (portConfig.Type)
+                // remove primery from all 
+                foreach (var mobile in Mobiles)
                 {
-                    case ConnectionType.Serial:
-                        port = new SerialPort(portConfig.ComPort, portConfig.BaudRate);
-                        break;
-                    case ConnectionType.UDP:
-                        port = new UdpClient(portConfig.Port);
-                        break;
-                    case ConnectionType.TCP:
-                        port = new TcpClient(portConfig.IPAddress, portConfig.Port);
-                        break;
-                    default:
-                        throw new ArgumentException();
+                    mobile.IsPrimery = false;
                 }
-                Ports.Add(portConfig.PortName, port);
             }
-            catch (System.Exception)
+            if (Mobiles.Count(m => m.IsPrimery) == 0)
             {
-                throw;
+                // make the 1st primery
+                Mobiles.First().IsPrimery = true;
+            }
+
+            // INIT Mobiles devices
+            foreach (var mobile in Mobiles)
+            {
+                mobile.InitDevices();
             }
         }
-    }
-    #region Commands
-
-    [RelayCommand]
-    private void Measure()
-    {
-        if (MeasurementMode)
+        catch (Exception ex)
         {
-            CurrentMapMode = MapMode.Measure;
-            TargetMode = false;
+            MessageBox.Show($"Error: {ex.Message}");
+            // throw;
         }
-        else if (!TargetMode) { CurrentMapMode = MapMode.Navigate; }
     }
-
-    [RelayCommand]
-    private void Target()
-    {
-        if (TargetMode)
-        {
-            CurrentMapMode = MapMode.Target;
-            MeasurementMode = false;
-        }
-        else if (!MeasurementMode) { CurrentMapMode = MapMode.Navigate; }
-    }
-
-    #endregion
+    
 
     private void InitDataView()
     {
@@ -176,8 +138,11 @@ public partial class MapViewModel : ObservableObject
         Data.Add("Bearing", "-");
         Data.Add("Distance", "-");
     }
+    public void EditDataView()
+    {
 
-    public void UpdateDataView(VesselData vessel,string CRS, Target CurrentTarget)
+    }
+    public void UpdateDataView(DataDisplay vessel,string CRS, Target CurrentTarget)
     {
         double lon, lat;
         lon = vessel.Longitude;     //vessel.GetGGA.Longitude.Degrees;
@@ -190,8 +155,8 @@ public partial class MapViewModel : ObservableObject
         Data["Latitude"] = lat.FormatLatLong(MapSettings.DegreeFormat);
         Data["Longitude"] = lon.FormatLatLong(MapSettings.DegreeFormat);
         Data["Heading"] = vessel.Heading.ToString("F2");    // Added offset
-        Data["Time (UTC)"] = vessel.LastFixTime.ToString(@"hh\:mm\:ss\.fff");//GetGGA.UTC.ToString(@"hh\:mm\:ss");
-        Data["No. of Sats"] = vessel.GetGGA.SatelliteCount;
+        Data["Time (UTC)"] = vessel.LastFixTime.ToString(@"HH\:mm\:ss\.fff");//GetGGA.UTC.ToString(@"hh\:mm\:ss");
+        Data["No. of Sats"] = //vessel.GetGGA.SatelliteCount;
         Data["Quality"] = vessel.GetGGA.FixQuality;
         Data["Speed (Kn)"] = vessel.SpeedInKnots.ToString("F2");
         Data["Speed Fw (Kn)"] = vessel.SpeedFw.ToString("F2");
@@ -215,37 +180,28 @@ public partial class MapViewModel : ObservableObject
         Data = new Dictionary<string, object>(Data);
     }
 
-    //public void UpdateDataView(VesselData vessel, GeoConverter.Converter converter, Target CurrentTarget)
-    //{
-    //    double lon, lat;
-    //    lon = vessel.GetGGA.Longitude.Degrees;
-    //    lat = vessel.GetGGA.Latitude.Degrees;
-    //    var p = converter.Convert(new(lon, lat, 0));
-    //    Data["X"] = p.X.ToString("F2");
-    //    Data["Y"] = p.Y.ToString("F2");
-    //    Data["Latitude"] = Formater.FormatLatLong(lat, MapSettings.DegreeFormat);
-    //    Data["Longitude"] = Formater.FormatLatLong(lon, MapSettings.DegreeFormat);
-    //    Data["Heading"] = ((vessel.GetHDT.HeadingTrue + MapSettings.HeadingOffset) % 360).ToString("F2");    // Added offset
-    //    Data["Time (UTC)"] = vessel.GetGGA.UTC.ToString(@"hh\:mm\:ss");
-    //    Data["No. of Sats"] = vessel.GetGGA.SatelliteCount;
-    //    Data["Quality"] = vessel.GetGGA.FixQuality;
-    //    Data["Speed (Kn)"] = vessel.GetVTG.GroundSpeedKnots.ToString("F2");
-    //    if (CurrentTarget is null)
-    //    {
-    //        Data["Target Name"] = "N/A";
-    //        Data["Bearing"] = "-";
-    //        Data["Distance"] = "-";
-    //    }
-    //    else
-    //    {
-    //        Data["Target Name"] = CurrentTarget.Name;
-    //        MPoint vesselPoint = new MPoint(p.X, p.Y);
-    //        MPoint targetPoint = new MPoint(CurrentTarget.X, CurrentTarget.Y);
-    //        Data["Bearing"] = GeoMath.CalcBearing(vesselPoint, targetPoint).ToString("F1");
-    //        Data["Distance"] = vesselPoint.Distance(targetPoint).ToString("F1");
+    #region Commands
+    [RelayCommand]
+    private void Measure()
+    {
+        if (MeasurementMode)
+        {
+            CurrentMapMode = MapMode.Measure;
+            TargetMode = false;
+        }
+        else if (!TargetMode) { CurrentMapMode = MapMode.Navigate; }
+    }
 
-    //    }
-    //    Data = new Dictionary<string, object>(Data);
-    //}
+    [RelayCommand]
+    private void Target()
+    {
+        if (TargetMode)
+        {
+            CurrentMapMode = MapMode.Target;
+            MeasurementMode = false;
+        }
+        else if (!MeasurementMode) { CurrentMapMode = MapMode.Navigate; }
+    }
 
+    #endregion
 }

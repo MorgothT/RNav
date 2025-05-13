@@ -24,6 +24,16 @@ public class BoatShapeLayer : BaseLayer, IModifyFeatureLayer, IDisposable
     private AnimationEntry<Map>? _animationMyDirection;
     private AnimationEntry<Map>? _animationMyLocation;
 
+    private Guid mobileId;
+    public Guid MobileId
+    {
+        get => mobileId;
+        set
+        {
+            mobileId = value;
+        }
+    }
+    
     private BoatShape _boatShape;
     /// <summary>
     /// The Vessel's Shape to be displayed on the map
@@ -57,6 +67,7 @@ public class BoatShapeLayer : BaseLayer, IModifyFeatureLayer, IDisposable
     }
 
     private MPoint _myLocation = new(0, 0);
+
     /// <summary>
     /// Position of location, that is displayed
     /// </summary>
@@ -116,21 +127,23 @@ public class BoatShapeLayer : BaseLayer, IModifyFeatureLayer, IDisposable
     /// </summary>
     /// <param name="map">MapView, to which this layer belongs</param>
     /// <param name="location">Location, where to start</param>
-    public BoatShapeLayer(Map map, MPoint location, BoatShape boatShape) : this(map, boatShape)
+    public BoatShapeLayer(Map map, MPoint location, BoatShape boatShape, Guid mobile = default) : this(map, boatShape, mobile)
     {
         _myLocation = location;
+        //MobileId = mobile;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="T:Mapsui.Layers.MyLocationLayer"/> class.
     /// </summary>
     /// <param name="map">Map, to which this layer belongs</param>
-    public BoatShapeLayer(Map map, BoatShape boatShape)
+    public BoatShapeLayer(Map map, BoatShape boatShape, Guid mobile = default)
     {
         _map = map ?? throw new ArgumentNullException("Map shouldn't be null");
         _map.Info += HandleClicked;
         _boatShape = boatShape;
         _boatShape.Refresh();
+        MobileId = mobile;
 
         Enabled = true;
         IsMapInfoLayer = true;
@@ -158,19 +171,26 @@ public class BoatShapeLayer : BaseLayer, IModifyFeatureLayer, IDisposable
             ArrowPosition = 0,
             SymbolOffset = new Offset(0, -SymbolStyle.DefaultHeight * 0.4f),
             MaxWidth = 300,
-            RotateWithMap = true,
-            SymbolOffsetRotatesWithMap = true,
-            Color = Mapsui.Styles.Color.White,
+            RotateWithMap = false,
+            SymbolOffsetRotatesWithMap = false,
+            Color = Color.Transparent,
+            //ArrowHeight = 0,
             StrokeWidth = 0,
-            ShadowWidth = 0
+            ShadowWidth = 0,
+            ArrowWidth = 1,
+            ArrowHeight = 10,
+            BackgroundColor = Mapsui.Styles.Color.Transparent,
+            TitleTextAlignment = Mapsui.Widgets.Alignment.Auto,
+            
         };
 
         _feature.Styles.Clear();
         _feature.Styles.Add(_locStyle);
-        //_feature.Styles.Add(_coStyle);
+        _feature.Styles.Add(_coStyle);
 
         _features = new List<IFeature> { _feature };
         Style = null;
+        
     }
 
     /// <summary>

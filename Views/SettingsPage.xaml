@@ -24,6 +24,7 @@
     <Page.Resources>
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" EnumType="models:AppTheme"/>
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConnectionType" EnumType="core:ConnectionType"/>
+        <!--
         <DataTemplate DataType="{x:Type cm:PortConfig}">
 
             <GroupBox BorderThickness="3,0,3,3" UseLayoutRounding="True" >
@@ -116,6 +117,7 @@
             </GroupBox>
 
         </DataTemplate>
+        -->
     </Page.Resources>
     <ScrollViewer>
         <Grid Margin="{StaticResource SmallTopBottomMargin}">
@@ -238,14 +240,15 @@
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Text="Vessel Shape:" VerticalAlignment="Center"
+                        <!-->
+                            <TextBlock Text="Vessel Shape:" VerticalAlignment="Center"
                                     Grid.Column="0"/>
-                        <TextBlock Text="{Binding MapSettings.BoatShape}"
+                            <TextBlock Text="{Binding MapSettings.BoatShape}"
                                     Grid.Column="1" Margin="{StaticResource SmallLeftRightMargin}" VerticalAlignment="Center"/>
-                        <Button Command="{Binding BrowseBoatShapeCommand}" Style="{StaticResource MahApps.Styles.Button.ToolBar}"
+                            <Button Command="{Binding BrowseBoatShapeCommand}" Style="{StaticResource MahApps.Styles.Button.ToolBar}"
                                 Grid.Column="2" Padding="0" Width="48" HorizontalAlignment="Right" MinWidth="50">
-                            <Label FontFamily="RNav" Content="&#xE704;" FontSize="24" FontWeight="Light" Padding="0"/>
-                        </Button>
+                                <Label FontFamily="RNav" Content="&#xE704;" FontSize="24" FontWeight="Light" Padding="0"/>
+                            </Button>
                         <TextBlock Text="Fill Color:"
                                     Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
                         <mah:ColorPicker Background="{x:Null}" SelectedColor="{Binding MapSettings.BoatShape.FillColor}" MaxWidth="50" 
@@ -268,6 +271,8 @@
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                         </mah:ColorPicker>
+                        </!-->
+
                         <TextBlock Text="Heading Offset (Deg):" 
                                    Grid.ColumnSpan="2" Grid.Row="3" Grid.Column="0" 
                                    VerticalAlignment="Center"/>
@@ -359,6 +364,7 @@
                     </Grid>
                 </GroupBox>
                 <!-- TODO: Change to list of devices-->
+                <!-->
                 <GroupBox Header="GNSS Input">
                     <DockPanel LastChildFill="True">
                         <StackPanel DockPanel.Dock="Right" Margin="{StaticResource XSmallLeftMargin}">
@@ -387,6 +393,7 @@
                                   SelectedItem="{Binding SelectedDevice}"/>
                     </DockPanel>
                 </GroupBox>
+                </!-->
             </StackPanel>
         </Grid>
     </ScrollViewer>

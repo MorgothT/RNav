@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GeoConverter;
+using Mapper_v1.Core.Models;
 using Mapper_v1.Helpers;
 using Mapper_v1.Models;
 using Mapsui;

@@ -171,7 +171,13 @@
   <data name="ShellTargetsPage" xml:space="preserve">
     <value>Targets</value>
   </data>
+  <data name="ShellMobilesPage" xml:space="preserve">
+    <value>Mobiles</value>
+  </data>
   <data name="TargetsPageTitle" xml:space="preserve">
     <value>Targets</value>
+  </data>
+  <data name="MobilesPageTitle" xml:space="preserve">
+    <value>Mobiles</value>
   </data>
 </root>

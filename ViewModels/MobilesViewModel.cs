@@ -145,21 +145,48 @@ public partial class MobilesViewModel : ObservableObject, INavigationAware
     }
 
     [RelayCommand]
-    private void SaveMobiles()
+    private void LoadFromFile()
     {
-        mobileSettings.SaveSettings(Mobiles);
+        var ofd = new Microsoft.Win32.OpenFileDialog
+        {
+            Filter = "Mobile Files (*.mob)|*.mob|All Files (*.*)|*.*",
+            Title = "Select Mobiles File",
+            CheckFileExists = true,
+        };
+        var result = ofd.ShowDialog();
+        if (result.Value == true)
+        {
+            Mobiles = mobileSettings.LoadMobilesFromFile(ofd.FileName);
+        }
     }
+
+    [RelayCommand]
+    private void SaveToFile()
+    {
+        var sfd = new Microsoft.Win32.SaveFileDialog
+        {
+            Filter = "Mobile Files (*.mob)|*.mob|All Files (*.*)|*.*",
+            Title = "Save Mobiles To File",
+            AddExtension = true,
+            DefaultExt = ".mob",
+            OverwritePrompt = true,
+        };
+        var result = sfd.ShowDialog();
+        if (result.Value == true)
+        {
+            mobileSettings.SaveSettings(sfd.FileName);
+        }
+    }
+    #endregion
 
     public void OnNavigatedTo(object parameter)
     {
-        
+
     }
 
     public void OnNavigatedFrom()
     {
         SaveToSettings();
     }
-
-    #endregion
 }
 

@@ -131,10 +131,11 @@
                         </ListView.ItemTemplate>
                     </ListView>
                 </GroupBox>
-                <!--<DockPanel LastChildFill="True" Grid.Row="2" Background="Transparent">
-                    <Button Content="Save Mobiles" Command="{Binding SaveMobilesCommand}" Margin="5" DockPanel.Dock="Bottom"/>
+                <DockPanel LastChildFill="True" Grid.Row="2" Background="Transparent">
+                    <Button Content="Import" Command="{Binding LoadFromFileCommand}" Margin="5" DockPanel.Dock="Bottom"/>
+                    <Button Content="Export" Command="{Binding SaveToFileCommand}" Margin="5" DockPanel.Dock="Bottom"/>
                     <TextBlock Text="" DockPanel.Dock="Top"/>
-                </DockPanel>-->
+                </DockPanel>
             </Grid>
             <StackPanel Orientation="Horizontal" Grid.Column="1">
                 <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />

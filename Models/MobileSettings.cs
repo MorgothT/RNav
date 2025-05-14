@@ -91,7 +91,8 @@ namespace Mapper_v1.Models
                     }
                 }
             }
-            Mobiles = [.. Mobiles.OrderByDescending(m => m.IsPrimery)];
+            // Order the Mobiles so primery is first
+            //Mobiles = [.. Mobiles.OrderByDescending(m => m.IsPrimery)];
         }
 
         internal void SaveSettings(ObservableCollection<Mobile> mobiles)

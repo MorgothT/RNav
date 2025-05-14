@@ -16,13 +16,6 @@
     d:DataContext="{d:DesignInstance Type=viewmodels:MobilesViewModel}"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800">
-    <!--
-    <i:Interaction.Triggers>
-        <i:EventTrigger EventName="MouseLeave">
-            <i:InvokeCommandAction Command="{Binding SaveMobilesCommand}"/>
-        </i:EventTrigger>
-    </i:Interaction.Triggers>
-    -->
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
@@ -85,12 +78,23 @@
                         </DockPanel>
                     </GroupBox.Header>
                     <ListView x:Name="MobileList" ItemsSource="{Binding Mobiles}" SelectedItem="{Binding SelectedMobile}" 
-                            SelectionMode="Single" Margin="5">
+                            SelectionMode="Single" Margin="5" 
+                              AllowDrop="True"
+                              PreviewMouseLeftButtonDown="MobileList_PreviewMouseLeftButtonDown"
+                              PreviewMouseMove="MobileList_PreviewMouseMove"
+                              Drop="MobileList_Drop"
+                              DragOver="MobileItem_DragOver">
                         <ListView.ItemTemplate>
                             <HierarchicalDataTemplate DataType="{x:Type CModels:Mobile}" ItemsSource="{Binding DeviceConfigs}">
                                 <TextBlock Text="{Binding Name}"/>
                             </HierarchicalDataTemplate>
                         </ListView.ItemTemplate>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem" BasedOn="{StaticResource MahApps.Styles.ListBoxItem}">
+                                
+                                <!--<Setter Property="AllowDrop" Value="True"/>-->
+                            </Style>
+                        </ListView.ItemContainerStyle>
                     </ListView>
                 </GroupBox>
                 <GroupBox Grid.Row="1">
@@ -127,10 +131,10 @@
                         </ListView.ItemTemplate>
                     </ListView>
                 </GroupBox>
-                <DockPanel LastChildFill="True" Grid.Row="2" Background="Transparent">
+                <!--<DockPanel LastChildFill="True" Grid.Row="2" Background="Transparent">
                     <Button Content="Save Mobiles" Command="{Binding SaveMobilesCommand}" Margin="5" DockPanel.Dock="Bottom"/>
                     <TextBlock Text="" DockPanel.Dock="Top"/>
-                </DockPanel>
+                </DockPanel>-->
             </Grid>
             <StackPanel Orientation="Horizontal" Grid.Column="1">
                 <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />

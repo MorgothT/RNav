@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapper_v1.Contracts.ViewModels;
 using Mapper_v1.Core;
 using Mapper_v1.Core.Contracts;
 using Mapper_v1.Core.Models;
@@ -9,7 +10,7 @@ using System.Collections.ObjectModel;
 
 namespace Mapper_v1.ViewModels;
 
-public partial class MobilesViewModel : ObservableObject
+public partial class MobilesViewModel : ObservableObject, INavigationAware
 {
     [ObservableProperty]
     private ObservableCollection<Mobile> mobiles;
@@ -147,6 +148,16 @@ public partial class MobilesViewModel : ObservableObject
     private void SaveMobiles()
     {
         mobileSettings.SaveSettings(Mobiles);
+    }
+
+    public void OnNavigatedTo(object parameter)
+    {
+        
+    }
+
+    public void OnNavigatedFrom()
+    {
+        SaveToSettings();
     }
 
     #endregion

@@ -241,11 +241,9 @@ public partial class MapPage : Page
     }
     private void InitMapLayers()
     {
-        //REDO: Meashurement layer need to be on top
         // Special layers
         foreach (var mobile in vm.Mobiles) {
             MobileShapeSettings shapeSettings = mobile.MobileShapeSettings;
-            // Update the following line to convert System.Drawing.Color to System.Windows.Media.Color
             var shape = new BoatShape(shapeSettings.ShapePath,shapeSettings.ShapeFill, shapeSettings.ShapeOutline);
             if (mobile.IsPrimery)
             {
@@ -265,33 +263,7 @@ public partial class MapPage : Page
                     IsCentered = false,
                 });
             }
-            //if (mobile.IsPrimery)
-            //{
-            //    MobileLayers.Insert(0, new BoatShapeLayer(MapControl.Map, mapSettings.BoatShape, mobile.Id)
-            //    {
-            //        CalloutText = mobile.Name,
-            //        Enabled = true,
-            //        IsCentered = ToggleTracking.IsChecked.Value,
-            //    });
-            //}
-            //else
-            //{
-            //    // TODO: add from settings
-            //    var shape = new BoatShape(@".\VesselShapes\CraneDimond.shp", System.Windows.Media.Colors.Yellow, System.Windows.Media.Colors.Blue);
-            //    MobileLayers.Add(new BoatShapeLayer(MapControl.Map, shape, mobile.Id)
-            //    {
-            //        CalloutText = mobile.Name,
-            //        Enabled = true,
-            //        IsCentered = false,
-            //    });
-            //}
         }
-        //MyBoatLayer = new BoatShapeLayer(MapControl.Map, mapSettings.BoatShape)
-        //{
-        //    Name = "Location",
-        //    Enabled = true,
-        //    IsCentered = ToggleTracking.IsChecked.Value,
-        //};
         BoatTrailLayer = new MemoryLayer()
         {
             //Features = new[] { CreateTrailFeature() },
@@ -335,7 +307,7 @@ public partial class MapPage : Page
         {
             var osm = OpenStreetMap.CreateTileLayer("RNav_OSM");
             osm.Name = "MapOvelay";
-            MapControl.Map.Layers.Add(osm);
+            MapControl.Map.Layers.Insert(0, osm);
         }
         AddCharts();
         LoadLastTrail();
@@ -347,8 +319,7 @@ public partial class MapPage : Page
         MapControl.Map.Layers.Add(BoatTrailLayer);
         //MapControl.Map.Layers.Add(MyBoatLayer);
         MobileLayers.ForEach(layer => { MapControl.Map.Layers.Add(layer); });
-        MapControl.Map.Layers.Insert(0, measurementLayer);
-
+        MapControl.Map.Layers.Add(measurementLayer);
     }
     private void LoadLastTrail()
     {

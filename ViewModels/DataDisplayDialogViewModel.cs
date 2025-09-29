@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapper_v1.Contracts.ViewModels;
+using Mapper_v1.Helpers;
 using Mapper_v1.Models;
 using System.Collections.ObjectModel;
 
@@ -30,6 +31,7 @@ public partial class DataDisplayDialogViewModel : ObservableObject, INavigationA
         AvailableItems = new ObservableCollection<DataViewItem>(
             PopulateAvailableItems(mobileSettings).Except(SelectedItems, comparer)
         );
+        //ResetItemsColor();
     }
 
     private void RemoveInvalidSelectedItems(MobileSettings mobileSettings)
@@ -131,6 +133,15 @@ public partial class DataDisplayDialogViewModel : ObservableObject, INavigationA
             SelectedSelectedItem = SelectedItems.ElementAtOrDefault(index);
         }
     }
+    [RelayCommand]
+    private void ResetItemsColor()
+    {
+        foreach (var item in SelectedItems)
+        {
+            item.Color = Formater.GetThemeForegroundColor();
+        }
+    }
+
     public void OnNavigatedFrom()
     {
         // Not implemented

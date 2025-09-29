@@ -44,15 +44,12 @@ namespace Mapper_v1.Views;
 
 public partial class MapPage : Page
 {
-    //public BoatShapeLayer MyBoatLayer;
     public List<BoatShapeLayer> MobileLayers = [];
     public MemoryLayer BoatTrailLayer;
-    public DataDisplay DataDisplay = new();
 
     private MapSettings mapSettings = new();
     private CommSettings commSettings = new();
 
-    //private ObservableCollection<NmeaDevice> devices = new();
     private MPoint measureStart;
     private WritableLayer measurementLayer;
     private GenericCollectionLayer<List<IFeature>> MyTargets = new();
@@ -106,9 +103,6 @@ public partial class MapPage : Page
             Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => UpdateMobilePosition(mobileId)));
             Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => UpdateTrail(mobileId)));
         };
-
-        // Subscribe to SelectedTarget changes
-        //SelectedTargetChanged += OnSelectedTargetChanged;
     }
 
     private void OnSelectedTargetChanged(Target newTarget)
@@ -118,66 +112,10 @@ public partial class MapPage : Page
          vm.OnSelectedTargetChanged(newTarget); // if such a method exists
     }
 
-    private void InitMobiles()
-    {
-        foreach (var mobile in vm.Mobiles)
-        {
-            // Subscribe to Mobile DataChanged event
-            // This will allow us to update the UI when mobile data changes
-            //mobile.DataChanged += MobileDataChanged;
-        }
-    }
-
-    private void MobileDataChanged(Guid mobileId, DataTypes dataType)
-    {
-        // Get the mobile data  
-        if (!vm.Mobiles.Any(m => m.Id == mobileId)) return; // Mobile not found  
-        Mobile mobile = vm.Mobiles.Where(m => m.Id == mobileId).Single();
-        MobileData data = mobile.Data;
-
-        // TODO: replace Vessel data  
-        //if (RecordEnabled && dataType.HasFlag(DataTypes.Raw))
-        //{
-        //    Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => LogNMEA(data.RawMessage)));
-        //}
-
-        // Update Main Vessel  
-        if (mobile.IsPrimery)
-        {
-            //DataDisplay.Heading = data.Motion.Heading;
-            //DataDisplay.Depth = data.Depth.Meters;
-            //DataDisplay.LastFixTime = data.Time.DateTime;
-            //DataDisplay.Latitude = data.Position.Latitude;
-            //DataDisplay.Longitude = data.Position.Longitude;
-            //DataDisplay.SpeedInKnots = data.Speed.GroundSpeedKnots;
-
-            //Dispatcher.BeginInvoke(DispatcherPriority.Background, LogLocation);     //moveed to ViewModel  
-            //Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(UpdateTrail));     //Seperate to viewmodel & view  
-
-            // Update UI elements  
-            //Dispatcher.BeginInvoke(UpdateLocation);  
-            //Dispatcher.BeginInvoke(UpdateDirection);  
-            //Dispatcher.BeginInvoke(UpdateDepth);  
-
-            
-            vm.UpdateDataView_Old(DataDisplay, ProjectCRS, SelectedTarget);
-        }
-        //else  
-        {
-            // update UI of all mobiles  
-            //Dispatcher.BeginInvoke(new Action<Guid>(UpdateMobilePosition), mobileId);
-            //Dispatcher.BeginInvoke(new Action<Guid>(UpdateMobileDirection), mobileId);
-        }
-    }
-
-
-
     //REDO: change this after Mobile implementation
     private void InitVessel()
     {
-        DataDisplay.HeadingOffset = mapSettings.HeadingOffset;
-        DataDisplay.DepthOffset = mapSettings.DepthOffset;
-        DataDisplay.PositionOffset = new(mapSettings.PositionOffset.X, mapSettings.PositionOffset.Y);
+
     }
 
     private void InitMapControl()
@@ -835,6 +773,31 @@ public partial class MapPage : Page
     {
         ZoomActive();
     }
+    /// <summary>
+    /// Adds a new target to the map and to the settings
+    /// if fromMap is true then point is in Map CRS, else in Project CRS
+    /// </summary>
+    /// <param name="point"></param>
+    /// <param name="fromMap"></param>
+    private void AddNewTarget(MPoint point,bool fromMap = false)
+    {
+        int id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
+        if (fromMap)
+        {
+            ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, point);
+        }
+        //ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, point);
+        MPoint wgs = new(point);
+        ProjectionDefaults.Projection.Project(ProjectCRS, "EPSG:4326", wgs);
+        Target target = Target.CreateTarget(point, id, wgs);
+        mapSettings.TargetList.Add(target);
+        mapSettings.SaveMapSettings();
+        var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
+        ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
+        MyTargets?.Features.Add(feature);
+        MyTargets.DataHasChanged();
+        MapControl.Refresh();
+    }
     private void MapControl_Click(object sender, MapInfoEventArgs e)
     {
         if (e.MapInfo?.WorldPosition is null)
@@ -857,19 +820,20 @@ public partial class MapPage : Page
         }
         if (vm.TargetMode)
         {
-            int id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
-            MPoint tr = new(e.MapInfo.WorldPosition);
-            ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, tr);
-            MPoint wgs = new(tr);
-            ProjectionDefaults.Projection.Project(ProjectCRS, "EPSG:4326", wgs);
-            Target target = Target.CreateTarget(tr, id, wgs);
-            mapSettings.TargetList.Add(target);
-            mapSettings.SaveMapSettings();
-            var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
-            ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
-            MyTargets?.Features.Add(feature);
-            e.MapInfo.Layer?.DataHasChanged();
-            MapControl.Refresh();
+            AddNewTarget(e.MapInfo.WorldPosition, true);
+            //int id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
+            //MPoint tr = new(e.MapInfo.WorldPosition);
+            //ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, tr);
+            //MPoint wgs = new(tr);
+            //ProjectionDefaults.Projection.Project(ProjectCRS, "EPSG:4326", wgs);
+            //Target target = Target.CreateTarget(tr, id, wgs);
+            //mapSettings.TargetList.Add(target);
+            //mapSettings.SaveMapSettings();
+            //var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
+            //ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
+            //MyTargets?.Features.Add(feature);
+            //e.MapInfo.Layer?.DataHasChanged();
+            //MapControl.Refresh();
         }
         if (!vm.MeasurementMode && !vm.TargetMode)
         {
@@ -996,7 +960,6 @@ public partial class MapPage : Page
     }
     private void Grid_KeyDown(object sender, KeyEventArgs e)
     {
-        //TODO: add controls and try to stop from losing focus
         Trace.WriteLine(e.Key);
         var vp = MapControl.Map.Navigator.Viewport;
         if (e.Key == Key.OemPlus || e.Key == Key.Add)
@@ -1030,5 +993,12 @@ public partial class MapPage : Page
     }
 
     #endregion
+    //TODO: Move to context menu on map?
+    //TODO: move button placement
+    // Add target at the current boat location
+    private void AddTarget_Click(object sender, RoutedEventArgs e)
+    {
+        AddNewTarget(MobileLayers.First().MyLocation,true);
+    }
 }
 

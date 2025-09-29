@@ -12,7 +12,7 @@ namespace Mapper_v1.Models;
 
 public partial class Target : ObservableObject
 {
-    // REDO: Add desctiption and more...
+    // REDO: Add description and more...
 
     [ObservableProperty]
     private int id;

@@ -30,7 +30,8 @@ public partial class ChartsViewModel : ObservableObject
     {
         OpenFileDialog ofd = new OpenFileDialog
         {
-            Filter = @"Vector files (*.shp;*.dxf)|*.shp;*.dxf|Raster files (*.tif;*.ecw)|*.tif;*.ecw|All files (*.*)|*.*"   // TODO: add more Chart types
+            // TODO: add more Chart types
+            Filter = @"Vector files (*.shp;*.dxf)|*.shp;*.dxf|Raster files (*.tif;*.ecw)|*.tif;*.ecw|All files (*.*)|*.*"   
         };
         if (ofd.ShowDialog() == true)
         {

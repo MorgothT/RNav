@@ -13,7 +13,6 @@ using Mapsui.Projections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Windows;
 
 namespace Mapper_v1.ViewModels;
@@ -152,11 +151,13 @@ public partial class MapViewModel : ObservableObject, INavigationAware
             {
                 object current = null;
                 // Handle system-wide properties
-                
+
+                //TODO: subscribe to View enabling logging
                 //if (item.Name == "LOGGING")
                 //{
                 //    //item.Value = ;
                 //}
+                
                 // handle Traget properties
                 if (item.Name.StartsWith("Target "))
                 {
@@ -295,32 +296,6 @@ public partial class MapViewModel : ObservableObject, INavigationAware
         }
         return item.Value;
     }
-
-    
-
-    private void InitDataView_Old()
-    {
-
-
-        // Add default data items to the dictionary
-        Data.Add("Time (UTC)", 0);
-        Data.Add("Latitude", 0);
-        Data.Add("Longitude", 0);
-        Data.Add("X", 0);
-        Data.Add("Y", 0);
-        Data.Add("No. of Sats", 0);
-        Data.Add("Quality", 0);
-        Data.Add("Heading", 0);
-        Data.Add("Speed (Kn)", 0);
-        Data.Add("Speed Fw (Kn)", double.NaN);
-        Data.Add("Speed Sb (Kn)", double.NaN);
-        Data.Add("Depth", 0);
-
-        Data.Add("Target Name", "N/A");
-        Data.Add("Bearing", "-");
-        Data.Add("Distance", "-");
-    }
-
     private void LoadDataViewItems()
     {
         // Load the selected items from the default settings location
@@ -359,104 +334,6 @@ public partial class MapViewModel : ObservableObject, INavigationAware
         // Update the current target
         currentTarget = newTarget;
         UpdateDataView(Mobiles.Where(m => m.IsPrimery).FirstOrDefault().Id);
-        //if (newTarget is null)
-        //{
-        //    foreach (var item in DataViewItems)
-        //    {
-        //        switch (item.Name)
-        //        {
-        //            case "Target Name":
-        //                item.Value = "N/A";
-        //                break;
-        //            case "Target Brg":
-        //                item.Value = null;
-        //                break;
-        //            case "Target Dist":
-        //                item.Value = null;
-        //                break;
-        //            case "Target X":
-        //                item.Value = null;
-        //                break;
-        //            case "Target Y":
-        //                item.Value = null;
-        //                break;
-        //            default:
-        //                break;
-        //        }
-        //    }
-        //}
-        //else
-        //{
-        //    var primeryPosition = Mobiles.FirstOrDefault(m => m.IsPrimery)?.Data.Position;
-        //    MPoint mPoint = new MPoint(primeryPosition.East, primeryPosition.North);
-
-        //    foreach (var item in DataViewItems)
-        //    {
-        //        switch (item.Name)
-        //        {
-        //            case "Target Name":
-        //                item.Value = newTarget.Name ?? "N/A";
-        //                break;
-        //            case "Target Brg":
-        //                item.Value = mPoint.CalcBearing(newTarget);
-        //                break;
-        //            case "Target Dist":
-        //                item.Value = mPoint.Distance(newTarget);
-        //                break;
-        //            case "Target X":
-        //                item.Value = newTarget.X;
-        //                break;
-        //            case "Target Y":
-        //                item.Value = newTarget.Y;
-        //                break;
-        //            default:
-        //                break;
-        //        }
-        //    }
-        //    //Data["Target Name"] = newTarget.Name;
-        //    //MPoint vesselPoint = new MPoint(Data["X"].ToString(), Data["Y"].ToString());
-        //    //MPoint targetPoint = newTarget.ToMPoint();
-        //    //Data["Bearing"] = vesselPoint.CalcBearing(targetPoint).ToString("F1");
-        //    //Data["Distance"] = vesselPoint.Distance(targetPoint).ToString("F1");
-        //}
-    }
-    public void UpdateDataView_Old(DataDisplay vessel,string CRS, Target CurrentTarget)
-    {
-        // TODO: implement 
-        double lon, lat;
-        lon = vessel.Longitude;     //vessel.GetGGA.Longitude.Degrees;
-        lat = vessel.Latitude;     //vessel.GetGGA.Latitude.Degrees;
-        MPoint p = new MPoint(lon,lat);
-        Projection.Project("EPSG:4326",CRS,p);
-
-        Data["X"] = p.X.ToString("F2");
-        Data["Y"] = p.Y.ToString("F2");
-        Data["Latitude"] = lat.FormatLatLong(MapSettings.DegreeFormat);
-        Data["Longitude"] = lon.FormatLatLong(MapSettings.DegreeFormat);
-        Data["Heading"] = vessel.Heading.ToString("F2");    // Added offset
-        Data["Time (UTC)"] = vessel.LastFixTime.ToString(@"HH\:mm\:ss\.fff");//GetGGA.UTC.ToString(@"hh\:mm\:ss");
-        Data["No. of Sats"] = //vessel.GetGGA.SatelliteCount;
-        Data["Quality"] = vessel.GetGGA.FixQuality;
-        Data["Speed (Kn)"] = vessel.SpeedInKnots.ToString("F2");
-        Data["Speed Fw (Kn)"] = vessel.SpeedFw.ToString("F2");
-        Data["Speed Sb (Kn)"] = vessel.SpeedSb.ToString("F2");
-        Data["Depth"] = vessel.Depth.ToString("F2");
-
-        if (CurrentTarget is null)
-        {
-            Data["Target Name"] = "N/A";
-            Data["Bearing"] = "-";
-            Data["Distance"] = "-";
-        }
-        else
-        {
-            Data["Target Name"] = CurrentTarget.Name;
-            //MPoint vesselPoint = new MPoint(p.X, p.Y);
-            //MPoint targetPoint = CurrentTarget.ToMPoint();
-            Data["Bearing"] = p.CalcBearing(CurrentTarget).ToString("F1");
-            Data["Distance"] = p.Distance(CurrentTarget).ToString("F1");
-        }
-        Data = new Dictionary<string, object>(Data);
     }
 
     #region Commands

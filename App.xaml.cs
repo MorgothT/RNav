@@ -80,7 +80,10 @@ public partial class App : Application
 
         services.AddTransient<TargetsViewModel>();
         services.AddTransient<TargetsPage>();
-
+        
+        services.AddTransient<MobilesViewModel>();
+        services.AddTransient<MobilesPage>();
+        
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<SettingsPage>();
 

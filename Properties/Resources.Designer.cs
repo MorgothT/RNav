@@ -88,6 +88,15 @@ namespace Mapper_v1.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Mobiles.
+        /// </summary>
+        public static string MobilesPageTitle {
+            get {
+                return ResourceManager.GetString("MobilesPageTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Settings page placeholder text.  Your app description goes here..
         /// </summary>
         public static string SettingsPageAboutText {
@@ -201,6 +210,15 @@ namespace Mapper_v1.Properties {
         public static string ShellMapPage {
             get {
                 return ResourceManager.GetString("ShellMapPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mobiles.
+        /// </summary>
+        public static string ShellMobilesPage {
+            get {
+                return ResourceManager.GetString("ShellMobilesPage", resourceCulture);
             }
         }
         

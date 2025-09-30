@@ -1,0 +1,44 @@
+<UserControl x:Class="Mapper_v1.Controls.DataDisplayControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:converters="clr-namespace:Mapper_v1.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="400">
+    <UserControl.Resources>
+        <converters:Color2Brush x:Key="Color2Brush"/>
+        <converters:DoubleFormatConverter x:Key="DoubleFormatConverter"/>
+    </UserControl.Resources>
+    <StackPanel>
+        <DataGrid x:Name="DataView" DataContext="{Binding}" ItemsSource="{Binding}" IsHitTestVisible="False" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding DisplayName}" Header="Name">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource MahApps.Styles.TextBlock.DataGrid}">
+                            <Setter Property="Foreground" Value="{StaticResource MahApps.Brushes.Text}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Highlight}" Value="true">
+                                    <Setter Property="FontWeight" Value="ExtraBold"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Binding="{Binding Value}" Header="Value">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource MahApps.Styles.TextBlock.DataGrid}">
+                            <Setter Property="Foreground" Value="{Binding Color, Converter={StaticResource Color2Brush}}"/>
+                            <Setter Property="HorizontalAlignment" Value="Right"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Highlight}" Value="true">
+                                    <Setter Property="FontWeight" Value="ExtraBold"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </StackPanel>
+</UserControl>

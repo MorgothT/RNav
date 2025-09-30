@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GeoConverter;
+using Mapper_v1.Core.Models;
 using Mapper_v1.Helpers;
 using Mapper_v1.Models;
 using Mapsui;
@@ -33,20 +34,6 @@ public partial class TargetsViewModel : ObservableObject
     #region Constractor
     public TargetsViewModel()
     {   
-        //REDO: projections of target
-        //int epsg = int.Parse(mapSettings.CurrentProjection.Split(':')[1]);
-        //switch (epsg)
-        //{
-        //    case 6991:
-        //        toWgs = new(Converter.Projections.ITM, Converter.Ellipsoids.WGS_84);
-        //        break;
-        //    case 32636:
-        //        toWgs = new(Converter.Projections.UTM_36N, Converter.Ellipsoids.WGS_84);
-        //        break;
-        //    default:
-        //        toWgs = new(Converter.Ellipsoids.WGS_84, Converter.Ellipsoids.WGS_84);
-        //        break;
-        //}
     }
     #endregion
 
@@ -64,13 +51,6 @@ public partial class TargetsViewModel : ObservableObject
         if (sfd.ShowDialog() == true)
         {
             if (File.Exists(sfd.FileName)) { File.Delete(sfd.FileName); }
-            //foreach (Target target in MapSettings.TargetList)
-            //{
-            //    //if (sfd.FileName.EndsWith(".csv"))    //if there is a need for another format
-            //    //{
-            //    File.AppendAllText(sfd.FileName, $"{target}{Environment.NewLine}");
-            //    //}
-            //}
             string targets = JsonConvert.SerializeObject(MapSettings.TargetList);
             File.WriteAllText(sfd.FileName, targets);
         }

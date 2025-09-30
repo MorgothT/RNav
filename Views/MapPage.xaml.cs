@@ -1,5 +1,8 @@
-﻿using InvernessPark.Utilities.NMEA;
-using Mapper_v1.Converters;
+﻿using Mapper_v1.Converters;
+using Mapper_v1.Core;
+using Mapper_v1.Core.Models;
+using Mapper_v1.Core.Models.DataStruct;
+using Mapper_v1.Core.Projections;
 using Mapper_v1.Helpers;
 using Mapper_v1.Layers;
 using Mapper_v1.Models;
@@ -28,7 +31,6 @@ using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 using Newtonsoft.Json;
 using SkiaSharp;
-using System.Collections.ObjectModel;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
@@ -42,19 +44,16 @@ namespace Mapper_v1.Views;
 
 public partial class MapPage : Page
 {
-    public BoatShapeLayer MyBoatLayer;
+    public List<BoatShapeLayer> MobileLayers = [];
     public MemoryLayer BoatTrailLayer;
-    public VesselData VesselData = new();
 
     private MapSettings mapSettings = new();
     private CommSettings commSettings = new();
 
-    private ObservableCollection<NmeaDevice> devices = new();
     private MPoint measureStart;
-    private WritableLayer MyMeasurementLayer;
+    private WritableLayer measurementLayer;
     private GenericCollectionLayer<List<IFeature>> MyTargets = new();
     private int SelectedTargetId = -1;
-    private Target SelectedTarget;
     private List<TimedPoint> MyTrail = new();
     
     private DateTime startLineTime;
@@ -63,7 +62,22 @@ public partial class MapPage : Page
     private static ColorConvertor colorConvertor = new();
     private readonly MapViewModel vm;
     private string ProjectCRS;
-    
+
+    public event Action<Target> SelectedTargetChanged;
+    private Target _selectedTarget;
+    public Target SelectedTarget
+    {
+        get => _selectedTarget;
+        set
+        {
+            if (!Equals(_selectedTarget, value))
+            {
+                _selectedTarget = value;
+                SelectedTargetChanged?.Invoke(_selectedTarget);
+            }
+        }
+    }
+
     public MapPage(MapViewModel viewModel)
     {
         InitializeComponent();
@@ -71,21 +85,37 @@ public partial class MapPage : Page
 
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         vm = viewModel;
-
+        
+        SelectedTargetChanged += OnSelectedTargetChanged;
+        
+        //InitMobiles();
         InitVessel();
-
-        SubscribeToNmea();
         InitMapControl();
         InitUIControls();
-        ConnectToGps();
-        //MapControl.Focus();
-}
 
+        vm.HeadingChanged += (mobileId) =>
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => UpdateMobileDirection(mobileId)));
+        };
+        vm.PositionChanged += (mobileId) =>
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => UpdateMobileDirection(mobileId)));
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => UpdateMobilePosition(mobileId)));
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => UpdateTrail(mobileId)));
+        };
+    }
+
+    private void OnSelectedTargetChanged(Target newTarget)
+    {
+        // Handle the new selected target here, e.g., notify the ViewModel or update UI
+        // Example: vm can be notified or you can update UI elements
+         vm.OnSelectedTargetChanged(newTarget); // if such a method exists
+    }
+
+    //REDO: change this after Mobile implementation
     private void InitVessel()
     {
-        VesselData.HeadingOffset = mapSettings.HeadingOffset;
-        VesselData.DepthOffset = mapSettings.DepthOffset;
-        VesselData.PositionOffset = new(mapSettings.PositionOffset.X, mapSettings.PositionOffset.Y);
+
     }
 
     private void InitMapControl()
@@ -193,12 +223,28 @@ public partial class MapPage : Page
     private void InitMapLayers()
     {
         // Special layers
-        MyBoatLayer = new BoatShapeLayer(MapControl.Map, mapSettings.BoatShape)
-        {
-            Name = "Location",
-            Enabled = true,
-            IsCentered = ToggleTracking.IsChecked.Value,
-        };
+        foreach (var mobile in vm.Mobiles) {
+            MobileShapeSettings shapeSettings = mobile.MobileShapeSettings;
+            var shape = new BoatShape(shapeSettings.ShapePath,shapeSettings.ShapeFill, shapeSettings.ShapeOutline);
+            if (mobile.IsPrimery)
+            {
+                MobileLayers.Insert(0, new BoatShapeLayer(MapControl.Map, shape, mobile.Id)
+                {
+                    CalloutText = mobile.Name,
+                    Enabled = true,
+                    IsCentered = ToggleTracking.IsChecked.Value,
+                });
+            }
+            else
+            {
+                MobileLayers.Add(new BoatShapeLayer(MapControl.Map, shape, mobile.Id)
+                {
+                    CalloutText = mobile.Name,
+                    Enabled = true,
+                    IsCentered = false,
+                });
+            }
+        }
         BoatTrailLayer = new MemoryLayer()
         {
             //Features = new[] { CreateTrailFeature() },
@@ -210,7 +256,7 @@ public partial class MapPage : Page
                 Line = { Color = colorConvertor.WMColorToMapsui(mapSettings.BoatShape.OutlineColor) }
             }
         };
-        MyMeasurementLayer = new WritableLayer()
+        measurementLayer = new WritableLayer()
         {
             Name = "Measurement",
             Opacity = 0.7f
@@ -242,7 +288,7 @@ public partial class MapPage : Page
         {
             var osm = OpenStreetMap.CreateTileLayer("RNav_OSM");
             osm.Name = "MapOvelay";
-            MapControl.Map.Layers.Add(osm);
+            MapControl.Map.Layers.Insert(0, osm);
         }
         AddCharts();
         LoadLastTrail();
@@ -251,9 +297,10 @@ public partial class MapPage : Page
             LoadSavedTargets();
             MapControl.Map.Layers.Add(MyTargets);
         }
-        MapControl.Map.Layers.Add(MyMeasurementLayer);
         MapControl.Map.Layers.Add(BoatTrailLayer);
-        MapControl.Map.Layers.Add(MyBoatLayer);
+        //MapControl.Map.Layers.Add(MyBoatLayer);
+        MobileLayers.ForEach(layer => { MapControl.Map.Layers.Add(layer); });
+        MapControl.Map.Layers.Add(measurementLayer);
     }
     private void LoadLastTrail()
     {
@@ -276,7 +323,7 @@ public partial class MapPage : Page
         Properties.MapControl.Default.Rotation = MapControl.Map.Navigator.Viewport.Rotation;
         Properties.MapControl.Default.BtnTrackingState = (bool)ToggleTracking.IsChecked;
         Properties.MapControl.Default.BtnHeadingState = (bool)ToggleNoseUp.IsChecked;
-        Properties.MapControl.Default.DataDisplayState = DataDisplay.IsExpanded;
+        Properties.MapControl.Default.DataDisplayState = DataDisplayPanel.IsExpanded;
         Properties.MapControl.Default.Save();
     }
     private void LoadMapControlState()
@@ -288,7 +335,7 @@ public partial class MapPage : Page
             MapControl.Map.Navigator.RotateTo(Properties.MapControl.Default.Rotation);
             ToggleTracking.IsChecked = Properties.MapControl.Default.BtnTrackingState;
             ToggleNoseUp.IsChecked = Properties.MapControl.Default.BtnHeadingState;
-            DataDisplay.IsExpanded = Properties.MapControl.Default.DataDisplayState;
+            DataDisplayPanel.IsExpanded = Properties.MapControl.Default.DataDisplayState;
         }
     }
     private void SaveViewport()
@@ -310,62 +357,15 @@ public partial class MapPage : Page
     #endregion
 
     #region GNSS_Methods
-    private void SubscribeToNmea()
-    {
-        NmeaHandler nmeaHandler = new NmeaHandler();
-        nmeaHandler.LogNmeaMessage += NmeaMessageReceived;
-        foreach (DeviceSettings settings in commSettings.Devices)
-        {
-            var dev = new NmeaDevice(nmeaHandler, settings);
-            dev.NmeaReceiver.NmeaMessageFailedChecksum += (bytes, index, count, expected, actual) =>
-                {
-                    Trace.TraceError($"Failed Checksum: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray()).Trim()} expected {expected} but got {actual}");
-                };
-            dev.NmeaReceiver.NmeaMessageDropped += (bytes, index, count, reason) =>
-                {
-                    Trace.WriteLine($"Bad Syntax: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())} reason: {reason}");
-                };
-            dev.NmeaReceiver.NmeaMessageIgnored += (bytes, index, count) =>
-                {
-                    Trace.WriteLine($"Ignored: {Encoding.ASCII.GetString(bytes.Skip(index).Take(count).ToArray())}");
-                };
-            devices.Add(dev);
-        }
-    }
-    private void NmeaMessageReceived(INmeaMessage msg)
-    {
-        VesselData.Update(msg);
-        if (RecordEnabled) 
-            Dispatcher.BeginInvoke(new Action(() => LogNMEA(msg)));
-        switch (msg.GetType().Name)
-        {
-            case "GGA":
-                Dispatcher.BeginInvoke(UpdateLocation);
-                Dispatcher.BeginInvoke(DispatcherPriority.Background, LogLocation);
-                Dispatcher.BeginInvoke(DispatcherPriority.Background, UpdateTrail);
-                break;
-            case "HDT":
-                Dispatcher.BeginInvoke(UpdateDirection);
-                break;
-            case "DBT":
-            case "DPT":
-                Dispatcher.BeginInvoke(UpdateDepth);
-                break;
-            case "ZDA":
-                break;
-            default:
-                break;
-        }
-        vm.UpdateDataView(VesselData, ProjectCRS, SelectedTarget);
-    }
-    private void UpdateTrail()
+    private void UpdateTrail(Guid mobileId)
     {
         if (mapSettings.TrailDuration == 0) return;
-        //TimedPoint point = new TimedPoint(VesselData.GetGGA, fromWGS84);
-        //MPoint gpsPoint = new MPoint(VesselData.GetGGA.Latitude.Degrees,VesselData.GetGGA.Longitude.Degrees);
-        MPoint gpsPoint = new MPoint(VesselData.Longitude, VesselData.Latitude);
+        Mobile mobile = vm.Mobiles.Where(m => m.Id == mobileId).Single();
+        if (mobile.IsPrimery == false) return; // Only update trail for primary mobile
+
+        MPoint gpsPoint = new MPoint(mobile.Data.Position.Longitude, mobile.Data.Position.Latitude);
         ProjectionDefaults.Projection.Project("EPSG:4326", ProjectCRS, gpsPoint);
-        TimedPoint point = new TimedPoint(gpsPoint.X,gpsPoint.Y,VesselData.LastFixTime);
+        TimedPoint point = new TimedPoint(gpsPoint.X, gpsPoint.Y, mobile.Data.Time.DateTime.ToLocalTime());
         MyTrail.Add(point);
         if (MyTrail.Count < 2)
         {
@@ -376,7 +376,7 @@ public partial class MapPage : Page
 
         try
         {
-            BoatTrailLayer.Features = new[] { CreateTrailFeature() };
+            BoatTrailLayer.Features = [CreateTrailFeature()];
             if (BoatTrailLayer.Features != null && BoatTrailLayer.Features.First() != null)
             {
                 ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, BoatTrailLayer.Features);
@@ -394,32 +394,13 @@ public partial class MapPage : Page
             if (MyTrail.Count < 2) return;
             MyTrail.RemoveRange(0, MyTrail.Count - 1);
             mapSettings.SaveTrail(MyTrail);
-            //BoatTrailLayer.Features = new GeometryFeature[] { null };
-            //BoatTrailLayer.DataHasChanged();
         }
         catch
         {
         }
     }
-
-    /// <summary>
-    /// Logging vessel trail to file using WGS84 -> Project projection
-    /// </summary>
-    private void LogLocation()
-    {
-        string logPath = @$"{mapSettings.LogDirectory}\{DateTime.Today.ToString("yyyyMMdd")}.log";
-        if (!Directory.Exists(mapSettings.LogDirectory))
-        {
-            Directory.CreateDirectory(mapSettings.LogDirectory);
-        }
-        //TimedPoint point = new TimedPoint(VesselData.GetGGA, fromWGS84);
-        MPoint gpsPoint = new MPoint(VesselData.Longitude,VesselData.Latitude);
-        ProjectionDefaults.Projection.Project("EPSG:4326", ProjectCRS, gpsPoint);
-        TimedPoint point = new TimedPoint(gpsPoint.X, gpsPoint.Y, VesselData.LastFixTime);
-        File.AppendAllText(logPath, $"{point.ToLocalTime()}\n");
-    }
     //TODO: add Log for Hypack ?
-    private void LogNMEA(INmeaMessage msg)
+    private void LogNMEA(string msg)
     {
         if (startLineTime == DateTime.MinValue)
             startLineTime = DateTime.UtcNow;
@@ -428,51 +409,121 @@ public partial class MapPage : Page
         {
             Directory.CreateDirectory(mapSettings.LogDirectory);
         }
-        File.AppendAllText(logPath, $"{DateTime.UtcNow:HH:mm:ss},{msg.Payload}{Environment.NewLine}");
+        File.AppendAllText(logPath, $"{DateTime.UtcNow:HH:mm:ss},{msg}{Environment.NewLine}");
     }
+    //private void LogNMEA(INmeaMessage msg)
+    //{
+    //    LogNMEA(msg.Payload);
+    //}
 
-    private void ConnectToGps()
+    //private void ConnectToGps()
+    //{
+    //    foreach (NmeaDevice dev in devices)
+    //    {
+    //        try
+    //        {
+    //            dev.Connect();
+    //        }
+    //        catch (Exception)
+    //        {
+    //            throw;
+    //        }
+    //    }
+    //}
+    //private void UpdateDirection()
+    //{
+    //    //double heading = (VesselData.GetHDT.HeadingTrue + mapSettings.HeadingOffset) % 360;
+    //    double heading;// = DataDisplay.Heading;
+    //    double mapRotation = Properties.MapControl.Default.Rotation;
+    //    //if (ToggleNoseUp.IsChecked.Value)
+    //    //{
+    //    //    // when bow up
+    //    //    //MyBoatLayer.UpdateMyDirection(heading, heading);
+    //    //    MobileLayers.First().UpdateMyDirection(heading, heading);
+    //    //    MapControl.Map.Navigator.RotateTo(360 - heading);
+    //    //}
+    //    //else
+    //    //{
+    //    //    //MyBoatLayer.UpdateMyDirection(heading, 0);
+    //    //    MobileLayers.First().UpdateMyDirection((heading + mapRotation) % 360, 0);
+    //    //}
+    //    foreach (var layer in MobileLayers)
+    //    {
+    //        double? dir = null;
+    //        foreach (var mobile in vm.Mobiles)
+    //        {
+    //            if (mobile.Id == layer.MobileId)
+    //            {
+    //                dir = mobile.Data.Motion.Heading;
+    //                break;
+    //            }
+    //            else continue;
+    //        }
+    //        if (dir is null) continue; //could not find heading
+    //        heading = dir.Value;
+    //        if (ToggleNoseUp.IsChecked.Value)
+    //            if (layer == MobileLayers.FirstOrDefault())
+    //            {
+    //                layer.UpdateMyDirection(heading, heading);
+    //                MapControl.Map.Navigator.RotateTo(360 - heading);
+    //            }
+    //            else
+    //            {
+    //                layer.UpdateMyDirection(heading, -MapControl.Map.Navigator.Viewport.Rotation);
+    //            }
+    //        else
+    //        {
+    //            layer.UpdateMyDirection((heading + mapRotation) % 360, 0);
+    //        }
+ 
+    //    }
+    //}
+    //private void UpdateLocation()   // WGS84 (GNSS) -> Map CRS
+    //{
+    //    //double lon = VesselData.GetGGA.Longitude.Degrees;
+    //    //double lat = VesselData.GetGGA.Latitude.Degrees;
+    //    //MPoint point = new MPoint(lon, lat);
+    //    MPoint point = new MPoint(DataDisplay.Longitude, DataDisplay.Latitude);
+    //    ProjectionDefaults.Projection.Project("EPSG:4326", MapControl.Map.CRS, point);
+    //    MobileLayers.First().UpdateMyLocation(point);
+    //    MobileLayers.First().DataHasChanged();
+    //}
+    private void UpdateMobilePosition(Guid mobileId)
     {
-        foreach (NmeaDevice dev in devices)
-        {
-            try
-            {
-                dev.Connect();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
+        var position = vm.Mobiles.Where(m => m.Id == mobileId).Single().Data.Position;
+        MPoint point = new MPoint(position.Longitude,position.Latitude);
+        ProjectionDefaults.Projection.Project("EPSG:4326", MapControl.Map.CRS, point);
+        var layer = MobileLayers.Where(m => m.MobileId == mobileId).Single();
+        layer.UpdateMyLocation(point);
+        layer.DataHasChanged();
     }
-    private void UpdateDirection()
+    private void UpdateMobileDirection(Guid mobileId)
     {
-        //double heading = (VesselData.GetHDT.HeadingTrue + mapSettings.HeadingOffset) % 360;
-        double heading = VesselData.Heading;
         double mapRotation = Properties.MapControl.Default.Rotation;
+
+        var layer = MobileLayers.Where(m => m.MobileId == mobileId).Single();
+        var mobile = vm.Mobiles.Where(m => m.Id == mobileId).Single();
+        double heading = mobile.Data.Motion.Heading; // Default to 0 if heading is null
+
         if (ToggleNoseUp.IsChecked.Value)
         {
-            // when bow up
-            MyBoatLayer.UpdateMyDirection(heading, heading);
-            MapControl.Map.Navigator.RotateTo(360 - heading);
+            if (mobile.IsPrimery)
+            {
+                layer.UpdateMyDirection(heading, heading);
+                MapControl.Map.Navigator.RotateTo(360 - heading);
+            }
+            else
+            {
+                layer.UpdateMyDirection(heading, -MapControl.Map.Navigator.Viewport.Rotation);
+            }
         }
         else
         {
-            //MyBoatLayer.UpdateMyDirection(heading, 0);
-            MyBoatLayer.UpdateMyDirection((heading + mapRotation) % 360, 0);
+            layer.UpdateMyDirection((heading + mapRotation) % 360, 0);
         }
     }
-    private void UpdateLocation()   // WGS84 (GNSS) -> Map CRS
-    {
-        //double lon = VesselData.GetGGA.Longitude.Degrees;
-        //double lat = VesselData.GetGGA.Latitude.Degrees;
-        //MPoint point = new MPoint(lon, lat);
-        MPoint point = new MPoint(VesselData.Longitude, VesselData.Latitude);
-        ProjectionDefaults.Projection.Project("EPSG:4326", MapControl.Map.CRS, point);
-        MyBoatLayer.UpdateMyLocation(point);
-        MyBoatLayer.DataHasChanged();
-    }
-    private void UpdateDepth()
+    
+    private void UpdateMobileDepth(Guid mobileId)
     { 
         //TODO: Add Depth Alarm
     }
@@ -621,7 +672,7 @@ public partial class MapPage : Page
     }
     private void DrawLine(MPoint to)
     {
-        MyMeasurementLayer.Clear();
+        measurementLayer.Clear();
         var line = new WKTReader().Read($"LINESTRING ({measureStart.X} {measureStart.Y},{to.X} {to.Y})");
         var feature = new GeometryFeature(line);
         ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
@@ -636,8 +687,8 @@ public partial class MapPage : Page
             VerticalAlignment = LabelStyle.VerticalAlignmentEnum.Bottom,
             Halo = new Pen { Color = Color.Wheat, Width = 1 },
         });
-        MyMeasurementLayer.Add(feature);
-        MyMeasurementLayer.Add(label);
+        measurementLayer.Add(feature);
+        measurementLayer.Add(label);
     }
     private void TurnCalloutOff(CalloutStyle currentCallout = null)
     {
@@ -657,7 +708,7 @@ public partial class MapPage : Page
     private void StartMeasurement(MPoint point) // Map CRS -> Project Crs
     {
         ToggleTracking.IsChecked = false;
-        MyBoatLayer.IsCentered = false;
+        MobileLayers.First().IsCentered = false;
         //MapControl.Map.Navigator.PanLock = true;
         //measureStart = MapControl.Map.Navigator.Viewport.ScreenToWorld(point);
         ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, point);
@@ -665,7 +716,7 @@ public partial class MapPage : Page
     }
     private void StopMeasurement()
     {
-        MyMeasurementLayer.Clear();
+        measurementLayer.Clear();
         //MapControl.Map.Navigator.PanLock = false;
         measureStart = null;
         MapControl.Refresh();
@@ -705,12 +756,13 @@ public partial class MapPage : Page
         {
             SaveMapControlState();
             SaveViewport();
-            foreach (var device in devices)
-            {
-                device.Dispose();
-            }
+            //foreach (var device in devices)
+            //{
+            //    device.Dispose();
+            //}
             MapControl.Dispose();
             Trace.WriteLine("Disposed of MapControl");
+            
         }
         catch (Exception)
         {
@@ -720,6 +772,31 @@ public partial class MapPage : Page
     private void ZoomExtent_Click(object sender, RoutedEventArgs e)
     {
         ZoomActive();
+    }
+    /// <summary>
+    /// Adds a new target to the map and to the settings
+    /// if fromMap is true then point is in Map CRS, else in Project CRS
+    /// </summary>
+    /// <param name="point"></param>
+    /// <param name="fromMap"></param>
+    private void AddNewTarget(MPoint point,bool fromMap = false)
+    {
+        int id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
+        if (fromMap)
+        {
+            ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, point);
+        }
+        //ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, point);
+        MPoint wgs = new(point);
+        ProjectionDefaults.Projection.Project(ProjectCRS, "EPSG:4326", wgs);
+        Target target = Target.CreateTarget(point, id, wgs);
+        mapSettings.TargetList.Add(target);
+        mapSettings.SaveMapSettings();
+        var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
+        ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
+        MyTargets?.Features.Add(feature);
+        MyTargets.DataHasChanged();
+        MapControl.Refresh();
     }
     private void MapControl_Click(object sender, MapInfoEventArgs e)
     {
@@ -733,29 +810,30 @@ public partial class MapPage : Page
             {
                 case true:
                     StartMeasurement(e.MapInfo.WorldPosition);  // world pos is Map CRS
-                    MyMeasurementLayer.Enabled = true;
+                    measurementLayer.Enabled = true;
                     break;
                 case false:
                     StopMeasurement();
-                    MyMeasurementLayer.Enabled = false;
+                    measurementLayer.Enabled = false;
                     break;
             }
         }
         if (vm.TargetMode)
         {
-            int id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
-            MPoint tr = new(e.MapInfo.WorldPosition);
-            ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, tr);
-            MPoint wgs = new(tr);
-            ProjectionDefaults.Projection.Project(ProjectCRS, "EPSG:4326", wgs);
-            Target target = Target.CreateTarget(tr, id, wgs);
-            mapSettings.TargetList.Add(target);
-            mapSettings.SaveMapSettings();
-            var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
-            ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
-            MyTargets?.Features.Add(feature);
-            e.MapInfo.Layer?.DataHasChanged();
-            MapControl.Refresh();
+            AddNewTarget(e.MapInfo.WorldPosition, true);
+            //int id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
+            //MPoint tr = new(e.MapInfo.WorldPosition);
+            //ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, tr);
+            //MPoint wgs = new(tr);
+            //ProjectionDefaults.Projection.Project(ProjectCRS, "EPSG:4326", wgs);
+            //Target target = Target.CreateTarget(tr, id, wgs);
+            //mapSettings.TargetList.Add(target);
+            //mapSettings.SaveMapSettings();
+            //var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
+            //ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
+            //MyTargets?.Features.Add(feature);
+            //e.MapInfo.Layer?.DataHasChanged();
+            //MapControl.Refresh();
         }
         if (!vm.MeasurementMode && !vm.TargetMode)
         {
@@ -788,9 +866,19 @@ public partial class MapPage : Page
             if (MyTargets?.Features is null) return;
             var screenPosition = e.GetPosition(MapControl).ToMapsui();
             MapInfo info = MapControl.GetMapInfo(screenPosition);
-            if (info.Feature is null) return;
-            SelectedTargetId = (int)info.Feature["Id"];
-
+            if (info.Feature is null || info.Feature.Styles.Where(x=>x.GetType() == typeof(BoatStyle)).Any()) return;
+            if (SelectedTargetId == (int)info.Feature["Id"])
+            {
+                // Deselect the target
+                SelectedTargetId = -1;
+                SelectedTarget = null;
+                
+            }
+            else
+            {
+                SelectedTargetId = (int)info.Feature["Id"];
+            }
+            // Update the selection state of all target features
             foreach (var targetFeature in MyTargets.Features)
             {
                 if ((int)targetFeature["Id"] == SelectedTargetId)
@@ -842,7 +930,7 @@ public partial class MapPage : Page
     #region MapControls
     private void ToggleTracking_Click(object sender, RoutedEventArgs e)
     {
-        MyBoatLayer.IsCentered = ToggleTracking.IsChecked.Value;
+        MobileLayers.First().IsCentered = ToggleTracking.IsChecked.Value;
         SaveMapControlState();
     }
     private void ToggleNoseUp_Unchecked(object sender, RoutedEventArgs e)
@@ -872,7 +960,6 @@ public partial class MapPage : Page
     }
     private void Grid_KeyDown(object sender, KeyEventArgs e)
     {
-        //TODO: add controls and try to stop from losing focus
         Trace.WriteLine(e.Key);
         var vp = MapControl.Map.Navigator.Viewport;
         if (e.Key == Key.OemPlus || e.Key == Key.Add)
@@ -906,5 +993,12 @@ public partial class MapPage : Page
     }
 
     #endregion
+    //TODO: Move to context menu on map?
+    //TODO: move button placement
+    // Add target at the current boat location
+    private void AddTarget_Click(object sender, RoutedEventArgs e)
+    {
+        AddNewTarget(MobileLayers.First().MyLocation,true);
+    }
 }
 

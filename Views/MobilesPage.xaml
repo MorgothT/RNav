@@ -1,0 +1,149 @@
+﻿<Page
+    x:Class="Mapper_v1.Views.MobilesPage"
+    Style="{DynamicResource MahApps.Styles.Page}"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:metro="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:help="clr-namespace:Mapper_v1.Helpers"
+    xmlns:properties="clr-namespace:Mapper_v1.Properties" 
+    xmlns:viewmodels="clr-namespace:Mapper_v1.ViewModels" 
+    xmlns:CModels ="clr-namespace:Mapper_v1.Core.Models;assembly=Mapper_v1.Core"
+    xmlns:core="clr-namespace:Mapper_v1.Core;assembly=Mapper_v1.Core"
+    xmlns:controls="clr-namespace:Mapper_v1.Controls"
+    xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+    d:DataContext="{d:DesignInstance Type=viewmodels:MobilesViewModel}"
+    mc:Ignorable="d"
+    d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock
+            Style="{StaticResource PageTitleStyle}"
+            Text="{x:Static properties:Resources.MobilesPageTitle}" />
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <!--
+            The Mahapps Gray10 color represents where you should place your content.
+            Place your content here.
+            -->
+            <!--<DockPanel LastChildFill="True">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Top">
+                    <Button Content="Add Mobile" Command="{Binding AddMobileCommand}"/>
+                    <Button Content="Remove Mobile" Command="{Binding RemoveMobileCommand}"/>
+                    <Button Content="Add Device" Command="{Binding AddDeviceCommand}"/>
+                    <Button Content="Remove Device" Command="{Binding RemoveDeviceCommand}"/>
+                </StackPanel>
+
+                <TreeView Grid.Column="0" ItemsSource="{Binding Mobiles}" SelectedItemChanged="TreeView_SelectedItemChanged">
+                    <TreeView.Resources>
+                        <HierarchicalDataTemplate DataType="{x:Type CModels:Mobile}" ItemsSource="{Binding DeviceConfigs}">
+                            <TextBlock Text="{Binding Name}" Foreground="Blue"/>
+                        </HierarchicalDataTemplate>
+                        <DataTemplate DataType="{x:Type CModels:BaseDeviceConfig}">
+                            <TextBlock Text="{Binding DeviceName}" Foreground="Green"/>
+                        </DataTemplate>
+                    </TreeView.Resources>
+                </TreeView>
+            </DockPanel>-->
+            <Grid Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto" SharedSizeGroup="ListViews"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="auto" SharedSizeGroup="ListViews"/>
+                    
+                </Grid.RowDefinitions>
+                <GroupBox Grid.Row="0">
+                    <GroupBox.Header>
+                        <DockPanel LastChildFill="True">
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                                <Button Command="{Binding AddMobileCommand}"> 
+                                    <Label FontFamily="RNav" Content="&#xE713;" Foreground="{DynamicResource MahApps.Brushes.AccentBase}"
+                                           Padding="0" FontSize="14" FontWeight="Light"/>
+                                </Button>
+                                <Button Command="{Binding RemoveMobileCommand}">
+                                    <Label FontFamily="RNav" Content="&#xE70D;" Foreground="red" 
+                                           Padding="0" FontSize="14" FontWeight="Light"/>
+                                </Button>
+                            </StackPanel>
+                            <TextBlock Text="Mobiles" VerticalAlignment="Center"  DockPanel.Dock="Left" FontSize="{StaticResource LargeFontSize}"/>
+                        </DockPanel>
+                    </GroupBox.Header>
+                    <ListView x:Name="MobileList" ItemsSource="{Binding Mobiles}" SelectedItem="{Binding SelectedMobile}" 
+                            SelectionMode="Single" Margin="5" 
+                              AllowDrop="True"
+                              PreviewMouseLeftButtonDown="MobileList_PreviewMouseLeftButtonDown"
+                              PreviewMouseMove="MobileList_PreviewMouseMove"
+                              Drop="MobileList_Drop"
+                              DragOver="MobileItem_DragOver">
+                        <ListView.ItemTemplate>
+                            <HierarchicalDataTemplate DataType="{x:Type CModels:Mobile}" ItemsSource="{Binding DeviceConfigs}">
+                                <TextBlock Text="{Binding Name}"/>
+                            </HierarchicalDataTemplate>
+                        </ListView.ItemTemplate>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem" BasedOn="{StaticResource MahApps.Styles.ListBoxItem}">
+                                
+                                <!--<Setter Property="AllowDrop" Value="True"/>-->
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                    </ListView>
+                </GroupBox>
+                <GroupBox Grid.Row="1">
+                    <GroupBox.Header>
+                        <DockPanel LastChildFill="True">
+                            <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                                <metro:DropDownButton ItemsSource="{help:Enum core:DeviceType}">
+                                    <metro:DropDownButton.Icon>
+                                        <Label FontFamily="RNav" Content="&#xE713;" Foreground="{DynamicResource MahApps.Brushes.AccentBase}"
+                                               Padding="0" FontSize="16" FontWeight="Light"/>
+                                    </metro:DropDownButton.Icon>
+                                    <metro:DropDownButton.ItemContainerStyle>
+                                        <Style BasedOn="{StaticResource {x:Type MenuItem}}" TargetType="{x:Type MenuItem}">
+                                            <Setter Property="Command" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type metro:DropDownButton}}, Path=DataContext.AddDeviceCommand}" />
+                                            <Setter Property="CommandParameter" Value="{Binding}"/>
+                                        </Style>
+                                    </metro:DropDownButton.ItemContainerStyle>
+                                </metro:DropDownButton>
+                                <!--<Button Content="Add Device" Command="{Binding AddDeviceCommand}" CommandParameter="{x:Static core:DeviceType.NmeaDevice}"/>-->
+                                <Button Command="{Binding RemoveDeviceCommand}">
+                                    <Label FontFamily="RNav" Content="&#xE70D;" Foreground="red" 
+                                           Padding="0" FontSize="16" FontWeight="Light"/>
+                                </Button>
+                            </StackPanel>
+                            <TextBlock Text="Devices" VerticalAlignment="Center" DockPanel.Dock="Left" FontSize="{StaticResource LargeFontSize}"/>
+                        </DockPanel>
+                    </GroupBox.Header>
+                    <ListView x:Name="DeviceList" ItemsSource="{Binding SelectedMobile.DeviceConfigs}" SelectedItem="{Binding SelectedDevice}" 
+                        SelectionMode="Single" Margin="5">
+                        <ListView.ItemTemplate>
+                            <DataTemplate DataType="{x:Type CModels:BaseDeviceConfig}">
+                                <TextBlock Text="{Binding DeviceName}"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </GroupBox>
+                <DockPanel LastChildFill="True" Grid.Row="2" Background="Transparent">
+                    <Button Content="Import" Command="{Binding LoadFromFileCommand}" Margin="5" DockPanel.Dock="Bottom"/>
+                    <Button Content="Export" Command="{Binding SaveToFileCommand}" Margin="5" DockPanel.Dock="Bottom"/>
+                    <TextBlock Text="" DockPanel.Dock="Top"/>
+                </DockPanel>
+            </Grid>
+            <StackPanel Orientation="Horizontal" Grid.Column="1">
+                <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+            </StackPanel>
+            <StackPanel Orientation="Vertical" Grid.Column="2">
+                <controls:MobileSettingsControl DataContext="{Binding Path=SelectedMobile, Mode=TwoWay}"/>
+                <controls:DeviceSettings DataContext="{Binding Path=SelectedDevice, Mode=TwoWay}"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using GeoConverter;
+using Mapper_v1.Core;
 using Mapper_v1.Helpers;
 using Mapsui;
 using Mapsui.Extensions;
@@ -11,7 +12,7 @@ namespace Mapper_v1.Models;
 
 public partial class Target : ObservableObject
 {
-    // REDO: Add desctiption and more...
+    // REDO: Add description and more...
 
     [ObservableProperty]
     private int id;

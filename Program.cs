@@ -15,7 +15,7 @@ namespace Mapper_v1
             try
             {
                 VelopackApp.Build()
-                                .WithFirstRun(v => MessageBox.Show("Thanks for installing RNav !"))
+                                .OnFirstRun(v => MessageBox.Show("Thanks for installing RNav !"))
                                 .SetAutoApplyOnStartup(false)
                                 //.WithAfterInstallFastCallback(v => AddFontResource(@"./Fonts/RNav.ttf"))
                                 //.WithBeforeUninstallFastCallback(v => RemoveFontResource(@"./Fonts/RNav.ttf"))

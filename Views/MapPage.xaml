@@ -7,7 +7,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:properties="clr-namespace:Mapper_v1.Properties"
     xmlns:mapsui="clr-namespace:Mapsui.UI.Wpf;assembly=Mapsui.UI.Wpf"
-    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls" 
+    xmlns:viewmodels="clr-namespace:Mapper_v1.ViewModels"
+    xmlns:controls="clr-namespace:Mapper_v1.Controls"
+    d:DataContext="{d:DesignInstance Type=viewmodels:MapViewModel}"
     mc:Ignorable="d"
     d:DesignHeight="450" d:DesignWidth="800" Unloaded="Page_Unloaded" Loaded="Page_Loaded">
     <!--<Page.Resources>
@@ -55,8 +58,8 @@
                 <mapsui:MapControl x:Name="MapControl" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
                                    Background="{StaticResource MahApps.Brushes.Gray10}"/>
                 <Border VerticalAlignment="Top" HorizontalAlignment="Left">
-                    <StackPanel>
-                        <StackPanel Name="LineControl" Orientation="Horizontal">
+                    <DockPanel Name="SideBar" LastChildFill="False">
+                        <StackPanel Name="LineControl" Orientation="Horizontal" DockPanel.Dock="Top">
                             <ToggleButton x:Name="RecordLine" Margin="1" Padding="0" Click="RecordBtn_Click">
                                 <ToggleButton.Style>
                                     <Style TargetType="ToggleButton" BasedOn="{StaticResource MahApps.Styles.ToggleButton}">
@@ -64,7 +67,7 @@
                                             <Trigger Property="IsChecked" Value="False">
                                                 <Setter Property="Content">
                                                     <Setter.Value>
-                                                        <Label ToolTip="Record" FontFamily="Segoe MDL2 Assets" Content="&#xEA3B;" Foreground="Red"
+                                                        <Label ToolTip="Log NMEA on primery mobile" FontFamily="Segoe MDL2 Assets" Content="&#xEA3B;" Foreground="Red"
                                                                FontSize="24" FontWeight="Light">
                                                         </Label>
                                                     </Setter.Value>
@@ -95,8 +98,14 @@
                                     </Style>
                                 </ToggleButton.Style>
                             </ToggleButton>
+                            <Button x:Name="AddTarget" Margin="1" Padding="0" ToolTip="Add Target At Current Position" Click="AddTarget_Click">
+                                <Label FontFamily="RNav" Content="&#xE701;"
+                                   FontSize="24"
+                                   FontWeight="Light"/>
+                            </Button>
                         </StackPanel>
-                        <StackPanel Name="MapControls" Orientation="Vertical">
+                        <Separator DockPanel.Dock="Top" Style="{StaticResource MahApps.Styles.Separator.StatusBar}" Height="5" Background="{x:Null}" Foreground="{x:Null}"/>
+                        <StackPanel Name="MapControls" Orientation="Vertical" DockPanel.Dock="Left">
                             <Button x:Name="ZoomExtent" ToolTip="Zoom Extent" Margin="1" Padding="0" Click="ZoomExtent_Click">
                                 <Label FontFamily="RNav" Content="&#xE709;"
                                    FontSize="24"
@@ -142,8 +151,7 @@
                                 </Label>
                             </ToggleButton>
                         </StackPanel>
-                        
-                    </StackPanel>
+                    </DockPanel>
                 </Border>
                 <Border BorderThickness="6"
                         VerticalAlignment="Top" HorizontalAlignment="Right">
@@ -171,38 +179,23 @@
                     <TextBlock Name="FeatureInfo" TextWrapping="Wrap"/>
                 </Border>-->
             </Grid>
-            <Expander x:Name="DataDisplay" ExpandDirection="Left" Grid.Column="1">
+            <Expander Name="DataDisplayPanel" ExpandDirection="Left" Grid.Column="1">
                 <Expander.Header>
-                    <TextBlock Text="Data Display" FontSize="14" Margin="{StaticResource ExpanderHeaderThemePadding}" Foreground="{DynamicResource MahApps.Brushes.IdealForeground}">
-                        <TextBlock.LayoutTransform>
-                            <RotateTransform Angle="90"/>
-                        </TextBlock.LayoutTransform>
-                    </TextBlock>
+                    <StackPanel Orientation="Vertical">
+                        <Button Command="{Binding OpenDataDisplayDialogCommand}" 
+                            Style="{StaticResource MahApps.Styles.Button.Hamburger}"
+                            Margin="{StaticResource ExpanderHeaderThemePadding}"
+                            Width="30" Height="30" HorizontalAlignment="Left" VerticalAlignment="Top">
+                            <TextBlock Text="&#xEB7E;" FontFamily="Segoe MDL2 Assets" FontSize="16" Foreground="{DynamicResource MahApps.Brushes.IdealForeground}"/>
+                        </Button>
+                        <TextBlock Text="Data Display" FontSize="14" Margin="{StaticResource ExpanderHeaderThemePadding}" Foreground="{DynamicResource MahApps.Brushes.IdealForeground}">
+                            <TextBlock.LayoutTransform>
+                                <RotateTransform Angle="90"/>
+                            </TextBlock.LayoutTransform>
+                        </TextBlock>
+                    </StackPanel>
                 </Expander.Header>
-                <StackPanel>
-                    <!--<Button Name="ChangeData" Padding="0" Margin="1" Click="ChangeData_Click">
-                        <Label fa:Awesome.Content="Exchange" FontSize="16"/>
-                    </Button>-->
-                    <DataGrid  DataContext="{Binding}" x:Name="DataView" ItemsSource="{Binding Data}" IsHitTestVisible="False" AutoGenerateColumns="False">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding Key}" Header="Name" FontWeight="Regular">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Page}},Path=DataContext.MapSettings.FontSize}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Binding="{Binding Value}" Header="Value" FontWeight="Bold">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        <Setter Property="FontSize" Value="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Page}},Path=DataContext.MapSettings.FontSize}"/>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </StackPanel>
+                <controls:DataDisplayControl DataContext="{Binding DataViewItems}" />
             </Expander>
         </Grid>
         <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="5,0,5,5">

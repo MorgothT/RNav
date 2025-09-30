@@ -32,6 +32,15 @@ public partial class BoatShape : ObservableObject
         VesselAnchors = [];
         VesselObjects = [];
     }
+    public BoatShape(string path,System.Drawing.Color fill, System.Drawing.Color outline)
+    {
+        Path = path;
+        ReadBoatShapeFile();
+        Color fillColor = Color.FromArgb(fill.A, fill.R, fill.G, fill.B);
+        Color outlineColor = Color.FromArgb(outline.A, outline.R, outline.G, outline.B);
+        ChangeColors(fillColor, outlineColor);
+    }
+    
     public BoatShape(string path, Color fill, Color outline)
     {
         Path = path;

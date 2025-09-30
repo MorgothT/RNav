@@ -1,4 +1,7 @@
-﻿using Mapper_v1.Models;
+﻿using ControlzEx.Theming;
+using Mapper_v1.Core;
+using System.Windows;
+using System.Windows.Media;
 
 namespace Mapper_v1.Helpers;
 
@@ -26,4 +29,19 @@ public static class Formater
                 return ll.ToString();
         }
     }
+    public static Color GetThemeForegroundColor()
+    {
+        var theme = ThemeManager.Current.DetectTheme(Application.Current);
+        SolidColorBrush foregroundBrush = Application.Current.TryFindResource("MahApps.Brushes.Text") as SolidColorBrush;
+        Color? foregroundColor = foregroundBrush?.Color;
+        return foregroundColor ?? Colors.Black;
+    }
+    public static Color GetThemeBackgroundColor()
+    {
+        var theme = ThemeManager.Current.DetectTheme(Application.Current);
+        SolidColorBrush backgroundBrush = Application.Current.TryFindResource("MahApps.Brushes.Background") as SolidColorBrush;
+        Color? backgroundColor = backgroundBrush?.Color;
+        return backgroundColor ?? Colors.White;
+    }
+
 }

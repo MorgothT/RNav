@@ -1,5 +1,7 @@
 ﻿using ControlzEx.Theming;
 using Mapper_v1.Core;
+using netDxf;
+using SkiaSharp;
 using System.Windows;
 using System.Windows.Media;
 
@@ -43,5 +45,17 @@ public static class Formater
         Color? backgroundColor = backgroundBrush?.Color;
         return backgroundColor ?? Colors.White;
     }
-
+    public static int ToAlpha(this Transparency transparency)
+    {
+        if (transparency.IsByBlock || transparency.IsByLayer) return 255;
+        return (int)(transparency.Value / 90 * 255);
+    }
+    public static SKColor ToSKColor(this Mapsui.Styles.Color color)
+    {
+        return new SKColor((byte)color.R, (byte)color.G, (byte)color.B, (byte)color.A);
+    }
+    public static SKPoint ToSKPoint(this Mapsui.MPoint p)
+    {
+        return new SKPoint((float)p.X, (float)p.Y);
+    }
 }

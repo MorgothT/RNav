@@ -101,6 +101,7 @@ public partial class App : Application
     }
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
+        MessageBox.Show($"An unhandled exception occurred: {e.Exception.Message}", "Mapper v1", MessageBoxButton.OK, MessageBoxImage.Error);
         // Please log and handle the exception as appropriate to your scenario
         // For more info see https://docs.microsoft.com/dotnet/api/system.windows.application.dispatcherunhandledexception?view=netcore-3.0
     }

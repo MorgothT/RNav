@@ -181,7 +181,6 @@ public class BoatShapeLayer : BaseLayer, IModifyFeatureLayer, IDisposable
             ArrowHeight = 10,
             BackgroundColor = Mapsui.Styles.Color.Transparent,
             TitleTextAlignment = Mapsui.Widgets.Alignment.Auto,
-            
         };
 
         _feature.Styles.Clear();

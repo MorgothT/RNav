@@ -1,14 +1,18 @@
 ﻿using Mapper_v1.Converters;
+using Mapper_v1.Helpers;
 using Mapper_v1.Models;
 using Mapsui;
 using Mapsui.Layers;
 using Mapsui.Nts;
+using Mapsui.Nts.Extensions;
+using Mapsui.Rendering.Skia.Extensions;
 using Mapsui.Styles;
 using netDxf;
 using netDxf.Entities;
 using netDxf.Header;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
+using SkiaSharp.Views.Desktop;
 using System.IO;
 using System.Windows;
 using IFeature = Mapsui.IFeature;
@@ -20,6 +24,7 @@ namespace Mapper_v1.Layers
     {
         private List<IFeature> _features;
         private string _path;
+        private VectorStyle vectorStyle;
         private LabelStyle labelStyle;
         private static readonly ColorConvertor colorConvertor = new();
         public string CRS { get; set; }
@@ -29,7 +34,8 @@ namespace Mapper_v1.Layers
             //_map = map ?? throw new ArgumentNullException("Map shouldn't be null");
             _path = Path.Exists(chart.Path) ? chart.Path : throw new ArgumentException("Path does not exist");
             _features = new List<IFeature>();
-            Style = GetVectorStyle(chart);
+            Style = null;// GetVectorStyle(chart);
+            vectorStyle = GetVectorStyle(chart);
             labelStyle = GetLabelStyle(chart);
             
             //_styles = (StyleCollection)Style;
@@ -208,13 +214,19 @@ namespace Mapper_v1.Layers
                 Geometry = circfeature,
             };
             text.Value = text.Value.Replace(@"\P", Environment.NewLine.ToString()); //TODO: MTEXT - deal with other formating
+            Color color = labelStyle.ForeColor;
+            if (text.Color.IsByLayer == false)
+            {
+                color = new Color(text.Color.R, text.Color.G, text.Color.B,(text.Transparency.ToAlpha()));
+            }
+            // ignores embeded formating !
             textFeature.Styles.Add(new LabelStyle()
             {
-                Text = text.Value,
+                Text = text.PlainText(),
                 BackColor = labelStyle.BackColor,
                 CollisionDetection = true,
                 Font = labelStyle.Font,
-                ForeColor = labelStyle.ForeColor,
+                ForeColor = color,
                 Halo = labelStyle.Halo,
                 HorizontalAlignment = labelStyle.HorizontalAlignment,
                 VerticalAlignment = labelStyle.VerticalAlignment,
@@ -232,15 +244,20 @@ namespace Mapper_v1.Layers
             var textFeature = new GeometryFeature
             {
                 Geometry = circfeature,
-            }; 
-
+            };
+            Color color = labelStyle.ForeColor;
+            if (text.Color.IsByLayer == false)
+            {
+                color = new Color(text.Color.R, text.Color.G, text.Color.B, (text.Transparency.ToAlpha()));
+            }
+            textFeature.Styles.Clear();
             textFeature.Styles.Add(new LabelStyle()
             {
                 Text = text.Value,
                 BackColor = labelStyle.BackColor,
                 CollisionDetection = true,
                 Font = labelStyle.Font,
-                ForeColor = labelStyle.ForeColor,
+                ForeColor = color,
                 Halo = labelStyle.Halo,
                 HorizontalAlignment = labelStyle.HorizontalAlignment,
                 VerticalAlignment = labelStyle.VerticalAlignment,
@@ -249,28 +266,44 @@ namespace Mapper_v1.Layers
             });
             return textFeature;
         }
-
         private IFeature CreateFeatureFromCircle(EntityObject feature)
         {
             var circ = feature as Circle;
             var geofac = NtsGeometryServices.Instance.CreateGeometryFactory();
             var circfeature = geofac.CreatePoint(ToCoord(circ.Center)).Buffer(circ.Radius);
-            return new GeometryFeature(circfeature);
+            var gf = new GeometryFeature(circfeature);
+            gf.Styles.Add(vectorStyle);
+            return gf;
         }
-
         private IFeature CreateFeatureFromArc(EntityObject feature)
         {
             var arc = feature as Arc;
             Polyline2D poly = arc.ToPolyline2D(45);
             Coordinate[] points = (from Polyline2DVertex vertex in poly.Vertexes
                                    select ToCoord(vertex.Position)).ToArray();
-            return new GeometryFeature(new LineString(points));
+            var gf = new GeometryFeature(new LineString(points));
+            gf.Styles.Add(vectorStyle);
+            return gf;
         }
 
         private IFeature CreateFeatureFromPoint(EntityObject feature)
         {
+            //TODO: Add point style or renderer
             netDxf.Entities.Point point = (netDxf.Entities.Point)feature;
-            return new PointFeature(ToMPoint(point.Position));
+            //var pointFeature = new NetTopologySuite.Geometries.Point(ToCoord(point.Position)).ToFeature();
+            var geofac = NtsGeometryServices.Instance.CreateGeometryFactory();
+            var pointFeature = geofac.CreatePoint(ToCoord(point.Position)).ToFeature();
+            PointStyle style = new PointStyle()
+            {
+                //TODO: pull point style from chart/map settings
+                Color = Color.Red,
+                Shape = PointShape.SquareCross,
+                Size = 10
+            };
+            
+            
+            pointFeature.Styles = [style];
+            return pointFeature;
         }
 
         private IFeature CreateFeatureFromPoly3D(EntityObject feature)
@@ -278,7 +311,9 @@ namespace Mapper_v1.Layers
             Polyline2D poly = (feature as Polyline3D).ToPolyline2D(0);
             Coordinate[] points = (from Polyline2DVertex vertex in poly.Vertexes
                                    select ToCoord(vertex.Position)).ToArray();
-            return new GeometryFeature(new LineString(points));
+            var gf = new GeometryFeature(new LineString(points));
+            gf.Styles.Add(vectorStyle);
+            return gf;
         }
 
         private IFeature CreateFeatureFromPoly2D(EntityObject feature)
@@ -286,13 +321,17 @@ namespace Mapper_v1.Layers
             Polyline2D poly = feature as Polyline2D;
             Coordinate[] points = (from Polyline2DVertex vertex in poly.Vertexes
                                    select ToCoord(vertex.Position)).ToArray();
-            return new GeometryFeature(new LineString(points));
+            var gf = new GeometryFeature(new LineString(points));
+            gf.Styles.Add(vectorStyle);
+            return gf;
         }
 
         private IFeature CreateFeatureFromLine(EntityObject feature)
         {
             Line line = feature as Line;
-            return new GeometryFeature(new LineString([ToCoord(line.StartPoint), ToCoord(line.EndPoint)]));
+            var gf = new GeometryFeature(new LineString([ToCoord(line.StartPoint), ToCoord(line.EndPoint)]));
+            gf.Styles.Add(vectorStyle);
+            return gf;
         }
 
         /// <summary>

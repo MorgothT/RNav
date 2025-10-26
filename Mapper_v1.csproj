@@ -2,7 +2,7 @@
   
   <PropertyGroup>
     <!--TODO: Change Version here-->
-    <Version>1.4.1</Version>
+    <Version>1.4.2</Version>
     <StartupObject>Mapper_v1.Program</StartupObject>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-Windows</TargetFramework>
@@ -104,14 +104,14 @@
     <PackageReference Include="Mapsui.Extensions" Version="4.1.9" />
     <PackageReference Include="Mapsui.Nts" Version="4.1.9" />
     <PackageReference Include="Mapsui.Wpf" Version="4.1.9" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
     <PackageReference Include="netDxf" Version="2023.11.10" />
     <PackageReference Include="NuGet.CommandLine" Version="6.14.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="ProjNet" Version="2.0.0" />
-    <PackageReference Include="System.IO.Ports" Version="9.0.5" />
+    <PackageReference Include="System.IO.Ports" Version="9.0.9" />
     <PackageReference Include="System.Net.Sockets" Version="4.3.0" />
     <PackageReference Include="Velopack" Version="0.0.1298" />
   </ItemGroup>

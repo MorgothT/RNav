@@ -1,7 +1,5 @@
 ﻿using Mapper_v1.Converters;
-using Mapper_v1.Core;
 using Mapper_v1.Core.Models;
-using Mapper_v1.Core.Models.DataStruct;
 using Mapper_v1.Core.Projections;
 using Mapper_v1.Helpers;
 using Mapper_v1.Layers;
@@ -282,6 +280,10 @@ public partial class MapPage : Page
         {
             MapControl.Renderer.StyleRenderers.Add(typeof(TargetStyle), new TargetRenderer());
         }
+        if (MapControl.Renderer is Mapsui.Rendering.Skia.MapRenderer && !MapControl.Renderer.StyleRenderers.ContainsKey(typeof(PointStyle)))
+        {
+            MapControl.Renderer.StyleRenderers.Add(typeof(PointStyle), new PointRenderer());
+        }
 
         // Adding the layers to the map
         if (mapSettings.MapOverlay == true)
@@ -298,9 +300,9 @@ public partial class MapPage : Page
             MapControl.Map.Layers.Add(MyTargets);
         }
         MapControl.Map.Layers.Add(BoatTrailLayer);
-        //MapControl.Map.Layers.Add(MyBoatLayer);
         MobileLayers.ForEach(layer => { MapControl.Map.Layers.Add(layer); });
         MapControl.Map.Layers.Add(measurementLayer);
+        //TODO: UI to move charts order and enable layers
     }
     private void LoadLastTrail()
     {

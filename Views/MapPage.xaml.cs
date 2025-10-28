@@ -40,6 +40,7 @@ using System.Windows.Threading;
 
 namespace Mapper_v1.Views;
 
+// TODO: add the Offsets to the Device
 public partial class MapPage : Page
 {
     public List<BoatShapeLayer> MobileLayers = [];
@@ -75,7 +76,6 @@ public partial class MapPage : Page
             }
         }
     }
-    // TODO: change app update procedure
     public MapPage(MapViewModel viewModel)
     {
         InitializeComponent();

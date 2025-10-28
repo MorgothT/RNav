@@ -22,7 +22,7 @@ public class PointStyle : IStyle
     public Color Color { get; set; } = Color.Red;
     public PointShape Shape { get; set; } = PointShape.Dot;
     public double Size { get; set; } = 5;
-    public bool IsObsoluteUnits { get; set; } = false;
+    public bool IsAbsoluteUnits { get; set; } = false;
 }
 
 public class PointRenderer : ISkiaStyleRenderer
@@ -43,7 +43,7 @@ public class PointRenderer : ISkiaStyleRenderer
         canvas.Translate(p.X, p.Y);
         p = new SKPoint(0, 0);
 
-        if (pointStyle.IsObsoluteUnits)
+        if (pointStyle.IsAbsoluteUnits)
         {
             var latRad = SphericalMercator.ToLonLat(worldPoint).Y * Math.PI / 180;
             float scale = (float)(1 / (viewport.Resolution * Math.Cos(latRad)));

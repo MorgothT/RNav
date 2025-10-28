@@ -14,5 +14,5 @@ public partial class PointSettings : ObservableObject
     [ObservableProperty]
     private PointShape shape = PointShape.Dot;
     [ObservableProperty]
-    private bool isObsoluteUnits = false;
+    private bool isAbsoluteUnits = false;
 }

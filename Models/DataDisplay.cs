@@ -8,9 +8,7 @@ namespace Mapper_v1.Models;
 
 public partial class DataDisplay : ObservableObject
 {
-    // TODO: Change vessel to "Mobile" add the Offsets to the Device, add type of device ?
-    // TODO: Gibor fix ?
-    // TODO: Structure properties such as Location,Depth,MRU
+    // THIS IS OBSELETE    
     [ObservableProperty]
     private DateTime lastFixTime;
     //[ObservableProperty]

@@ -62,14 +62,13 @@ namespace Mapper_v1.Layers
 
         private PointStyle GetPointStyle()
         {
-            //TODO: pull point style from chart/map settings
             PointSettings settings = new MapSettings().PointSettings;
             PointStyle pointStyle = new PointStyle()
             {
                 Color = colorConvertor.WMColorToMapsui(settings.Color),
                 Shape = settings.Shape,
                 Size = settings.Size,
-                IsObsoluteUnits = settings.IsObsoluteUnits,
+                IsAbsoluteUnits = settings.IsAbsoluteUnits,
             };
             return pointStyle;
         }
@@ -227,7 +226,8 @@ namespace Mapper_v1.Layers
             {
                 Geometry = circfeature,
             };
-            text.Value = text.Value.Replace(@"\P", Environment.NewLine.ToString()); //TODO: MTEXT - deal with other formating
+            //TODO: MTEXT - deal with other formating ?
+            //text.Value = text.Value.Replace(@"\P", Environment.NewLine.ToString()); // uses PlainText later
             Color color = labelStyle.ForeColor;
             if (text.Color.IsByLayer == false)
             {

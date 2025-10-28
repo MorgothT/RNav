@@ -398,7 +398,7 @@
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                         </TextBox>
-                        <CheckBox Content="Absolute Units"  IsChecked="{Binding MapSettings.PointSettings.IsObsoluteUnits}"
+                        <CheckBox Content="Absolute Units"  IsChecked="{Binding MapSettings.PointSettings.IsAbsoluteUnits}"
                                   HorizontalAlignment="Right"
                                   Grid.Column="1" Grid.Row="1">
                             <i:Interaction.Triggers>

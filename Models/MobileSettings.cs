@@ -23,12 +23,6 @@ public partial class MobileSettings : ObservableObject
             SaveSettings();
         }
     }
-    ~MobileSettings()
-    {
-        SaveSettings();
-        Trace.WriteLine("destroy mobiles");
-    }
-
 
     public ObservableCollection<Mobile> LoadMobilesFromFile(string userSelectedPath = null)
     {

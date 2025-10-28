@@ -46,7 +46,7 @@ public partial class MapPage : Page
     public MemoryLayer BoatTrailLayer;
 
     private MapSettings mapSettings = new();
-    private CommSettings commSettings = new();
+    //private CommSettings commSettings = new();
 
     private MPoint measureStart;
     private WritableLayer measurementLayer;
@@ -75,7 +75,7 @@ public partial class MapPage : Page
             }
         }
     }
-
+    // TODO: change app update procedure
     public MapPage(MapViewModel viewModel)
     {
         InitializeComponent();
@@ -85,9 +85,7 @@ public partial class MapPage : Page
         vm = viewModel;
         
         SelectedTargetChanged += OnSelectedTargetChanged;
-        
-        //InitMobiles();
-        InitVessel();
+        InitDataDisplay();
         InitMapControl();
         InitUIControls();
 
@@ -102,20 +100,12 @@ public partial class MapPage : Page
             Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => UpdateTrail(mobileId)));
         };
     }
-
     private void OnSelectedTargetChanged(Target newTarget)
     {
         // Handle the new selected target here, e.g., notify the ViewModel or update UI
         // Example: vm can be notified or you can update UI elements
-         vm.OnSelectedTargetChanged(newTarget); // if such a method exists
+         vm.OnSelectedTargetChanged(newTarget);
     }
-
-    //REDO: change this after Mobile implementation
-    private void InitVessel()
-    {
-
-    }
-
     private void InitMapControl()
     {
         LoadMapControlState();
@@ -149,13 +139,19 @@ public partial class MapPage : Page
             throw;
         }
     }
-
     private void InitUIControls()
     {
         ColorSelector.SelectedColor = colorConvertor.WMColorFromMapsui(MapControl.Map.BackColor);
         Rotation.Foreground = colorConvertor.InvertBrushColor(MapControl.Map.BackColor);
         RotationSlider.Value = MapControl.Map.Navigator.Viewport.Rotation / 3.6;
         Rotation.Text = MapControl.Map.Navigator.Viewport.Rotation.ToString("F0");
+    }
+    private void InitDataDisplay()
+    {
+        foreach (var item in vm.DataViewItems)
+        {
+            item.FontSize = mapSettings.FontSize;
+        }
     }
     private void SetCRS()
     {
@@ -164,43 +160,7 @@ public partial class MapPage : Page
         int epsg = int.Parse(mapSettings.CurrentProjection.Split(':')[1]);
         ProjectCRS = $"EPSG:{epsg}";
     }
-    private void AddCharts()
-    {
-        foreach (var chart in mapSettings.ChartItems)
-        {
-            if (ProjectProjections.GetProjections().Contains(chart.Projection) == false)
-                chart.Projection = ProjectProjections.GetProjections()[0];
-            if (chart.Enabled == false) continue;   //Skiping inactive charts
-            if (File.Exists(chart.Path))
-            {
-                switch (chart.ChartType)
-                {
-                    case ChartType.Shapefile:
-                        MapControl.Map.Layers.Add(CreateShpLayer(chart));
-                        break;
-                    case ChartType.Geotiff:
-                        MapControl.Map.Layers.Add(CreateTiffLayer(chart));
-                        break;
-                    case ChartType.Dxf:
-                        if (DxfDocument.CheckDxfFileVersion(chart.Path) < DxfVersion.AutoCad2000)
-                        {
-                            MessageBox.Show($"Error: {chart.Path}\nMinimum DXF version is AutoCad2000 !");
-                            break;
-                        }
-                        else
-                        {
-                            MapControl.Map.Layers.Add(CreateDxfLayer(chart));
-                            break;
-                        }
-                    case ChartType.Ecw:
-                        MapControl.Map.Layers.Add(CreateEcwLayer(chart));
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-    }
+    
 
     #region Data Presistence
     private void LoadSavedTargets()
@@ -247,11 +207,12 @@ public partial class MapPage : Page
         {
             //Features = new[] { CreateTrailFeature() },
             Name = "BoatTrail",
+            
             Style = new VectorStyle
             {
                 Fill = null,
                 Outline = null,
-                Line = { Color = colorConvertor.WMColorToMapsui(mapSettings.BoatShape.OutlineColor) }
+                Line = { Color = colorConvertor.WMColorToMapsui(MobileLayers[0].BoatShape.OutlineColor) }
             }
         };
         measurementLayer = new WritableLayer()
@@ -303,6 +264,43 @@ public partial class MapPage : Page
         MobileLayers.ForEach(layer => { MapControl.Map.Layers.Add(layer); });
         MapControl.Map.Layers.Add(measurementLayer);
         //TODO: UI to move charts order and enable layers
+    }
+    private void AddCharts()
+    {
+        foreach (var chart in mapSettings.ChartItems)
+        {
+            if (ProjectProjections.GetProjections().Contains(chart.Projection) == false)
+                chart.Projection = ProjectProjections.GetProjections()[0];
+            if (chart.Enabled == false) continue;   //Skiping inactive charts
+            if (File.Exists(chart.Path))
+            {
+                switch (chart.ChartType)
+                {
+                    case ChartType.Shapefile:
+                        MapControl.Map.Layers.Add(CreateShpLayer(chart));
+                        break;
+                    case ChartType.Geotiff:
+                        MapControl.Map.Layers.Add(CreateTiffLayer(chart));
+                        break;
+                    case ChartType.Dxf:
+                        if (DxfDocument.CheckDxfFileVersion(chart.Path) < DxfVersion.AutoCad2000)
+                        {
+                            MessageBox.Show($"Error: {chart.Path}\nMinimum DXF version is AutoCad2000 !");
+                            break;
+                        }
+                        else
+                        {
+                            MapControl.Map.Layers.Add(CreateDxfLayer(chart));
+                            break;
+                        }
+                    case ChartType.Ecw:
+                        MapControl.Map.Layers.Add(CreateEcwLayer(chart));
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
     }
     private void LoadLastTrail()
     {
@@ -502,7 +500,6 @@ public partial class MapPage : Page
     private void UpdateMobileDirection(Guid mobileId)
     {
         double mapRotation = Properties.MapControl.Default.Rotation;
-
         var layer = MobileLayers.Where(m => m.MobileId == mobileId).Single();
         var mobile = vm.Mobiles.Where(m => m.Id == mobileId).Single();
         double heading = mobile.Data.Motion.Heading; // Default to 0 if heading is null

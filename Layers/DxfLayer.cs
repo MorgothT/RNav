@@ -5,18 +5,15 @@ using Mapsui;
 using Mapsui.Layers;
 using Mapsui.Nts;
 using Mapsui.Nts.Extensions;
-using Mapsui.Rendering.Skia.Extensions;
 using Mapsui.Styles;
 using netDxf;
 using netDxf.Entities;
 using netDxf.Header;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
-using SkiaSharp.Views.Desktop;
 using System.IO;
 using System.Windows;
 using IFeature = Mapsui.IFeature;
-using Style = Mapsui.Styles.Style;
 
 namespace Mapper_v1.Layers
 {
@@ -26,6 +23,7 @@ namespace Mapper_v1.Layers
         private string _path;
         private VectorStyle vectorStyle;
         private LabelStyle labelStyle;
+        private PointStyle pointStyle;
         private static readonly ColorConvertor colorConvertor = new();
         public string CRS { get; set; }
 
@@ -37,8 +35,9 @@ namespace Mapper_v1.Layers
             Style = null;// GetVectorStyle(chart);
             vectorStyle = GetVectorStyle(chart);
             labelStyle = GetLabelStyle(chart);
-            
+            pointStyle = GetPointStyle();
             //_styles = (StyleCollection)Style;
+
             // dxf checks
             DxfVersion version = DxfDocument.CheckDxfFileVersion(_path);
             if (version == DxfVersion.Unknown)
@@ -60,6 +59,21 @@ namespace Mapper_v1.Layers
             }
             
         }
+
+        private PointStyle GetPointStyle()
+        {
+            //TODO: pull point style from chart/map settings
+            PointSettings settings = new MapSettings().PointSettings;
+            PointStyle pointStyle = new PointStyle()
+            {
+                Color = colorConvertor.WMColorToMapsui(settings.Color),
+                Shape = settings.Shape,
+                Size = settings.Size,
+                IsObsoluteUnits = settings.IsObsoluteUnits,
+            };
+            return pointStyle;
+        }
+
         private static VectorStyle GetVectorStyle(ChartItem chart)
         {
             return new VectorStyle
@@ -288,21 +302,14 @@ namespace Mapper_v1.Layers
 
         private IFeature CreateFeatureFromPoint(EntityObject feature)
         {
-            //TODO: Add point style or renderer
             netDxf.Entities.Point point = (netDxf.Entities.Point)feature;
-            //var pointFeature = new NetTopologySuite.Geometries.Point(ToCoord(point.Position)).ToFeature();
-            var geofac = NtsGeometryServices.Instance.CreateGeometryFactory();
-            var pointFeature = geofac.CreatePoint(ToCoord(point.Position)).ToFeature();
-            PointStyle style = new PointStyle()
-            {
-                //TODO: pull point style from chart/map settings
-                Color = Color.Red,
-                Shape = PointShape.SquareCross,
-                Size = 10
-            };
+            var pointFeature = new NetTopologySuite.Geometries.Point(ToCoord(point.Position)).ToFeature();
+            //var geofac = NtsGeometryServices.Instance.CreateGeometryFactory();
+            //var pointFeature = geofac.CreatePoint(ToCoord(point.Position)).ToFeature();
             
-            
-            pointFeature.Styles = [style];
+
+            //PointStyle style = pointStyle;
+            pointFeature.Styles = [pointStyle];
             return pointFeature;
         }
 

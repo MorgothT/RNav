@@ -1,15 +1,15 @@
-﻿using Mapper_v1.Helpers;
+﻿using Mapper_v1.Core;
+using Mapper_v1.Helpers;
 using Mapsui;
 using Mapsui.Extensions;
 using Mapsui.Layers;
 using Mapsui.Nts;
 using Mapsui.Nts.Extensions;
+using Mapsui.Projections;
 using Mapsui.Rendering;
-using Mapsui.Rendering.Skia.Extensions;
 using Mapsui.Rendering.Skia.SkiaStyles;
 using Mapsui.Styles;
 using SkiaSharp;
-using System.Net.Http;
 
 namespace Mapper_v1.Layers;
 
@@ -22,6 +22,7 @@ public class PointStyle : IStyle
     public Color Color { get; set; } = Color.Red;
     public PointShape Shape { get; set; } = PointShape.Dot;
     public double Size { get; set; } = 5;
+    public bool IsObsoluteUnits { get; set; } = false;
 }
 
 public class PointRenderer : ISkiaStyleRenderer
@@ -30,13 +31,24 @@ public class PointRenderer : ISkiaStyleRenderer
     {
         if (feature is not GeometryFeature point) return false;
         if (style is not PointStyle pointStyle) return false;
-        SKPoint p = viewport.WorldToScreen(point.Geometry.Coordinate.ToMPoint()).ToSKPoint();
+        MPoint worldPoint = point.Geometry.Coordinate.ToMPoint();
+        SKPoint p = viewport.WorldToScreen(worldPoint).ToSKPoint();
         SKColor color = pointStyle.Color.ToSKColor();
         SKPaint paint = new SKPaint()
         {
             Color = color,
             IsStroke = true
         };
+
+        canvas.Translate(p.X, p.Y);
+        p = new SKPoint(0, 0);
+
+        if (pointStyle.IsObsoluteUnits)
+        {
+            var latRad = SphericalMercator.ToLonLat(worldPoint).Y * Math.PI / 180;
+            float scale = (float)(1 / (viewport.Resolution * Math.Cos(latRad)));
+            canvas.Scale(scale, -scale);
+        }
         switch (pointStyle.Shape)
         {
             case PointShape.Dot:
@@ -108,15 +120,15 @@ public class PointRenderer : ISkiaStyleRenderer
     }
 }
 
-public enum PointShape
-{
-    Dot,
-    Circle,
-    Square,
-    Cross,
-    SquareCross,
-    CircleCross,
-    Plus,
-    SquarePlus,
-    CirclePlus,
-}
+//public enum PointShape
+//{
+//    Dot,
+//    Circle,
+//    Square,
+//    Cross,
+//    SquareCross,
+//    CircleCross,
+//    Plus,
+//    SquarePlus,
+//    CirclePlus,
+//}

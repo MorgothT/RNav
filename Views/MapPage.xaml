@@ -195,7 +195,7 @@
                         </TextBlock>
                     </StackPanel>
                 </Expander.Header>
-                <controls:DataDisplayControl DataContext="{Binding DataViewItems}" />
+                <controls:DataDisplayControl DataContext="{Binding DataViewItems}"/>
             </Expander>
         </Grid>
         <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="5,0,5,5">

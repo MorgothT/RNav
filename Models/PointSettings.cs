@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Mapper_v1.Core;
 using Mapper_v1.Layers;
 using System.Windows.Media;
 
@@ -12,8 +13,6 @@ public partial class PointSettings : ObservableObject
     private double size = 10;
     [ObservableProperty]
     private PointShape shape = PointShape.Dot;
-
-
-    //TODO: implement loading and saving the point settings
-    //TODO: Add ui for the point settings
+    [ObservableProperty]
+    private bool isObsoluteUnits = false;
 }

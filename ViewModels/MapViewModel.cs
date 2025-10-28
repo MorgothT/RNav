@@ -133,6 +133,7 @@ public partial class MapViewModel : ObservableObject, INavigationAware
         Mobile mobile = Mobiles.FirstOrDefault(m => m.Id == id);
         foreach (var item in DataViewItems)
         {
+            //item.FontSize = MapSettings.FontSize;
             if (item.MobileId == id)
             {
                 // Support nested property names, e.g. "Position.Latitude"
@@ -373,6 +374,10 @@ public partial class MapViewModel : ObservableObject, INavigationAware
         // Show as dialog
         dialogWindow.ShowDialog();
         DataViewItems = dataDisplayDialogViewModel.SelectedItems;
+        //foreach (var item in DataViewItems)
+        //{
+        //    item.FontSize = MapSettings.FontSize;
+        //}
         SaveDataViewItems();
     }
     #endregion

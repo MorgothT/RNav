@@ -6,7 +6,11 @@ using Mapper_v1.Core.Models;
 using Mapper_v1.Models;
 using Microsoft.Extensions.Options;
 using Microsoft.Win32;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
+using Velopack;
+using Velopack.Sources;
 
 
 namespace Mapper_v1.ViewModels;
@@ -41,49 +45,14 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     [ObservableProperty]
     private MapSettings mapSettings = new();
     [ObservableProperty]
-    private CommSettings commSettings = new();
-
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(RemoveDeviceCommand))]
-    private PortConfig selectedDevice;
-
-
-    [RelayCommand]
-    private void AddDevice()
-    {
-        CommSettings.Devices.Add(new PortConfig());
-        CommSettings.SaveSettings();
-    }
-
-    [RelayCommand(CanExecute = nameof(CanRemoveDevice))]
-    private void RemoveDevice()
-    {
-        CommSettings.Devices.Remove(SelectedDevice);
-        CommSettings.SaveSettings();
-    }
-    private bool CanRemoveDevice()
-    {
-        return SelectedDevice is not null;
-    }
+    [NotifyCanExecuteChangedFor(nameof(UpdateCommand))]
+    private bool isUpdateRunning = false;
 
     [RelayCommand]
     private void SaveSettings()
     {
         MapSettings.SaveMapSettings();
-        CommSettings.SaveSettings();
-    }
-
-    [RelayCommand]
-    private void BrowseBoatShape()
-    {
-        OpenFileDialog ofd = new OpenFileDialog();
-        ofd.Filter = @"Hypack Boat Shape (*.shp)|*.shp|CSV (*.csv)|*.csv";
-        if (ofd.ShowDialog() == true)
-        {
-            MapSettings.BoatShape.Path = ofd.FileName;
-            MapSettings.SaveMapSettings();
-            MapSettings = new();
-        }
+        //CommSettings.SaveSettings();
     }
 
     [RelayCommand]
@@ -97,6 +66,24 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
             MapSettings.LogDirectory = ofd.FolderName;
         }
     }
+    [RelayCommand(CanExecute =nameof(CanUpdate))]
+    private async Task Update()
+    {
+        try
+        {
+            IsUpdateRunning = true;
+            await UpdateMyApp();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error: {ex.Message}");
+        }
+        IsUpdateRunning = false;
+    }
+    private bool CanUpdate()
+    {
+        return IsUpdateRunning == false;
+    }
 
     public SettingsViewModel(IOptions<AppConfig> appConfig, IThemeSelectorService themeSelectorService, ISystemService systemService, IApplicationInfoService applicationInfoService)
     {
@@ -105,6 +92,26 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
         _systemService = systemService;
         _applicationInfoService = applicationInfoService;
     }
+    private static async Task UpdateMyApp()
+    {
+        var mgr = new UpdateManager(new GithubSource("https://github.com/MorgothT/RNav", "", false));
+        var newVersion = await mgr.CheckForUpdatesAsync();
+        if (newVersion == null)
+            return;
+        await mgr.DownloadUpdatesAsync(newVersion);
+        var result = MessageBox.Show($"Version {newVersion.TargetFullRelease.Version} is available.{Environment.NewLine}Do you wish to restart the application ?",
+                                    "New version found",
+                                    button: MessageBoxButton.YesNo,
+                                    icon: MessageBoxImage.Question,
+                                    defaultResult: MessageBoxResult.No);
+        if (result == MessageBoxResult.Yes)
+
+            mgr.ApplyUpdatesAndRestart(newVersion);
+        else
+            mgr.WaitExitThenApplyUpdates(newVersion.TargetFullRelease, restart: false);
+
+    }
+
 
     public void OnNavigatedTo(object parameter)
     {

@@ -226,5 +226,17 @@ namespace Mapper_v1.Properties {
                 this["ShowTargets"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string PointSettings {
+            get {
+                return ((string)(this["PointSettings"]));
+            }
+            set {
+                this["PointSettings"] = value;
+            }
+        }
     }
 }

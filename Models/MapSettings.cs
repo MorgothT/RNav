@@ -11,42 +11,48 @@ namespace Mapper_v1.Models;
 
 public partial class MapSettings : ObservableObject
 {
-
     [ObservableProperty]
     private string currentProjection;
     [ObservableProperty]
     private List<string> projectionList;
     [ObservableProperty]
-    private ObservableCollection<ChartItem> chartItems;
+    private PointSettings pointSettings;
     [ObservableProperty]
-    private BoatShape boatShape = new();
-    [ObservableProperty]
-    private double fontSize;
+    private double fontSize;    // TODO: implement or delete
     [ObservableProperty]
     private DegreeFormat degreeFormat;
-    [ObservableProperty]
-    private ObservableCollection<Target> targetList;
-    [ObservableProperty]
-    private float targetRadius = 5;
-    [ObservableProperty]
-    private double headingOffset = 0;
-    [ObservableProperty]
-    private double depthOffset = 0;
-    [ObservableProperty]
-    private System.Drawing.Point positionOffset = new(0,0);
-
     [ObservableProperty]
     private ushort trailDuration;
     [ObservableProperty]
     private string logDirectory;
+    
+    // Data persistance
+    [ObservableProperty]
+    private ObservableCollection<ChartItem> chartItems;
+    [ObservableProperty]
+    private ObservableCollection<Target> targetList;
     [ObservableProperty]
     private List<TimedPoint> lastTrail;
+    [ObservableProperty]
+    private int selectedTargetId;
+    
+    // App Settings in other screens
+    [ObservableProperty]
+    private float targetRadius = 5;
     [ObservableProperty]
     private bool mapOverlay;
     [ObservableProperty]
     private bool showTargets = true;
-    [ObservableProperty]
-    private int selectedTargetId;
+
+    // Depreceted
+    //[ObservableProperty]
+    //private double headingOffset = 0;
+    //[ObservableProperty]
+    //private double depthOffset = 0;
+    //[ObservableProperty]
+    //private System.Drawing.Point positionOffset = new(0,0);
+    //[ObservableProperty]
+    //private BoatShape boatShape = new();
 
     public double[] GetFontSizes
     {
@@ -63,7 +69,7 @@ public partial class MapSettings : ObservableObject
         ProjectionList = ProjectProjections.GetProjections();
         CurrentProjection = ProjectionList.First();
         ChartItems = new ObservableCollection<ChartItem>();
-        BoatShape = new BoatShape();
+        //BoatShape = new BoatShape();
         FontSize = 12;
         DegreeFormat = DegreeFormat.Deg;
         TargetList = new ObservableCollection<Target>();
@@ -79,24 +85,25 @@ public partial class MapSettings : ObservableObject
         try
         {
             ProjectionList = ProjectProjections.GetProjections();
-            CurrentProjection = Properties.Map.Default.Projection;
+            CurrentProjection = Properties.Map.Default.Projection ?? ProjectionList.First();
             if (ProjectionList.Contains(CurrentProjection) == false)
                 CurrentProjection = ProjectionList[0];
-            ChartItems = JsonConvert.DeserializeObject<ObservableCollection<ChartItem>>(Properties.Map.Default.Layers);
-            BoatShape = JsonConvert.DeserializeObject<BoatShape>(Properties.Map.Default.BoatShape)?? new();
+            ChartItems = JsonConvert.DeserializeObject<ObservableCollection<ChartItem>>(Properties.Map.Default.Layers) ?? [];
+            //BoatShape = JsonConvert.DeserializeObject<BoatShape>(Properties.Map.Default.BoatShape)?? new();
             FontSize = Properties.Map.Default.FontSize;
             DegreeFormat = JsonConvert.DeserializeObject<DegreeFormat>(Properties.Map.Default.DegreeFormat);
-            TargetList = JsonConvert.DeserializeObject<ObservableCollection<Target>>(Properties.Map.Default.TargetList);
+            TargetList = JsonConvert.DeserializeObject<ObservableCollection<Target>>(Properties.Map.Default.TargetList) ?? [];
             if (TargetList is null) TargetList = new ObservableCollection<Target>();
             TargetRadius = Properties.Map.Default.TargetRadius;
-            HeadingOffset = Properties.Map.Default.HeadingOffset;
-            DepthOffset = Properties.Map.Default.DepthOffset;
-            PositionOffset = Properties.Map.Default.PositionOffset;
+            //HeadingOffset = Properties.Map.Default.HeadingOffset;
+            //DepthOffset = Properties.Map.Default.DepthOffset;
+            //PositionOffset = Properties.Map.Default.PositionOffset;
             TrailDuration = Properties.Map.Default.TrailDuration;
             LogDirectory = Properties.Map.Default.LogDirectory;
             MapOverlay = Properties.Map.Default.MapOverlay;
             ShowTargets = Properties.Map.Default.ShowTargets;
             SelectedTargetId = Properties.Map.Default.LastTargetId;
+            PointSettings = JsonConvert.DeserializeObject<PointSettings>(Properties.Map.Default.PointSettings) ?? new PointSettings();
             if (ProjectionList is null) InitializeMapSettings();
         }
         catch (Exception)
@@ -109,20 +116,20 @@ public partial class MapSettings : ObservableObject
     {
         Properties.Map.Default.Projection = CurrentProjection;
         Properties.Map.Default.Layers = JsonConvert.SerializeObject(ChartItems);
-        Properties.Map.Default.BoatShape = JsonConvert.SerializeObject(BoatShape);
+        //Properties.Map.Default.BoatShape = JsonConvert.SerializeObject(BoatShape);
         Properties.Map.Default.FontSize = FontSize;
         Properties.Map.Default.DegreeFormat = JsonConvert.SerializeObject(DegreeFormat);
         Properties.Map.Default.TargetList = JsonConvert.SerializeObject(TargetList);
         Properties.Map.Default.TargetRadius = TargetRadius;
-        Properties.Map.Default.HeadingOffset = HeadingOffset;
-        Properties.Map.Default.DepthOffset = DepthOffset;
-        Properties.Map.Default.PositionOffset = PositionOffset;
+        //Properties.Map.Default.HeadingOffset = HeadingOffset;
+        //Properties.Map.Default.DepthOffset = DepthOffset;
+        //Properties.Map.Default.PositionOffset = PositionOffset;
         Properties.Map.Default.TrailDuration = TrailDuration;
         Properties.Map.Default.LogDirectory = LogDirectory;
         Properties.Map.Default.MapOverlay = MapOverlay;
         Properties.Map.Default.ShowTargets = ShowTargets;
         Properties.Map.Default.LastTargetId = SelectedTargetId;
-
+        Properties.Map.Default.PointSettings = JsonConvert.SerializeObject(PointSettings);
         Properties.Map.Default.Save();
     }
     public List<TimedPoint> GetTrail()

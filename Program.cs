@@ -26,7 +26,7 @@ namespace Mapper_v1
                     //MessageBox.Show($"Added {result} new font");
                     //Trace.WriteLine($"Added {result} new font");
                 }
-                _ = UpdateMyApp();
+                //_ = UpdateMyApp();
                 var app = new App();
                 app.InitializeComponent();
                 app.Run();

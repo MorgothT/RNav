@@ -11,7 +11,7 @@
         <converters:DoubleFormatConverter x:Key="DoubleFormatConverter"/>
     </UserControl.Resources>
     <StackPanel>
-        <DataGrid x:Name="DataView" DataContext="{Binding}" ItemsSource="{Binding}" IsHitTestVisible="False" AutoGenerateColumns="False">
+        <DataGrid x:Name="DataView" DataContext="{Binding}" ItemsSource="{Binding}" IsHitTestVisible="False" AutoGenerateColumns="False" FontSize="{Binding FontSize}">
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding DisplayName}" Header="Name">
                     <DataGridTextColumn.ElementStyle>

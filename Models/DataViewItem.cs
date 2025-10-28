@@ -29,6 +29,8 @@ public partial class DataViewItem : ObservableObject
     private int[] decimalPlacesOptions = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
     [ObservableProperty]
     private bool showMobileName = true;
+    [ObservableProperty]
+    private double fontSize = 12;
 
     public static readonly DataViewItemComparer comparer = new();
     public static readonly Guid SystemId = new Guid("00000000-0000-0000-0000-000000000001");

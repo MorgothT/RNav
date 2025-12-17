@@ -10,6 +10,7 @@ namespace Mapper_v1.ViewModels;
 public class ShellViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
+    //private readonly IConfigService _configService;
     private HamburgerMenuItem _selectedMenuItem;
     private HamburgerMenuItem _selectedOptionsMenuItem;
     private RelayCommand _goBackCommand;
@@ -46,9 +47,10 @@ public class ShellViewModel : ObservableObject
     public ICommand OptionsMenuItemInvokedCommand => _optionsMenuItemInvokedCommand ?? (_optionsMenuItemInvokedCommand = new RelayCommand(OnOptionsMenuItemInvoked));
     public ICommand LoadedCommand => _loadedCommand ?? (_loadedCommand = new RelayCommand(OnLoaded));
     public ICommand UnloadedCommand => _unloadedCommand ?? (_unloadedCommand = new RelayCommand(OnUnloaded));
-    public ShellViewModel(INavigationService navigationService)
+    public ShellViewModel(INavigationService navigationService)//, IConfigService configService)
     {
         _navigationService = navigationService;
+        //_configService = configService;
     }
     private void OnLoaded()
     {

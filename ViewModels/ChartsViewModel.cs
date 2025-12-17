@@ -9,7 +9,7 @@ public partial class ChartsViewModel : ObservableObject
 {
 
     [ObservableProperty]
-    private MapSettings mapSettings = new();
+    private MapSettings mapSettings = new MapSettings().GetMapSettings();
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(MoveDownCommand), nameof(MoveUpCommand),
@@ -111,12 +111,12 @@ public partial class ChartsViewModel : ObservableObject
     [RelayCommand]
     private void ImportCharts()
     {
-        MapSettings.LoadCharts();
+        MapSettings.ImportCharts();
     }
     [RelayCommand(CanExecute = nameof(CanExportCharts))]
     private void ExportCharts()
     {
-        MapSettings.SaveCharts();
+        MapSettings.ExportCharts();
     }
     private bool CanExportCharts()
     {

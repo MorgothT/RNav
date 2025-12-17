@@ -27,7 +27,7 @@ public partial class TargetsViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ExportTargetsCommand), nameof(ClearTargetsCommand))]
-    private MapSettings mapSettings = new();
+    private MapSettings mapSettings = new MapSettings().GetMapSettings();
 
     #endregion
 

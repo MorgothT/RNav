@@ -7,6 +7,7 @@ using Mapsui.Rendering;
 using Mapsui.Rendering.Skia.SkiaStyles;
 using Mapsui.Styles;
 using SkiaSharp;
+using System.Diagnostics;
 
 namespace Mapper_v1.Layers
 {
@@ -33,26 +34,34 @@ namespace Mapper_v1.Layers
             //Trace.WriteLine($"1: {canvas.TotalMatrix.ScaleX},{canvas.TotalMatrix.ScaleY},{canvas.TotalMatrix.SkewX},{canvas.TotalMatrix.SkewY}");
             canvas.RotateDegrees(boatStyle.SymbolRotation);
             //Trace.WriteLine($"2: {canvas.TotalMatrix.ScaleX},{canvas.TotalMatrix.ScaleY},{canvas.TotalMatrix.SkewX},{canvas.TotalMatrix.SkewY}");
+            // make sure the boat is seen at all zoom levels with absolute size
+
             canvas.Scale(scale, -scale);
             //Trace.WriteLine($"3: {canvas.TotalMatrix.ScaleX},{canvas.TotalMatrix.ScaleY},{canvas.TotalMatrix.SkewX},{canvas.TotalMatrix.SkewY}");
-
-            SKPath path = new SKPath();
-            path.AddPoly(boatShape.VesselOutline.ToArray());
-            //Draw a fill of the vessel
-            canvas.DrawPath(path, boatShape.SKFillColor);
-            // Draw the origin point
-            canvas.DrawCircle(0, 0, boatStyle.OriginSize, new SKPaint() { Color = SKColors.Red });
-            // Draw the outline of the vessel
-            canvas.DrawPoints(SKPointMode.Polygon, boatShape.VesselOutline.ToArray(), boatShape.SKOutlineColor);
-            // Draw objects
-            foreach (VesselArc arc in boatShape.VesselObjects)
+            if (scale >= 0.01f)
             {
-                DrawArcBetween2Points(canvas,arc,boatShape.SKOutlineColor);
+                SKPath path = new SKPath();
+                path.AddPoly(boatShape.VesselOutline.ToArray());
+                //Draw a fill of the vessel
+                canvas.DrawPath(path, boatShape.SKFillColor);
+                // Draw the origin point
+                canvas.DrawCircle(0, 0, boatStyle.OriginSize, new SKPaint() { Color = SKColors.Red });
+                // Draw the outline of the vessel
+                canvas.DrawPoints(SKPointMode.Polygon, boatShape.VesselOutline.ToArray(), boatShape.SKOutlineColor);
+                // Draw objects
+                foreach (VesselArc arc in boatShape.VesselObjects)
+                {
+                    DrawArcBetween2Points(canvas, arc, boatShape.SKOutlineColor);
+                }
+                //Draw Anchors
+                foreach (VesselAnchor anchor in boatShape.VesselAnchors)
+                {
+                    DrawAnchor(canvas, anchor);
+                }
             }
-            //Draw Anchors
-            foreach (VesselAnchor anchor in boatShape.VesselAnchors)
+            else // draw a simple dot when zoomed out too far
             {
-                DrawAnchor(canvas, anchor);
+                canvas.DrawCircle(0, 0, 1/scale, new SKPaint() { Color = SKColors.Red, IsStroke = false});
             }
             return true;
         }

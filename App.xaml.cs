@@ -68,6 +68,10 @@ public partial class App : Application
         services.AddSingleton<IPageService, PageService>();
         services.AddSingleton<INavigationService, NavigationService>();
 
+        // Settings
+        //services.AddSingleton<IConfigService, ConfigService>();
+        //services.AddSingleton<MapSettings>();
+
         // Views and ViewModels
         services.AddTransient<IShellWindow, ShellWindow>();
         services.AddTransient<ShellViewModel>();
@@ -95,6 +99,7 @@ public partial class App : Application
     }
     private async void OnExit(object sender, ExitEventArgs e)
     {
+        //(_host.Services.GetService(typeof(ConfigService)) as ConfigService).Save();
         await _host.StopAsync();
         _host.Dispose();
         _host = null;

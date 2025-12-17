@@ -46,7 +46,7 @@ public partial class MapPage : Page
     public List<BoatShapeLayer> MobileLayers = [];
     public MemoryLayer BoatTrailLayer;
 
-    private MapSettings mapSettings = new();
+    //private MapSettings mapSettings = new MapSettings().GetMapSettings();
     //private CommSettings commSettings = new();
 
     private MPoint measureStart;
@@ -112,7 +112,7 @@ public partial class MapPage : Page
         MapControl.MouseMove += MapControlOnMouseMove;
         MapControl.Info += MapControl_Click;
         MapControl.MouseRightButtonDown += MapControl_MouseRightButtonDown;
-
+        
         MapControl.Map.Navigator.RotationLock = false;
         MapControl.UnSnapRotationDegrees = 30;
         MapControl.ReSnapRotationDegrees = 5;
@@ -122,11 +122,20 @@ public partial class MapPage : Page
         {
             MaxWidth = 100,
             ScaleBarMode = ScaleBarMode.Both,
-            MarginX = 0,
-            MarginY = 25,
-            HorizontalAlignment = Mapsui.Widgets.HorizontalAlignment.Right,
+            MarginX = 10,
+            MarginY = 10,
+            HorizontalAlignment = Mapsui.Widgets.HorizontalAlignment.Left,
             SecondaryUnitConverter = NauticalUnitConverter.Instance
         });
+        //MapControl.Map.Widgets.Add(new ZoomInOutWidget()
+        //{
+        //    Orientation = Mapsui.Widgets.Zoom.Orientation.Vertical,
+        //     Size = 20,
+        //    MarginX = 10,
+        //    MarginY = 10,
+        //    HorizontalAlignment = Mapsui.Widgets.HorizontalAlignment.Right,
+        //    VerticalAlignment = Mapsui.Widgets.VerticalAlignment.Bottom,
+        //});
         MapControl.Map.Navigator.OverrideZoomBounds = new MMinMax(1000000, 0.0149); // zoom to about 1m (depens on Lattitude)
         
         try
@@ -150,14 +159,14 @@ public partial class MapPage : Page
     {
         foreach (var item in vm.DataViewItems)
         {
-            item.FontSize = mapSettings.FontSize;
+            item.FontSize = vm.MapSettings.FontSize;
         }
     }
     private void SetCRS()
     {
         MapControl.Map.CRS = "EPSG:3857";
         ProjectionDefaults.Projection = new WktProjections(); //new IsraelProjections();
-        int epsg = int.Parse(mapSettings.CurrentProjection.Split(':')[1]);
+        int epsg = int.Parse(vm.MapSettings.CurrentProjection.Split(':')[1]);
         ProjectCRS = $"EPSG:{epsg}";
     }
     
@@ -165,10 +174,10 @@ public partial class MapPage : Page
     #region Data Presistence
     private void LoadSavedTargets()
     {
-        SelectedTargetId = mapSettings.SelectedTargetId;
-        foreach (Target target in mapSettings.TargetList)
+        SelectedTargetId = vm.MapSettings.SelectedTargetId;
+        foreach (Target target in vm.MapSettings.TargetList)
         {
-            var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
+            var feature = Target.CreateTargetFeature(target, vm.MapSettings.TargetRadius, vm.MapSettings.DegreeFormat);
             if ((int)feature["Id"] == SelectedTargetId)
             {
                 feature["IsSelected"] = true;
@@ -191,6 +200,7 @@ public partial class MapPage : Page
                     CalloutText = mobile.Name,
                     Enabled = true,
                     IsCentered = ToggleTracking.IsChecked.Value,
+                    Name = mobile.Name
                 });
             }
             else
@@ -200,6 +210,7 @@ public partial class MapPage : Page
                     CalloutText = mobile.Name,
                     Enabled = true,
                     IsCentered = false,
+                    Name = mobile.Name
                 });
             }
         }
@@ -228,7 +239,7 @@ public partial class MapPage : Page
             {
                 Color = SKColors.LimeGreen,
                 Opacity = 0.1f,
-                Radius = mapSettings.TargetRadius
+                Radius = vm.MapSettings.TargetRadius
             }
         };
 
@@ -247,7 +258,7 @@ public partial class MapPage : Page
         }
 
         // Adding the layers to the map
-        if (mapSettings.MapOverlay == true)
+        if (vm.MapSettings.MapOverlay == true)
         {
             var osm = OpenStreetMap.CreateTileLayer("RNav_OSM");
             osm.Name = "MapOvelay";
@@ -255,7 +266,7 @@ public partial class MapPage : Page
         }
         AddCharts();
         LoadLastTrail();
-        if (mapSettings.ShowTargets == true) 
+        if (vm.MapSettings.ShowTargets == true) 
         {
             LoadSavedTargets();
             MapControl.Map.Layers.Add(MyTargets);
@@ -267,7 +278,7 @@ public partial class MapPage : Page
     }
     private void AddCharts()
     {
-        foreach (var chart in mapSettings.ChartItems)
+        foreach (var chart in vm.MapSettings.ChartItems)
         {
             if (ProjectProjections.GetProjections().Contains(chart.Projection) == false)
                 chart.Projection = ProjectProjections.GetProjections()[0];
@@ -306,7 +317,8 @@ public partial class MapPage : Page
     {
         try
         {
-            MyTrail = mapSettings.GetTrail();
+            MyTrail = vm.MapSettings.LastTrail;
+            //MyTrail = mapSettings.GetTrail();
         }
         catch (Exception)
         {
@@ -315,6 +327,8 @@ public partial class MapPage : Page
         if (MyTrail is null)
         {
             MyTrail = new();
+            vm.MapSettings.LastTrail = MyTrail;
+            vm.MapSettings.SaveMapSettings();
         }
     }
     private void SaveMapControlState()
@@ -359,7 +373,7 @@ public partial class MapPage : Page
     #region GNSS_Methods
     private void UpdateTrail(Guid mobileId)
     {
-        if (mapSettings.TrailDuration == 0) return;
+        if (vm.MapSettings.TrailDuration == 0) return;
         Mobile mobile = vm.Mobiles.Where(m => m.Id == mobileId).Single();
         if (mobile.IsPrimery == false) return; // Only update trail for primary mobile
 
@@ -371,9 +385,9 @@ public partial class MapPage : Page
         {
             return;
         }
-        MyTrail.RemoveAll(x => point.Time.Subtract(x.Time) > TimeSpan.FromMinutes(mapSettings.TrailDuration));
-        mapSettings.SaveTrail(MyTrail);
-
+        MyTrail.RemoveAll(x => point.Time.Subtract(x.Time) > TimeSpan.FromMinutes(vm.MapSettings.TrailDuration));
+        //mapSettings.SaveTrail(MyTrail);
+        vm.MapSettings.LastTrail = MyTrail;
         try
         {
             BoatTrailLayer.Features = [CreateTrailFeature()];
@@ -393,7 +407,8 @@ public partial class MapPage : Page
         {
             if (MyTrail.Count < 2) return;
             MyTrail.RemoveRange(0, MyTrail.Count - 1);
-            mapSettings.SaveTrail(MyTrail);
+            //mapSettings.SaveTrail(MyTrail);
+            vm.MapSettings.LastTrail = MyTrail;
         }
         catch
         {
@@ -404,90 +419,13 @@ public partial class MapPage : Page
     {
         if (startLineTime == DateTime.MinValue)
             startLineTime = DateTime.UtcNow;
-        string logPath = @$"{mapSettings.LogDirectory}\{startLineTime.ToString("yyyyMMdd-HHmmss")}.raw";
-        if (!Directory.Exists(mapSettings.LogDirectory))
+        string logPath = @$"{vm.MapSettings.LogDirectory}\{startLineTime.ToString("yyyyMMdd-HHmmss")}.raw";
+        if (!Directory.Exists(vm.MapSettings.LogDirectory))
         {
-            Directory.CreateDirectory(mapSettings.LogDirectory);
+            Directory.CreateDirectory(vm.MapSettings.LogDirectory);
         }
         File.AppendAllText(logPath, $"{DateTime.UtcNow:HH:mm:ss},{msg}{Environment.NewLine}");
     }
-    //private void LogNMEA(INmeaMessage msg)
-    //{
-    //    LogNMEA(msg.Payload);
-    //}
-
-    //private void ConnectToGps()
-    //{
-    //    foreach (NmeaDevice dev in devices)
-    //    {
-    //        try
-    //        {
-    //            dev.Connect();
-    //        }
-    //        catch (Exception)
-    //        {
-    //            throw;
-    //        }
-    //    }
-    //}
-    //private void UpdateDirection()
-    //{
-    //    //double heading = (VesselData.GetHDT.HeadingTrue + mapSettings.HeadingOffset) % 360;
-    //    double heading;// = DataDisplay.Heading;
-    //    double mapRotation = Properties.MapControl.Default.Rotation;
-    //    //if (ToggleNoseUp.IsChecked.Value)
-    //    //{
-    //    //    // when bow up
-    //    //    //MyBoatLayer.UpdateMyDirection(heading, heading);
-    //    //    MobileLayers.First().UpdateMyDirection(heading, heading);
-    //    //    MapControl.Map.Navigator.RotateTo(360 - heading);
-    //    //}
-    //    //else
-    //    //{
-    //    //    //MyBoatLayer.UpdateMyDirection(heading, 0);
-    //    //    MobileLayers.First().UpdateMyDirection((heading + mapRotation) % 360, 0);
-    //    //}
-    //    foreach (var layer in MobileLayers)
-    //    {
-    //        double? dir = null;
-    //        foreach (var mobile in vm.Mobiles)
-    //        {
-    //            if (mobile.Id == layer.MobileId)
-    //            {
-    //                dir = mobile.Data.Motion.Heading;
-    //                break;
-    //            }
-    //            else continue;
-    //        }
-    //        if (dir is null) continue; //could not find heading
-    //        heading = dir.Value;
-    //        if (ToggleNoseUp.IsChecked.Value)
-    //            if (layer == MobileLayers.FirstOrDefault())
-    //            {
-    //                layer.UpdateMyDirection(heading, heading);
-    //                MapControl.Map.Navigator.RotateTo(360 - heading);
-    //            }
-    //            else
-    //            {
-    //                layer.UpdateMyDirection(heading, -MapControl.Map.Navigator.Viewport.Rotation);
-    //            }
-    //        else
-    //        {
-    //            layer.UpdateMyDirection((heading + mapRotation) % 360, 0);
-    //        }
- 
-    //    }
-    //}
-    //private void UpdateLocation()   // WGS84 (GNSS) -> Map CRS
-    //{
-    //    //double lon = VesselData.GetGGA.Longitude.Degrees;
-    //    //double lat = VesselData.GetGGA.Latitude.Degrees;
-    //    //MPoint point = new MPoint(lon, lat);
-    //    MPoint point = new MPoint(DataDisplay.Longitude, DataDisplay.Latitude);
-    //    ProjectionDefaults.Projection.Project("EPSG:4326", MapControl.Map.CRS, point);
-    //    MobileLayers.First().UpdateMyLocation(point);
-    //    MobileLayers.First().DataHasChanged();
-    //}
     private void UpdateMobilePosition(Guid mobileId)
     {
         var position = vm.Mobiles.Where(m => m.Id == mobileId).Single().Data.Position;
@@ -496,6 +434,11 @@ public partial class MapPage : Page
         var layer = MobileLayers.Where(m => m.MobileId == mobileId).Single();
         layer.UpdateMyLocation(point);
         layer.DataHasChanged();
+        if (MapControl.Map.Extent?.Intersects(point.MRect) == false && layer.IsCentered)
+        {
+            MapControl.Map.Navigator.OverridePanBounds = MapControl.Map.Extent.Join(point.MRect.Grow(1));
+            MapControl.Map.Navigator.CenterOn(point);
+        }
     }
     private void UpdateMobileDirection(Guid mobileId)
     {
@@ -628,14 +571,18 @@ public partial class MapPage : Page
                 }
                 else
                 {
+                    //if (layer is BoatShapeLayer ml)
+                    //    ext = ext.Join(ml.MyLocation.MRect.Grow(10));
                     ext = ext.Join(layer.Extent);
                 }
             }
         }
         if (ext is not null)
         {
+            //ext = ext.Grow(1.1); //Add 10% margin
             MapControl.Map.Navigator.ZoomToBox(ext);
             MapControl.Map.Navigator.OverridePanBounds = ext;
+            
         }
     }
     private static StyleCollection GetShapefileStyles(ChartItem chart)
@@ -723,19 +670,20 @@ public partial class MapPage : Page
     private void RemoveTargetFeature(IFeature feature)
     {
         if (feature is null) { return; }
+        if (feature.Styles.Count(s => s.GetType() == typeof(BoatStyle)) > 0) return;
         var pointFeature = (PointFeature)feature;
         if (SelectedTargetId == (int)pointFeature["Id"])  // Nullify the SelectedTarget
         {
             SelectedTargetId = -1;
             SelectedTarget = null;
-            mapSettings.SaveMapSettings();
+            vm.MapSettings.SaveMapSettings();
         }
-        foreach (Target target in mapSettings.TargetList)
+        foreach (Target target in vm.MapSettings.TargetList)
         {
             if (target.Id == (int)pointFeature["Id"])
             {
-                mapSettings.TargetList.Remove(target);
-                mapSettings.SaveMapSettings();
+                vm.MapSettings.TargetList.Remove(target);
+                vm.MapSettings.SaveMapSettings();
                 return;
             }
         }
@@ -780,7 +728,7 @@ public partial class MapPage : Page
     /// <param name="fromMap"></param>
     private void AddNewTarget(MPoint point,bool fromMap = false)
     {
-        int id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
+        int id = vm.MapSettings.TargetList.Count == 0 ? 0 : vm.MapSettings.TargetList.Max(x => x.Id) + 1;
         if (fromMap)
         {
             ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, point);
@@ -789,9 +737,9 @@ public partial class MapPage : Page
         MPoint wgs = new(point);
         ProjectionDefaults.Projection.Project(ProjectCRS, "EPSG:4326", wgs);
         Target target = Target.CreateTarget(point, id, wgs);
-        mapSettings.TargetList.Add(target);
-        mapSettings.SaveMapSettings();
-        var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
+        vm.MapSettings.TargetList.Add(target);
+        vm.MapSettings.SaveMapSettings();
+        var feature = Target.CreateTargetFeature(target, vm.MapSettings.TargetRadius, vm.MapSettings.DegreeFormat);
         ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
         MyTargets?.Features.Add(feature);
         MyTargets.DataHasChanged();
@@ -820,19 +768,6 @@ public partial class MapPage : Page
         if (vm.TargetMode)
         {
             AddNewTarget(e.MapInfo.WorldPosition, true);
-            //int id = mapSettings.TargetList.Count == 0 ? 0 : mapSettings.TargetList.Max(x => x.Id) + 1;
-            //MPoint tr = new(e.MapInfo.WorldPosition);
-            //ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, tr);
-            //MPoint wgs = new(tr);
-            //ProjectionDefaults.Projection.Project(ProjectCRS, "EPSG:4326", wgs);
-            //Target target = Target.CreateTarget(tr, id, wgs);
-            //mapSettings.TargetList.Add(target);
-            //mapSettings.SaveMapSettings();
-            //var feature = Target.CreateTargetFeature(target, mapSettings.TargetRadius, mapSettings.DegreeFormat);
-            //ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
-            //MyTargets?.Features.Add(feature);
-            //e.MapInfo.Layer?.DataHasChanged();
-            //MapControl.Refresh();
         }
         if (!vm.MeasurementMode && !vm.TargetMode)
         {
@@ -853,8 +788,12 @@ public partial class MapPage : Page
             if (MyTargets?.Features is null) return;
             var screenPosition = e.GetPosition(MapControl).ToMapsui();
             MapInfo info = MapControl.GetMapInfo(screenPosition);
-            MyTargets.Features.Remove(info.Feature);
-            RemoveTargetFeature(info.Feature);
+            // assigns the first target in the location if exists
+            var feature = info.MapInfoRecords.FirstOrDefault(l => l.Layer.Name == "Targets")?.Feature;
+            //MyTargets.Features.Remove(info.Feature);
+            MyTargets.Features.Remove(feature);
+            //RemoveTargetFeature(info.Feature);
+            RemoveTargetFeature(feature);
             MapControl.Refresh();
         }
         if (vm.MeasurementMode) //do nothing in Ruler mode
@@ -890,8 +829,8 @@ public partial class MapPage : Page
                     targetFeature["IsSelected"] = false;
                 }
             }
-            mapSettings.SelectedTargetId = SelectedTargetId;
-            mapSettings.SaveMapSettings();
+            vm.MapSettings.SelectedTargetId = SelectedTargetId;
+            vm.MapSettings.SaveMapSettings();
             MapControl.Refresh();
         }
     }
@@ -990,14 +929,14 @@ public partial class MapPage : Page
         }
         e.Handled = true;
     }
-
-    #endregion
     //TODO: Move to context menu on map?
     //TODO: move button placement
     // Add target at the current boat location
     private void AddTarget_Click(object sender, RoutedEventArgs e)
     {
-        AddNewTarget(MobileLayers.First().MyLocation,true);
+        AddNewTarget(MobileLayers.First().MyLocation, true);
     }
+    #endregion
+
 }
 

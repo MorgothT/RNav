@@ -196,7 +196,10 @@
                     Style="{StaticResource BodyTextStyle}" HorizontalAlignment="Center"/>
                 <Button Content="Check for update"
                         Command="{Binding UpdateCommand}" Margin="5" Style="{StaticResource MahApps.Styles.Button.Dialogs}"/>
-
+                <Button Content="Export Settings"
+                        Command="{Binding ExportSettingsCommand}" Margin="5" Style="{StaticResource MahApps.Styles.Button.Dialogs}"/>
+                <Button Content="Import Settings"
+                        Command="{Binding ImportSettingsCommand}" Margin="5" Style="{StaticResource MahApps.Styles.Button.Dialogs}"/>
                 <!--<TextBlock
                     Margin="{StaticResource SmallTopMargin}"
                     AutomationProperties.Name="{Binding Text, ElementName=settingsPrivacyStatement}">

@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 
 namespace Mapper_v1.Models;
-
+// DEPRECATED !
 public partial class CommSettings : ObservableObject
 {
     [ObservableProperty]

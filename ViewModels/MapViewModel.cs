@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapper_v1.Contracts.Services;
 using Mapper_v1.Contracts.ViewModels;
 using Mapper_v1.Core;
 using Mapper_v1.Core.Models;
@@ -12,6 +13,7 @@ using Mapsui;
 using Mapsui.Projections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 
@@ -22,7 +24,7 @@ public partial class MapViewModel : ObservableObject, INavigationAware
     public WktProjections Projection = new WktProjections();
 
     [ObservableProperty]
-    private MapSettings mapSettings = new();
+    private MapSettings mapSettings = new MapSettings().GetMapSettings();
     [ObservableProperty]
     private MobileSettings mobileSettings = new();
     [ObservableProperty]
@@ -45,14 +47,17 @@ public partial class MapViewModel : ObservableObject, INavigationAware
 
     public event Action<Guid> PositionChanged;
     public event Action<Guid> HeadingChanged;
+
+    //private IConfigService _configService;
     public MapViewModel()
     {
+        //_configService = configService;
         InitMobiles();
         InitDataView();
         //InitDataView_Old();
         InitProjection();
     }
-
+    
     private void InitProjection()
     {
         int epsg = int.Parse(MapSettings.CurrentProjection.Split(':')[1]);
@@ -103,6 +108,10 @@ public partial class MapViewModel : ObservableObject, INavigationAware
             foreach (var mobile in Mobiles)
             {
                 mobile.InitDevices();
+                mobile.StatusChanged += (id, status) =>
+                {
+                    Trace.WriteLine($"Mobile {mobile.Name} - Status: {status}");
+                };
                 MobileDataChanged = (sender, e) =>
                 {
                     // Handle property changes in the mobile's data
@@ -387,6 +396,7 @@ public partial class MapViewModel : ObservableObject, INavigationAware
     }
     public void OnNavigatedFrom()
     {
+        MapSettings.SaveMapSettings();
         try
         {
             foreach (var mobile in Mobiles)

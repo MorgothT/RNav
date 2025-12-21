@@ -97,8 +97,8 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
         };
         if (sfd.ShowDialog() == true)
         {
-            //MapSettings.SaveMapSettings(sfd.FileName);
-            _configService.SaveConfig(sfd.FileName);
+            MapSettings.SaveMapSettings(sfd.FileName);
+            //_configService.SaveConfig(sfd.FileName);
         }
     }
     [RelayCommand]
@@ -111,8 +111,8 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
         };
         if (ofd.ShowDialog() == true)
         {
-            //MapSettings = new MapSettings().GetMapSettings(ofd.FileName);
-            _configService.LoadMapConfig(ofd.FileName);
+            MapSettings = new MapSettings().GetMapSettings(ofd.FileName);
+            //_configService.LoadMapConfig(ofd.FileName);
         }
     }
 

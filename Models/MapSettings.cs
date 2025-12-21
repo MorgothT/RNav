@@ -60,7 +60,7 @@ public partial class MapSettings : ObservableObject
             return new double[] { 12, 16, 20, 24, 30, 40 };
         }
     }
-
+    // TODO: chart loading doesn't work since version 1.4.3
     //public MapSettings() => GetMapSettings();
     public MapSettings()
     {
@@ -68,10 +68,7 @@ public partial class MapSettings : ObservableObject
     }
     public MapSettings GetMapSettings(string path = null)
     {
-        if (path == null)
-        {
-            path = defaulName;
-        }
+        path ??= defaulName;
         try
         {
             if (!File.Exists(path))
@@ -213,7 +210,7 @@ public partial class MapSettings : ObservableObject
     //}
     public void ExportCharts()
     {
-        string charts = JsonSerializer.Serialize(ChartItems);
+        string charts = JsonSerializer.Serialize(ChartItems,jsonSerializerOptions);
         var sfd = new SaveFileDialog()
         {
             AddExtension = true,
@@ -240,9 +237,20 @@ public partial class MapSettings : ObservableObject
         {
             //TODO: add option to append imported charts to current list
             string charts = File.ReadAllText(ofd.FileName);
+            var append = MessageBox.Show("Do you want to append charts ?",
+                                         "Append Charts",
+                                         MessageBoxButton.YesNoCancel,
+                                         MessageBoxImage.Question);
             try
             {
-                ChartItems = JsonSerializer.Deserialize<ObservableCollection<ChartItem>>(charts);
+                if (append == MessageBoxResult.Cancel) return;
+                if (append == MessageBoxResult.No) ChartItems.Clear();
+                var items = JsonSerializer.Deserialize<ObservableCollection<ChartItem>>(charts,jsonSerializerOptions);
+                foreach (var item in items)
+                {
+                    if (ChartItems.Any(i=>i.Path == item.Path) == false) ChartItems.Add(item);
+                }
+                //ChartItems = JsonSerializer.Deserialize<ObservableCollection<ChartItem>>(charts,jsonSerializerOptions);
             }
             catch (Exception ex)
             {

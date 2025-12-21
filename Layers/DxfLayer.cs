@@ -62,7 +62,7 @@ namespace Mapper_v1.Layers
 
         private PointStyle GetPointStyle()
         {
-            PointSettings settings = new MapSettings().PointSettings;
+            PointSettings settings = new MapSettings().GetMapSettings().PointSettings;
             PointStyle pointStyle = new PointStyle()
             {
                 Color = colorConvertor.WMColorToMapsui(settings.Color),

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Mapper_v1.Projections;
+using System.Text.Json.Serialization;
 using System.Windows.Media;
 using Color = System.Windows.Media.Color;
 
@@ -41,6 +42,7 @@ public partial class ChartItem : ObservableObject
 
     [ObservableProperty]
     private string projection;
+    
     public static List<string> Projections
     {
         get
@@ -48,19 +50,29 @@ public partial class ChartItem : ObservableObject
             return ProjectProjections.GetProjections();
         }
     }
-    public string Name { get; private set; }
+    //public string Name { get; private set; }
+    public string Name => System.IO.Path.GetFileNameWithoutExtension(Path);
+    
+    [JsonInclude]
     public string Path { get; private set; }
-    public ChartType ChartType { get; }
-    public ChartItem(string path, Color? linecolor = null, Color? outlinecolor = null, Color? fillcolor = null, int width = 1)
+    [JsonInclude]
+    public ChartType ChartType { get; private set; }
+
+    public ChartItem() { }
+    public ChartItem(string path,
+                     Color? lineColor = null,
+                     Color? outlineColor = null,
+                     Color? fillColor = null,
+                     int lineWidth = 1)
     {
         Enabled = true;
-        Name = System.IO.Path.GetFileNameWithoutExtension(path);
         Path = path;
+        //Name = System.IO.Path.GetFileNameWithoutExtension(Path);
         Opacity = 1;
-        LineColor = linecolor ?? Colors.Black;
-        OutlineColor = outlinecolor ?? Colors.Black;
-        FillColor = fillcolor ?? Colors.Transparent;
-        LineWidth = width;
+        LineColor = lineColor ?? Colors.Black;
+        OutlineColor = outlineColor ?? Colors.Black;
+        FillColor = fillColor ?? Colors.Transparent;
+        LineWidth = lineWidth;
         //Label settings defaults
         LabelColor = Colors.Transparent;
         HaloColor = Colors.Transparent;
@@ -70,26 +82,44 @@ public partial class ChartItem : ObservableObject
         HorizontalAlignment = HorizontalAlignmentEnum.Center;
         VerticalAlignment = VerticalAlignmentEnum.Center;
         MaxResulotion = 0.2;
-
-        switch (System.IO.Path.GetExtension(path).ToLowerInvariant())
-        {
-            case ".shp":
-                ChartType = ChartType.Shapefile;
-                break;
-            case ".tif":
-                ChartType = ChartType.Geotiff;
-                break;
-            case ".ecw":
-                ChartType = ChartType.Ecw;
-                break;
-            case ".dxf":
-                ChartType = ChartType.Dxf;
-                break;
-            default:
-                ChartType = ChartType.Unsupported;
-                throw new FormatException();
-        }
+        ChartType = GetChartType(path);
+        if (ChartType == ChartType.Unsupported) throw new FormatException();
     }
+
+    private ChartType GetChartType(string path)
+    {
+        return System.IO.Path.GetExtension(path).ToLowerInvariant() switch
+        {
+            ".shp" => ChartType.Shapefile,
+            ".tif" => ChartType.Geotiff,
+            ".ecw" => ChartType.Ecw,
+            ".dxf" => ChartType.Dxf,
+            _ => ChartType.Unsupported,
+        };
+    }
+    //    {
+    //        switch (System.IO.Path.GetExtension(path).ToLowerInvariant()) return{
+    //            ".shp" => ChartType.Shapefile;
+    //        }
+
+    //            //{
+    //        //    case ".shp":
+    //        //        return = ChartType.Shapefile;
+    //        //        break;
+    //        //    case ".tif":
+    //        //        ChartType = ChartType.Geotiff;
+    //        //        break;
+    //        //    case ".ecw":
+    //        //        ChartType = ChartType.Ecw;
+    //        //        break;
+    //        //    case ".dxf":
+    //        //        ChartType = ChartType.Dxf;
+    //        //        break;
+    //        //    default:
+    //        //        ChartType = ChartType.Unsupported;
+    //        //        throw new FormatException();
+    //        //}
+    //    }
 }
 
 public enum ChartType

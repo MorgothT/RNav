@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Mapper_v1.Core;
-using Mapper_v1.Layers;
+using netDxf.Header;
 using System.Windows.Media;
 
 namespace Mapper_v1.Models;

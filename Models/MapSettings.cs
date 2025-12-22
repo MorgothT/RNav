@@ -2,6 +2,7 @@
 using Mapper_v1.Core;
 using Mapper_v1.Projections;
 using Microsoft.Win32;
+using netDxf.Header;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
@@ -60,7 +61,7 @@ public partial class MapSettings : ObservableObject
             return new double[] { 12, 16, 20, 24, 30, 40 };
         }
     }
-    // TODO: chart loading doesn't work since version 1.4.3
+    // TODO: chart loading doesn't work since version 1.4.3 - DONE
     //public MapSettings() => GetMapSettings();
     public MapSettings()
     {

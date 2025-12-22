@@ -9,6 +9,7 @@ using Mapsui.Projections;
 using Mapsui.Rendering;
 using Mapsui.Rendering.Skia.SkiaStyles;
 using Mapsui.Styles;
+using netDxf.Header;
 using SkiaSharp;
 
 namespace Mapper_v1.Layers;
@@ -54,41 +55,132 @@ public class PointRenderer : ISkiaStyleRenderer
             case PointShape.Dot:
                 canvas.DrawPoint(p, color);
                 return true;
-            case PointShape.Circle:
-                canvas.DrawCircle(p, (float)pointStyle.Size, paint);
+            case PointShape.Empty:
                 return true;
-            case PointShape.Square:
-                canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
+            case PointShape.Plus:
+                canvas.DrawPoints(SKPointMode.Lines, GetPlusPoints(pointStyle.Size, p), paint);
                 return true;
             case PointShape.Cross:
-                canvas.DrawPoints(SKPointMode.Polygon,GetXPoints(pointStyle.Size,p),paint);
+                canvas.DrawPoints(SKPointMode.Lines, GetCrossPoints(pointStyle.Size, p), paint);
                 return true;
-            case PointShape.SquareCross:
-                canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
-                canvas.DrawPoints(SKPointMode.Lines, GetXPoints(pointStyle.Size * 1.5, p), paint);
+            case PointShape.Line:
+                canvas.DrawPoints(SKPointMode.Lines, GetLinePoints(pointStyle.Size, p), paint);
+                return true;
+            case PointShape.CircleDot:
+                canvas.DrawCircle(p, (float)pointStyle.Size, paint);
+                canvas.DrawPoint(p, color);
+                return true;
+            case PointShape.CircleEmpty:
+                canvas.DrawCircle(p, (float)pointStyle.Size, paint);
+                return true;
+            case PointShape.CirclePlus:
+                canvas.DrawCircle(p, (float)pointStyle.Size, paint);
+                canvas.DrawPoints(SKPointMode.Lines, GetPlusPoints(pointStyle.Size, p), paint);
                 return true;
             case PointShape.CircleCross:
                 canvas.DrawCircle(p, (float)pointStyle.Size, paint);
-                canvas.DrawPoints(SKPointMode.Lines, GetXPoints(pointStyle.Size * 1.5, p), paint);
+                canvas.DrawPoints(SKPointMode.Lines, GetCrossPoints(pointStyle.Size, p), paint);
                 return true;
-            case PointShape.Plus:
-                canvas.DrawPoints(SKPointMode.Lines,GetPlusPoints(pointStyle.Size,p),paint);
+            case PointShape.CircleLine:
+                canvas.DrawCircle(p, (float)pointStyle.Size, paint);
+                canvas.DrawPoints(SKPointMode.Lines, GetLinePoints(pointStyle.Size, p), paint);
+                return true;
+            case PointShape.SquareDot:
+                canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
+                canvas.DrawPoint(p, color);
+                return true;
+            case PointShape.SquareEmpty:
+                canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
                 return true;
             case PointShape.SquarePlus:
                 canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
                 canvas.DrawPoints(SKPointMode.Lines, GetPlusPoints(pointStyle.Size * 1.5, p), paint);
                 return true;
-            case PointShape.CirclePlus:
+            case PointShape.SquareCross:
+                canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
+                canvas.DrawPoints(SKPointMode.Lines, GetCrossPoints(pointStyle.Size * 1.5, p), paint);
+                return true;
+            case PointShape.SquareLine:
+                canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
+                canvas.DrawPoints(SKPointMode.Lines, GetLinePoints(pointStyle.Size, p), paint);
+                return true;
+            case PointShape.CircleSquareDot:
                 canvas.DrawCircle(p, (float)pointStyle.Size, paint);
-                canvas.DrawPoints(SKPointMode.Lines, GetPlusPoints(pointStyle.Size * 1.5, p), paint);
+                canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
+                canvas.DrawPoint(p, color);
+                return true;
+            case PointShape.CircleSquareEmpty:
+                canvas.DrawCircle(p, (float)pointStyle.Size, paint);
+                canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
+                return true;
+            case PointShape.CircleSquarePlus:
+                canvas.DrawCircle(p, (float)pointStyle.Size, paint);
+                canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
+                canvas.DrawPoints(SKPointMode.Lines, GetPlusPoints(pointStyle.Size, p), paint);
+                return true;
+            case PointShape.CircleSquareCross:
+                canvas.DrawCircle(p, (float)pointStyle.Size, paint);
+                canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
+                canvas.DrawPoints(SKPointMode.Lines, GetCrossPoints(pointStyle.Size, p), paint);
+                return true;
+            case PointShape.CircleSquareLine:
+                canvas.DrawCircle(p, (float)pointStyle.Size, paint);
+                canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
+                canvas.DrawPoints(SKPointMode.Lines, GetLinePoints(pointStyle.Size, p), paint);
                 return true;
             default:
                 return false;
         }
+        //switch (pointStyle.Shape)
+        //{
+        //    //case PointShape.Dot:
+        //    //    canvas.DrawPoint(p, color);
+        //    //    return true;
+        //    //case PointShape.CircleEmpty:
+        //    //    canvas.DrawCircle(p, (float)pointStyle.Size, paint);
+        //    //    return true;
+        //    //case PointShape.SquareEmpty:
+        //    //    canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
+        //    //    return true;
+        //    //case PointShape.Cross:
+        //    //    canvas.DrawPoints(SKPointMode.Polygon,GetXPoints(pointStyle.Size,p),paint);
+        //    //    return true;
+        //    //case PointShape.SquareCross:
+        //    //    canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
+        //    //    canvas.DrawPoints(SKPointMode.Lines, GetXPoints(pointStyle.Size * 1.5, p), paint);
+        //    //    return true;
+        //    //case PointShape.CircleCross:
+        //    //    canvas.DrawCircle(p, (float)pointStyle.Size, paint);
+        //    //    canvas.DrawPoints(SKPointMode.Lines, GetXPoints(pointStyle.Size * 1.5, p), paint);
+        //    //    return true;
+        //    //case PointShape.Plus:
+        //    //    canvas.DrawPoints(SKPointMode.Lines,GetPlusPoints(pointStyle.Size,p),paint);
+        //    //    return true;
+        //    //case PointShape.SquarePlus:
+        //    //    canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
+        //    //    canvas.DrawPoints(SKPointMode.Lines, GetPlusPoints(pointStyle.Size * 1.5, p), paint);
+        //    //    return true;
+        //    //case PointShape.CirclePlus:
+        //    //    canvas.DrawCircle(p, (float)pointStyle.Size, paint);
+        //    //    canvas.DrawPoints(SKPointMode.Lines, GetPlusPoints(pointStyle.Size * 1.5, p), paint);
+        //    //    return true;
+        //    default:
+        //        return false;
+        //}
+    }
+    private SKPoint[] GetLinePoints(double size, SKPoint p)
+    {
+        float s = (float)(size);
+        var points = new SKPoint[]
+        {
+            new(p.X, p.Y),
+            new(p.X, p.Y-s),
+        };
+        return points;
     }
     private SKPoint[] GetPlusPoints(double size, SKPoint p)
     {
-        float s = (float)size;
+        float s = (float)(size * 1.25);
         var points = new SKPoint[]
         {
         new SKPoint(p.X-s, p.Y),
@@ -98,9 +190,9 @@ public class PointRenderer : ISkiaStyleRenderer
         };
         return points;
     }
-    private SKPoint[] GetXPoints(double size, SKPoint p)
+    private SKPoint[] GetCrossPoints(double size, SKPoint p)
     {
-        float s = (float)size;
+        float s = (float)(size * 1.25);
         var points = new SKPoint[] 
         { 
         new SKPoint(p.X-s, p.Y-s),

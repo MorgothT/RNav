@@ -40,7 +40,6 @@ using System.Windows.Threading;
 
 namespace Mapper_v1.Views;
 
-// TODO: add the Offsets to the Device
 public partial class MapPage : Page
 {
     public List<BoatShapeLayer> MobileLayers = [];
@@ -845,9 +844,7 @@ public partial class MapPage : Page
         {
             double bearing = measureStart.CalcBearing(worldPosition);
             double distance = measureStart.Distance(worldPosition);
-            {
-                //MyMeasurementLayer.
-            }
+
             Distance.Text = $"{distance:F2}";
             Bearing.Text = $"{bearing:F2}";
             DrawLine(worldPosition);

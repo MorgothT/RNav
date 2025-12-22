@@ -15,10 +15,9 @@ using Velopack.Sources;
 namespace Mapper_v1.ViewModels;
 
 // Change the URL for your privacy policy in the appsettings.json file, currently set to https://YourPrivacyUrlGoesHere
-//TODO: Export Project Settings (map & comms) and load on startup
 public partial class SettingsViewModel : ObservableObject, INavigationAware
 {
-    private readonly ConfigService _configService;
+    //private readonly ConfigService _configService;
     private readonly AppConfig _appConfig;
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly ISystemService _systemService;
@@ -144,14 +143,12 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
                                     button: MessageBoxButton.YesNo,
                                     icon: MessageBoxImage.Question,
                                     defaultResult: MessageBoxResult.No);
-        //TODO: export all settings ?
         if (result == MessageBoxResult.Yes)
             mgr.ApplyUpdatesAndRestart(newVersion);
         else
             mgr.WaitExitThenApplyUpdates(newVersion.TargetFullRelease, restart: false);
 
     }
-
 
     public void OnNavigatedTo(object parameter)
     {

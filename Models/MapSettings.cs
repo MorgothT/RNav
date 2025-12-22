@@ -61,7 +61,6 @@ public partial class MapSettings : ObservableObject
             return new double[] { 12, 16, 20, 24, 30, 40 };
         }
     }
-    // TODO: chart loading doesn't work since version 1.4.3 - DONE
     //public MapSettings() => GetMapSettings();
     public MapSettings()
     {
@@ -236,7 +235,6 @@ public partial class MapSettings : ObservableObject
         };
         if (ofd.ShowDialog() == true)
         {
-            //TODO: add option to append imported charts to current list
             string charts = File.ReadAllText(ofd.FileName);
             var append = MessageBox.Show("Do you want to append charts ?",
                                          "Append Charts",

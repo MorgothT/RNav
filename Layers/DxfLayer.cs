@@ -226,7 +226,7 @@ namespace Mapper_v1.Layers
             {
                 Geometry = circfeature,
             };
-            //TODO: MTEXT - deal with other formating ?
+            //INFO: MTEXT - deal with other formating if needed
             //text.Value = text.Value.Replace(@"\P", Environment.NewLine.ToString()); // uses PlainText later
             Color color = labelStyle.ForeColor;
             if (text.Color.IsByLayer == false)

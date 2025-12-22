@@ -5,6 +5,7 @@ using System.DirectoryServices.ActiveDirectory;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace Mapper_v1.Controls
 {
@@ -37,11 +38,6 @@ namespace Mapper_v1.Controls
             if (result.Value == true)
             {
                 (DataContext as Mobile).MobileShapeSettings.ShapePath = ofd.FileName;
-                // Assuming you have a property in your ViewModel to bind to
-                // For example: MobileSettings.BoatShapePath
-                // mobileSettings.BoatShapePath = fileName;
-                // Or if you are using a command:
-                // YourCommand.Execute(fileName);
             }
         }
     }

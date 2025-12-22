@@ -7,6 +7,7 @@
              xmlns:mahapps="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:converters="clr-namespace:Mapper_v1.Converters"
              mc:Ignorable="d" 
+             x:Name="MobileShapeControl"
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Style>
         <Style TargetType="UserControl">
@@ -40,7 +41,9 @@
                         <mahapps:ColorPicker SelectedColor="{Binding ShapeFill, Converter={StaticResource ColorConvert}}" MaxWidth="50" Margin="5,0"                                             />
                         <mahapps:ColorPicker SelectedColor="{Binding ShapeOutline, Converter={StaticResource ColorConvert}}" MaxWidth="50"/>
                     </StackPanel>
-                    <TextBox Text="{Binding ShapePath}" Margin="5,0" DockPanel.Dock="Left"/>
+                    <TextBox x:Name="PathTextBox"
+                             Text="{Binding ShapePath, UpdateSourceTrigger=PropertyChanged}" 
+                             Margin="5,0" DockPanel.Dock="Left"/>
                 </DockPanel>
             </StackPanel>
         </StackPanel>

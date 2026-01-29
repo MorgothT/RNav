@@ -12,8 +12,8 @@
             <ColumnDefinition Width="auto"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="32"/>
         </Grid.RowDefinitions>
         <TextBlock Text="IP Address:" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"/>
         <TextBox Text="{Binding IPAddress}" VerticalAlignment="Center" Grid.Row="0" Grid.Column="1" Style="{DynamicResource ConnectionInput}"/>

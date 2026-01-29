@@ -13,8 +13,8 @@
             <ColumnDefinition Width="auto"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
+            <RowDefinition Height="32"/>
+            <RowDefinition Height="32"/>
         </Grid.RowDefinitions>
         <TextBlock Text="Com Port:" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"/>
         <ComboBox ItemsSource="{Binding AvailableComPorts}" SelectedItem="{Binding ComPort}" VerticalAlignment="Center" Grid.Row="0" Grid.Column="1" Margin="5,1"/>

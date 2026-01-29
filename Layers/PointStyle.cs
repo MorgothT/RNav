@@ -131,43 +131,7 @@ public class PointRenderer : ISkiaStyleRenderer
             default:
                 return false;
         }
-        //switch (pointStyle.Shape)
-        //{
-        //    //case PointShape.Dot:
-        //    //    canvas.DrawPoint(p, color);
-        //    //    return true;
-        //    //case PointShape.CircleEmpty:
-        //    //    canvas.DrawCircle(p, (float)pointStyle.Size, paint);
-        //    //    return true;
-        //    //case PointShape.SquareEmpty:
-        //    //    canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
-        //    //    return true;
-        //    //case PointShape.Cross:
-        //    //    canvas.DrawPoints(SKPointMode.Polygon,GetXPoints(pointStyle.Size,p),paint);
-        //    //    return true;
-        //    //case PointShape.SquareCross:
-        //    //    canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
-        //    //    canvas.DrawPoints(SKPointMode.Lines, GetXPoints(pointStyle.Size * 1.5, p), paint);
-        //    //    return true;
-        //    //case PointShape.CircleCross:
-        //    //    canvas.DrawCircle(p, (float)pointStyle.Size, paint);
-        //    //    canvas.DrawPoints(SKPointMode.Lines, GetXPoints(pointStyle.Size * 1.5, p), paint);
-        //    //    return true;
-        //    //case PointShape.Plus:
-        //    //    canvas.DrawPoints(SKPointMode.Lines,GetPlusPoints(pointStyle.Size,p),paint);
-        //    //    return true;
-        //    //case PointShape.SquarePlus:
-        //    //    canvas.DrawRect(GetRectangle(pointStyle.Size, p), paint);
-        //    //    canvas.DrawPoints(SKPointMode.Lines, GetPlusPoints(pointStyle.Size * 1.5, p), paint);
-        //    //    return true;
-        //    //case PointShape.CirclePlus:
-        //    //    canvas.DrawCircle(p, (float)pointStyle.Size, paint);
-        //    //    canvas.DrawPoints(SKPointMode.Lines, GetPlusPoints(pointStyle.Size * 1.5, p), paint);
-        //    //    return true;
-        //    default:
-        //        return false;
-        //}
-    }
+      }
     private SKPoint[] GetLinePoints(double size, SKPoint p)
     {
         float s = (float)(size);

@@ -4,9 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:controls="http://metro.mahapps.com/winfx/xaml/controls" 
+    xmlns:viewmodels="clr-namespace:Mapper_v1.ViewModels" 
+    d:DataContext="{d:DesignInstance Type=viewmodels:ShellDialogViewModel}"
     mc:Ignorable="d"
     Style="{StaticResource CustomMetroWindow}">
+    <controls:MetroWindow.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </controls:MetroWindow.Resources>
     <controls:MetroWindow.Content>
         <Grid>
             <Grid.RowDefinitions>
@@ -23,7 +28,8 @@
                 HorizontalAlignment="Right"
                 Command="{Binding CloseCommand}"
                 Width="200"
-                Margin="{StaticResource SmallLeftTopRightBottomMargin}" />
+                Margin="{StaticResource SmallLeftTopRightBottomMargin}"
+                Visibility="{Binding IsCloseButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
         </Grid>
     </controls:MetroWindow.Content>
 </controls:MetroWindow>

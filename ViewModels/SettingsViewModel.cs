@@ -2,8 +2,11 @@
 using CommunityToolkit.Mvvm.Input;
 using Mapper_v1.Contracts.Services;
 using Mapper_v1.Contracts.ViewModels;
+using Mapper_v1.Core.Contracts;
 using Mapper_v1.Models;
+using Mapper_v1.Projections;
 using Mapper_v1.Services;
+using Mapper_v1.Views;
 using Microsoft.Extensions.Options;
 using Microsoft.Win32;
 using System.Windows;
@@ -114,7 +117,38 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
             //_configService.LoadMapConfig(ofd.FileName);
         }
     }
+    [RelayCommand]
+    private void AddProjection()
+    {
+        //TODO: fix Projection adding window position - DONE
+        // Create the dialog window and its ViewModel
+        var dialogViewModel = new ShellDialogViewModel();
+        var dialogWindow = new ShellDialogWindow(dialogViewModel)
+        {
+            Width = 380,
+            Height = 200,
+            BorderThickness = new Thickness(2),
+            ShowMaxRestoreButton = false,
+            ShowMinButton = false,
+            // Set the owner to the main window to center it
+            Owner = App.Current.MainWindow,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+        };
 
+        // Create the DataDisplayDialogPage and its ViewModel
+        var projectionViewModel = new ProjectionDialogViewModel();
+        var projectionDialogPage = new ProjectionDialogPage(projectionViewModel);
+
+        // Navigate the dialog's frame to the page
+        dialogWindow.GetDialogFrame().Navigate(projectionDialogPage);
+        // Show as dialog
+        if (dialogWindow.ShowDialog() == true)
+        {
+            ProjectProjections.AddProjection(projectionViewModel.ProjectionWkt);
+            MapSettings.ProjectionList = ProjectProjections.GetProjections();
+            MapSettings.SaveMapSettings();
+        }
+    }
     public SettingsViewModel(IOptions<AppConfig> appConfig,
                              IThemeSelectorService themeSelectorService,
                              ISystemService systemService,

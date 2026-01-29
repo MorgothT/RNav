@@ -1,18 +1,16 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using GeoConverter;
-using Mapper_v1.Core.Models;
 using Mapper_v1.Helpers;
 using Mapper_v1.Models;
 using Mapsui;
-using Mapsui.Projections;
 using Microsoft.Win32;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 using System.IO;
+using System.Text.Json;
 using System.Windows;
 
 namespace Mapper_v1.ViewModels;
-
+// TODO: Add ability to export to other formats (XYZ) - DONE
 public partial class TargetsViewModel : ObservableObject
 {
     #region Fields
@@ -45,16 +43,44 @@ public partial class TargetsViewModel : ObservableObject
         var sfd = new SaveFileDialog
         {
             AddExtension = true,
-            Filter = "csv file (*.csv) | *.csv | target file (*.trg) | *.trg",
+            Filter = "CSV file (*.csv)|*.csv|Target file (*.trg)|*.trg|XYZ file (*.xyz)|*.xyz",
             FilterIndex = 2,
         };
         if (sfd.ShowDialog() == true)
         {
             if (File.Exists(sfd.FileName)) { File.Delete(sfd.FileName); }
-            string targets = JsonConvert.SerializeObject(MapSettings.TargetList);
-            File.WriteAllText(sfd.FileName, targets);
+            
+            switch (Path.GetExtension(sfd.FileName))
+            {
+                case ".csv":
+                    {
+                        using StreamWriter sw = new(sfd.FileName);
+                        sw.WriteLine("Id,Name,X,Y,Lat,Lon,Description");
+                        foreach (Target target in MapSettings.TargetList)
+                        {
+                            sw.WriteLine($"{target.Id},{target.Name},{target.X},{target.Y},{target.Lat},{target.Lon},{target.Notes}");
+                        }
+                    }
+                    break;
+                    case ".xyz":
+                    {
+                        using StreamWriter sw = new(sfd.FileName);
+                        foreach (Target target in MapSettings.TargetList)
+                        {
+                            sw.WriteLine($"{target.X:F2},{target.Y:F2},0");
+                        }
+                    }
+                    break;
+                    case ".trg":
+                    default:
+                    {
+                        JsonSerializerOptions options = new JsonSerializerOptions() { WriteIndented = true, };
+                        string targets = JsonSerializer.Serialize<IEnumerable<Target>>(MapSettings.TargetList,options);
+                        File.WriteAllText(sfd.FileName, targets);
+                    }
+                    break;
+            }
         }
-
     }
     private bool CanExportTargets()
     {
@@ -77,7 +103,7 @@ public partial class TargetsViewModel : ObservableObject
                     maxId = MapSettings.TargetList.MaxBy(t => t.Id).Id;
                 }
                 string targets = File.ReadAllText(ofd.FileName);
-                List<Target> importedTargets = JsonConvert.DeserializeObject<List<Target>>(targets);
+                List<Target> importedTargets = JsonSerializer.Deserialize<List<Target>>(targets);
                 foreach (Target target in importedTargets)
                 {
                     if (MapSettings.TargetList.Where(x=> x.Equals(target)).Any())    //Skip if same target allready exists

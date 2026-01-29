@@ -11,17 +11,14 @@ public class ShellDialogViewModel : ObservableObject
     private ICommand _closeCommand;
     public ICommand CloseCommand => _closeCommand ?? (_closeCommand = new RelayCommand(OnClose));
     public Action<bool?> SetResult { get; set; }
-    
-    //private IConfigService _configService;
-
-    public ShellDialogViewModel()//IConfigService configService)
+    public bool IsCloseButtonVisible { get; set; } = true;
+    public ShellDialogViewModel()
     {
-        //_configService = configService;
+
     }
 
     private void OnClose()
     {
-        //_configService.Save();
         bool result = true;
         SetResult(result);
     }

@@ -24,7 +24,7 @@ namespace Mapper_v1.Layers
         private VectorStyle vectorStyle;
         private LabelStyle labelStyle;
         private PointStyle pointStyle;
-        private static readonly ColorConvertor colorConvertor = new();
+        //private static readonly ColorConvertor colorConvertor = new();
         public string CRS { get; set; }
 
         public DxfLayer(ChartItem chart)
@@ -65,7 +65,7 @@ namespace Mapper_v1.Layers
             PointSettings settings = new MapSettings().GetMapSettings().PointSettings;
             PointStyle pointStyle = new PointStyle()
             {
-                Color = colorConvertor.WMColorToMapsui(settings.Color),
+                Color = settings.Color.ToMapsuiColor(),//colorConvertor.WMColorToMapsui(settings.Color),
                 Shape = settings.Shape,
                 Size = settings.Size,
                 IsAbsoluteUnits = settings.IsAbsoluteUnits,
@@ -80,13 +80,13 @@ namespace Mapper_v1.Layers
                 Outline = new Pen   // Outline of Areas and Points
                 {
                     Width = chart.LineWidth,
-                    Color = colorConvertor.WMColorToMapsui(chart.OutlineColor)//new Color(255, 0, 0, 0)
+                    Color = chart.OutlineColor.ToMapsuiColor()
                 },
-                Fill = new Brush { Color = colorConvertor.WMColorToMapsui(chart.FillColor) },   // Fill of Areas and Points
+                Fill = new Brush { Color = chart.FillColor.ToMapsuiColor() }, // Fill of Areas and Points
                 Line = new Pen  //Polyline Style
                 {
                     Width = chart.LineWidth,
-                    Color = colorConvertor.WMColorToMapsui(chart.LineColor)
+                    Color = chart.LineColor.ToMapsuiColor()
                 }
             };
         }
@@ -94,13 +94,13 @@ namespace Mapper_v1.Layers
         {
             return new LabelStyle
             {
-                ForeColor = colorConvertor.WMColorToMapsui(chart.LabelColor),
-                BackColor = new Brush(colorConvertor.WMColorToMapsui(chart.BackroundColor)),
+                ForeColor = chart.LabelColor.ToMapsuiColor(),
+                BackColor = new Brush(chart.BackroundColor.ToMapsuiColor()),
                 Font = new Font { FontFamily = "GenericSerif", Size = (double)chart.LabelFontSize },
                 HorizontalAlignment = (LabelStyle.HorizontalAlignmentEnum)chart.HorizontalAlignment, //LabelStyle.HorizontalAlignmentEnum.Center,
                 VerticalAlignment = (LabelStyle.VerticalAlignmentEnum)chart.VerticalAlignment, //LabelStyle.VerticalAlignmentEnum.Center,
                 Offset = new Offset { X = 0, Y = 0 },
-                Halo = new Pen { Color = colorConvertor.WMColorToMapsui(chart.HaloColor), Width = 1 },
+                Halo = new Pen { Color = chart.HaloColor.ToMapsuiColor(), Width = 1 },
                 CollisionDetection = true,
                 LabelColumn = chart.LabelAttributeName
             };
@@ -325,9 +325,16 @@ namespace Mapper_v1.Layers
 
         private IFeature CreateFeatureFromPoly2D(EntityObject feature)
         {
+            // TODO: implament IsClosed logic - DONE
             Polyline2D poly = feature as Polyline2D;
             Coordinate[] points = (from Polyline2DVertex vertex in poly.Vertexes
                                    select ToCoord(vertex.Position)).ToArray();
+            // check if polyline should be closed and add first point to end if not present
+            if (poly.IsClosed && points.First().Equals(points.Last()) == false)
+            {
+                // close the polyline by adding first point to end
+                points = points.Append(ToCoord(poly.Vertexes.First().Position)).ToArray();
+            }
             var gf = new GeometryFeature(new LineString(points));
             gf.Styles.Add(vectorStyle);
             return gf;

@@ -17,6 +17,7 @@ public class TargetStyle : IStyle
     //public float Scale { get; set; }
     public double Radius { get; set; } = 5;
     public SKColor Color { get; set; }
+    public SKColor SelectedColor { get; set; }
 }
 
 public class TargetRenderer : ISkiaStyleRenderer
@@ -40,14 +41,18 @@ public class TargetRenderer : ISkiaStyleRenderer
         var screenPoint = viewport.WorldToScreen(worldPoint);
         TargetStyle targetStyle = (TargetStyle)style;
 
-        using var colored = new SKPaint { Color = targetStyle.Color, IsAntialias = true, Style = SKPaintStyle.Stroke };
-        using var filled = new SKPaint { Color = targetStyle.Color.WithAlpha((byte)(255 * targetStyle.Opacity)), IsAntialias = true, Style = SKPaintStyle.Fill };
+        using var colored = new SKPaint { Style = SKPaintStyle.Stroke };
+        using var filled = new SKPaint { IsAntialias = true, Style = SKPaintStyle.Fill };
         if ((bool)feature["IsSelected"] == true)
         {
-            colored.Color = SKColors.DarkRed;
-            filled.Color = SKColors.DarkRed.WithAlpha((byte)(255 * targetStyle.Opacity));
+            colored.Color = targetStyle.SelectedColor;
+            filled.Color = targetStyle.SelectedColor.WithAlpha((byte)(255 * targetStyle.Opacity));
         }
-
+        else
+        {
+            colored.Color = targetStyle.Color;
+            filled.Color = targetStyle.Color.WithAlpha((byte)(255 * targetStyle.Opacity));
+        }
         canvas.Translate((float)screenPoint.X, (float)screenPoint.Y);
         canvas.Scale(-(float)(1.0 / viewport.Resolution));
         canvas.DrawCircle(0, 0, (float)targetStyle.Radius, colored);

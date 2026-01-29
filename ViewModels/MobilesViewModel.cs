@@ -6,6 +6,7 @@ using Mapper_v1.Core.Contracts;
 using Mapper_v1.Core.Models;
 using Mapper_v1.Core.Models.Devices;
 using Mapper_v1.Models;
+using Mapper_v1.Views;
 using System.Collections.ObjectModel;
 
 namespace Mapper_v1.ViewModels;
@@ -21,6 +22,7 @@ public partial class MobilesViewModel : ObservableObject, INavigationAware
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RemoveMobileCommand),nameof(AddDeviceCommand),nameof(RemoveDeviceCommand))]
+    [NotifyCanExecuteChangedFor(nameof(TestDeviceCommand))]
     private object selectedDevice;
 
     //[ObservableProperty]
@@ -116,7 +118,8 @@ public partial class MobilesViewModel : ObservableObject, INavigationAware
             default:
                 return;
         }
-        //SelectedDevice = new NmeaDeviceConfig();    //TODO: diffrent devices imp...
+        //SelectedDevice = new NmeaDeviceConfig();    
+        // TODO: diffrent devices imp...
         SelectedMobile.DeviceConfigs.Add((IDeviceConfig)SelectedDevice);
     }
     private bool CanAddDevice()
@@ -176,6 +179,27 @@ public partial class MobilesViewModel : ObservableObject, INavigationAware
         {
             mobileSettings.SaveSettings(sfd.FileName);
         }
+    }
+    [RelayCommand(CanExecute = nameof(CanTestDevice))]
+    private void TestDevice()
+    {
+        // Create the dialog window and its ViewModel
+        var dialogViewModel = new ShellDialogViewModel() { IsCloseButtonVisible = false };
+        var dialogWindow = new ShellDialogWindow(dialogViewModel);
+        
+        // Create the DataDisplayDialogPage and its ViewModel
+        var terminalViewModel = new TerminalViewModel((IDeviceConfig)SelectedDevice);
+        var terminalDialogPage = new TerminalDialogPage(terminalViewModel);
+        
+        // Navigate the dialog's frame to the page
+        dialogWindow.GetDialogFrame().Navigate(terminalDialogPage);
+        // Show as dialog
+        dialogWindow.ShowDialog();
+    }
+    private bool CanTestDevice()
+    {
+        if (SelectedDevice is null) return false;
+        return true;
     }
     #endregion
 

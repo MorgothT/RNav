@@ -29,6 +29,7 @@ using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 using Newtonsoft.Json;
 using SkiaSharp;
+using SkiaSharp.Views.WPF;
 using System.Data;
 using System.Diagnostics;
 using System.IO;
@@ -57,7 +58,7 @@ public partial class MapPage : Page
     private DateTime startLineTime;
     public bool RecordEnabled;
    
-    private static ColorConvertor colorConvertor = new();
+    //private static ColorConvertor colorConvertor = new();
     private readonly MapViewModel vm;
     private string ProjectCRS;
 
@@ -149,8 +150,8 @@ public partial class MapPage : Page
     }
     private void InitUIControls()
     {
-        ColorSelector.SelectedColor = colorConvertor.WMColorFromMapsui(MapControl.Map.BackColor);
-        Rotation.Foreground = colorConvertor.InvertBrushColor(MapControl.Map.BackColor);
+        ColorSelector.SelectedColor = MapControl.Map.BackColor.ToWMColor();
+        Rotation.Foreground = MapControl.Map.BackColor.InvertColor().ToBrush();
         RotationSlider.Value = MapControl.Map.Navigator.Viewport.Rotation / 3.6;
         Rotation.Text = MapControl.Map.Navigator.Viewport.Rotation.ToString("F0");
     }
@@ -176,7 +177,7 @@ public partial class MapPage : Page
         SelectedTargetId = vm.MapSettings.SelectedTargetId;
         foreach (Target target in vm.MapSettings.TargetList)
         {
-            var feature = Target.CreateTargetFeature(target, vm.MapSettings.TargetRadius, vm.MapSettings.DegreeFormat);
+            var feature = Target.CreateTargetFeature(target, vm.MapSettings.TargetSettings.TargetRadius, vm.MapSettings.DegreeFormat);
             if ((int)feature["Id"] == SelectedTargetId)
             {
                 feature["IsSelected"] = true;
@@ -222,7 +223,7 @@ public partial class MapPage : Page
             {
                 Fill = null,
                 Outline = null,
-                Line = { Color = colorConvertor.WMColorToMapsui(MobileLayers[0].BoatShape.OutlineColor) }
+                Line = { Color = MobileLayers[0].BoatShape.OutlineColor.ToMapsuiColor() }
             }
         };
         measurementLayer = new WritableLayer()
@@ -236,9 +237,10 @@ public partial class MapPage : Page
             IsMapInfoLayer = true,
             Style = new TargetStyle()
             {
-                Color = SKColors.LimeGreen,
-                Opacity = 0.1f,
-                Radius = vm.MapSettings.TargetRadius
+                Color = vm.MapSettings.TargetSettings.TargetColor.ToSKColor(),
+                SelectedColor = vm.MapSettings.TargetSettings.SelectedTargetColor.ToSKColor(),
+                Opacity = vm.MapSettings.TargetSettings.TargetOpacity,
+                Radius = vm.MapSettings.TargetSettings.TargetRadius
             }
         };
 
@@ -332,7 +334,7 @@ public partial class MapPage : Page
     }
     private void SaveMapControlState()
     {
-        Properties.MapControl.Default.BackColor = colorConvertor.Mapsui2String(MapControl.Map.BackColor);
+        Properties.MapControl.Default.BackColor = MapControl.Map.BackColor.ToColorString();
         Properties.MapControl.Default.Rotation = MapControl.Map.Navigator.Viewport.Rotation;
         Properties.MapControl.Default.BtnTrackingState = (bool)ToggleTracking.IsChecked;
         Properties.MapControl.Default.BtnHeadingState = (bool)ToggleNoseUp.IsChecked;
@@ -344,7 +346,7 @@ public partial class MapPage : Page
         if (MapControl.Map is not null)
         {
 
-            MapControl.Map.BackColor = colorConvertor.String2Mapsui(Properties.MapControl.Default.BackColor);
+            MapControl.Map.BackColor = Properties.MapControl.Default.BackColor.ToMapsuiColor();
             MapControl.Map.Navigator.RotateTo(Properties.MapControl.Default.Rotation);
             ToggleTracking.IsChecked = Properties.MapControl.Default.BtnTrackingState;
             ToggleNoseUp.IsChecked = Properties.MapControl.Default.BtnHeadingState;
@@ -476,7 +478,7 @@ public partial class MapPage : Page
     {
         var colorTrans = new List<Color>
                         {
-                            colorConvertor.WMColorToMapsui(chart.FillColor)
+                            chart.FillColor.ToMapsuiColor()
                         };
         IProvider tiffsource = new GeoTiffProvider(chart.Path, colorTrans)
         {
@@ -500,7 +502,7 @@ public partial class MapPage : Page
     {
         var colorTrans = new List<Color>
         {
-            colorConvertor.WMColorToMapsui(chart.FillColor)
+            chart.FillColor.ToMapsuiColor()
         };
         EcwProvider ecwsource = new EcwProvider(chart.Path, colorTrans, chart.MaxResulotion)
         {
@@ -592,24 +594,24 @@ public partial class MapPage : Page
             Outline = new Pen   // Outline of Areas and Points
             {
                 Width = chart.LineWidth,
-                Color = colorConvertor.WMColorToMapsui(chart.OutlineColor)//new Color(255, 0, 0, 0)
+                Color = chart.OutlineColor.ToMapsuiColor()//new Color(255, 0, 0, 0)
             },
-            Fill = new Brush { Color = colorConvertor.WMColorToMapsui(chart.FillColor) },   // Fill of Areas and Points
+            Fill = new Brush { Color = chart.FillColor.ToMapsuiColor() },   // Fill of Areas and Points
             Line = new Pen  //Polyline Style
             {
                 Width = chart.LineWidth,
-                Color = colorConvertor.WMColorToMapsui(chart.LineColor)
+                Color = chart.LineColor.ToMapsuiColor()
             }
         }); ;
         styles.Styles.Add(new LabelStyle
         {
-            ForeColor = colorConvertor.WMColorToMapsui(chart.LabelColor),
-            BackColor = new Brush(colorConvertor.WMColorToMapsui(chart.BackroundColor)),
+            ForeColor = chart.LabelColor.ToMapsuiColor(),
+            BackColor = new Brush(chart.BackroundColor.ToMapsuiColor()),
             Font = new Font { FontFamily = "GenericSerif", Size = (double)chart.LabelFontSize },
             HorizontalAlignment = (LabelStyle.HorizontalAlignmentEnum)chart.HorizontalAlignment, //LabelStyle.HorizontalAlignmentEnum.Center,
             VerticalAlignment = (LabelStyle.VerticalAlignmentEnum)chart.VerticalAlignment, //LabelStyle.VerticalAlignmentEnum.Center,
             Offset = new Offset { X = 0, Y = 0 },
-            Halo = new Pen { Color = colorConvertor.WMColorToMapsui(chart.HaloColor), Width = 1 },
+            Halo = new Pen { Color = chart.HaloColor.ToMapsuiColor(), Width = 1 },
             CollisionDetection = true,
             LabelColumn = chart.LabelAttributeName
         });
@@ -738,7 +740,7 @@ public partial class MapPage : Page
         Target target = Target.CreateTarget(point, id, wgs);
         vm.MapSettings.TargetList.Add(target);
         vm.MapSettings.SaveMapSettings();
-        var feature = Target.CreateTargetFeature(target, vm.MapSettings.TargetRadius, vm.MapSettings.DegreeFormat);
+        var feature = Target.CreateTargetFeature(target, vm.MapSettings.TargetSettings.TargetRadius, vm.MapSettings.DegreeFormat);
         ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
         MyTargets?.Features.Add(feature);
         MyTargets.DataHasChanged();
@@ -877,8 +879,8 @@ public partial class MapPage : Page
     {
         if (e.NewValue.HasValue)
         {
-            MapControl.Map.BackColor = colorConvertor.WMColorToMapsui(e.NewValue.Value);
-            Rotation.Foreground = colorConvertor.InvertBrushColor(MapControl.Map.BackColor);
+            MapControl.Map.BackColor = e.NewValue.Value.ToMapsuiColor();
+            Rotation.Foreground = MapControl.Map.BackColor.InvertColor().ToBrush();
             SaveMapControlState();
         }
     }
@@ -895,6 +897,7 @@ public partial class MapPage : Page
     }
     private void Grid_KeyDown(object sender, KeyEventArgs e)
     {
+        //INFO: Add new keyboard shortcuts here
         Trace.WriteLine(e.Key);
         var vp = MapControl.Map.Navigator.Viewport;
         if (e.Key == Key.OemPlus || e.Key == Key.Add)

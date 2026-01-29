@@ -162,7 +162,7 @@ public partial class MapViewModel : ObservableObject, INavigationAware
                 object current = null;
                 // Handle system-wide properties
 
-                //TODO: subscribe to View enabling logging
+                // TODO: subscribe to View enabling logging
                 //if (item.Name == "LOGGING")
                 //{
                 //    //item.Value = ;

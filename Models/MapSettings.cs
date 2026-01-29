@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Mapper_v1.Converters;
 using Mapper_v1.Core;
 using Mapper_v1.Projections;
 using Microsoft.Win32;
@@ -6,6 +7,7 @@ using netDxf.Header;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Media;
 
@@ -13,7 +15,7 @@ namespace Mapper_v1.Models;
 
 public partial class MapSettings : ObservableObject
 {
-
+    [JsonIgnore]
     [ObservableProperty]
     private List<string> projectionList;
     [ObservableProperty]
@@ -38,10 +40,10 @@ public partial class MapSettings : ObservableObject
     private List<TimedPoint> lastTrail;
     [ObservableProperty]
     private int selectedTargetId;
-    
+
     // App Settings in other screens
     [ObservableProperty]
-    private float targetRadius = 5;
+    private TargetSettings targetSettings = new TargetSettings();
     [ObservableProperty]
     private bool mapOverlay;
     [ObservableProperty]
@@ -79,6 +81,8 @@ public partial class MapSettings : ObservableObject
             }
             var json = File.ReadAllText(path);
             MapSettings current = JsonSerializer.Deserialize<MapSettings>(json,jsonSerializerOptions);
+            // Overrides projections from projection.cfg
+            current.ProjectionList = ProjectProjections.GetProjections();
             return current;
         }
         catch (Exception ex)
@@ -99,7 +103,13 @@ public partial class MapSettings : ObservableObject
         defaultSettings.FontSize = 12;
         defaultSettings.DegreeFormat = DegreeFormat.Deg;
         defaultSettings.TargetList = [];
-        defaultSettings.TargetRadius = 10;
+        defaultSettings.TargetSettings = new TargetSettings()
+        {
+            TargetRadius = 10,
+            TargetColor = Colors.Green,
+            SelectedTargetColor = Colors.Green.InvertColor(),
+            TargetOpacity = 0.25f
+        };
         defaultSettings.TrailDuration = 0;
         defaultSettings.LastTrail = [];
         defaultSettings.LogDirectory = @"C:\RNav\Logs";
@@ -132,22 +142,22 @@ public partial class MapSettings : ObservableObject
         return true;
     }
 
-    public void InitializeMapSettings()
-    {
-        ProjectionList = ProjectProjections.GetProjections();
-        CurrentProjection = ProjectionList.First();
-        ChartItems = new ObservableCollection<ChartItem>();
-        //BoatShape = new BoatShape();
-        FontSize = 12;
-        DegreeFormat = DegreeFormat.Deg;
-        TargetList = new ObservableCollection<Target>();
-        TargetRadius = 10;
-        TrailDuration = 0;
-        LogDirectory = @"C:\RNav\Logs";
-        MapOverlay = false;
-        SelectedTargetId = -1;
-        SaveMapSettings();
-    }
+    //public void InitializeMapSettings()
+    //{
+    //    ProjectionList = ProjectProjections.GetProjections();
+    //    CurrentProjection = ProjectionList.First();
+    //    ChartItems = new ObservableCollection<ChartItem>();
+    //    //BoatShape = new BoatShape();
+    //    FontSize = 12;
+    //    DegreeFormat = DegreeFormat.Deg;
+    //    TargetList = new ObservableCollection<Target>();
+    //    TargetRadius = 10;
+    //    TrailDuration = 0;
+    //    LogDirectory = @"C:\RNav\Logs";
+    //    MapOverlay = false;
+    //    SelectedTargetId = -1;
+    //    SaveMapSettings();
+    //}
     //public MapSettings GetMapSettings()
     //{
     //    try

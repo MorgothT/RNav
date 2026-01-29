@@ -218,14 +218,19 @@
                         Orientation="Vertical"
                         Margin="{StaticResource MediumLeftRightMargin}">
                 <GroupBox Header="Projection">
-                    <ComboBox ItemsSource="{Binding MapSettings.ProjectionList}"
+                    <DockPanel>
+                        <Button Content="Add" DockPanel.Dock="Right" Command="{Binding AddProjectionCommand}"
+                                Margin="{StaticResource XSmallLeftMargin}"/>
+                        <ComboBox ItemsSource="{Binding MapSettings.ProjectionList}"
                               SelectedValue="{Binding MapSettings.CurrentProjection}">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="SelectionChanged">
-                                <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}" CommandParameter="Default" />
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-                    </ComboBox>
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectionChanged">
+                                    <i:InvokeCommandAction Command="{Binding SaveSettingsCommand}" CommandParameter="Default" />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </ComboBox>
+                        
+                    </DockPanel>
                 </GroupBox>
                 <GroupBox Header="Vessel">
                     <Grid>

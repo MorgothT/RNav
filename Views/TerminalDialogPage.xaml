@@ -1,0 +1,62 @@
+﻿<Page x:Class="Mapper_v1.Views.TerminalDialogPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Mapper_v1.Views" 
+      xmlns:viewmodels="clr-namespace:Mapper_v1.ViewModels" 
+      xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+      xmlns:help="clr-namespace:Mapper_v1.Helpers"
+      d:DataContext="{d:DesignInstance Type=viewmodels:TerminalViewModel}"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="TerminalDialogPage">
+
+    <DockPanel Background="Transparent">
+        <StatusBar DockPanel.Dock="Bottom" Background="Transparent">
+            <StatusBarItem VerticalAlignment="Center">
+                <Ellipse Width="10" Height="10" Margin="3,0,0,0">
+                    <Ellipse.Style>
+                        <Style TargetType="Ellipse">
+                            <Setter Property="Fill" Value="Red"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                    <Setter Property="Fill" Value="Green"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Ellipse.Style>
+                </Ellipse>
+            </StatusBarItem>
+            <Separator/>
+            <TextBlock Text="Status:" Foreground="{StaticResource MahApps.Brushes.Text}"/>
+            <TextBlock Text="{Binding ConnectionStatus}" Foreground="{StaticResource MahApps.Brushes.Text}"/>
+        </StatusBar>
+        <Grid>
+            <!-->
+                <ListBox Name="Terminal" ItemsSource="{Binding TerminalText, NotifyOnTargetUpdated=True, Mode=OneWay}" 
+                     FontFamily="Consolas"
+                     Background="Transparent"
+                     TargetUpdated="ListBox_TargetUpdated"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     BorderThickness="0,0,0,2" 
+                     BorderBrush="{StaticResource MahApps.Brushes.TextBox.Border}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" TextWrapping="Wrap"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </!-->
+            <TextBox Text="{Binding TerminalOutput, Mode=OneWay}"
+                     help:TextBoxBehavior.AutoScrollToEnd="True"
+                     IsReadOnly="True"
+                     TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"
+                     FontFamily="Consolas"
+                     Background="Transparent"
+                     BorderThickness="0,0,0,2" 
+                     BorderBrush="{StaticResource MahApps.Brushes.TextBox.Border}"/>
+        </Grid>
+    </DockPanel>
+</Page>

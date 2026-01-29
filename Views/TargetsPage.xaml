@@ -9,6 +9,7 @@
       xmlns:local="clr-namespace:Mapper_v1.Views" 
       xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
       xmlns:model="clr-namespace:Mapper_v1.Models"
+      xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro" xmlns:viewmodels="clr-namespace:Mapper_v1.ViewModels" d:DataContext="{d:DesignInstance Type=viewmodels:TargetsViewModel}"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800">
     <i:Interaction.Triggers>
@@ -16,69 +17,7 @@
             <i:InvokeCommandAction Command="{Binding SaveTargetsCommand}"/>
         </i:EventTrigger>
     </i:Interaction.Triggers>
-    <Page.Resources>
-        <DataTemplate DataType="{x:Type model:Target}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <TextBlock Text="{Binding Id}" 
-                           Grid.Column="0"        
-                           Margin="5,0" 
-                           HorizontalAlignment="Center" 
-                           VerticalAlignment="Center"/>
-                <TextBox Text="{Binding Name}" 
-                         Style="{StaticResource MahApps.Styles.TextBox.DataGrid.Editing}"
-                         Grid.Column="1"
-                         Margin="5,0" 
-                         HorizontalAlignment="Left" 
-                         VerticalAlignment="Center" SelectionBrush="{x:Null}"/>
-                <TextBox Text="{Binding X, StringFormat=F2}"
-                         Style="{StaticResource MahApps.Styles.TextBox.ComboBox.Editable}"
-                           Grid.Column="2"        
-                           Margin="5,0" 
-                           HorizontalAlignment="Left" 
-                           VerticalAlignment="Center"
-                           Width="80">
-                </TextBox>
-                <TextBox Text="{Binding Y, StringFormat=F2}" 
-                         Style="{StaticResource MahApps.Styles.TextBox.ComboBox.Editable}"
-                           Grid.Column="3"        
-                           Margin="5,0" 
-                           HorizontalAlignment="Left" 
-                           VerticalAlignment="Center"
-                           Width="80"/>
-                <TextBlock Text="{Binding Lat, StringFormat=F8}" 
-                           Grid.Column="4"        
-                           Margin="5,0" 
-                           HorizontalAlignment="Left" 
-                           VerticalAlignment="Center"
-                           Width="100"/>
-                <TextBlock Text="{Binding Lon, StringFormat=F8}" 
-                           Grid.Column="5"        
-                           Margin="5,0" 
-                           HorizontalAlignment="Left" 
-                           VerticalAlignment="Center"
-                           Width="100"/>
-                <TextBox Text="{Binding Notes}"
-                         Style="{StaticResource MahApps.Styles.TextBox.DataGrid.Editing}"
-                         Grid.Column="6"
-                         Margin="5,0" 
-                         HorizontalAlignment="Stretch" TextAlignment="Left"
-                         TextWrapping="Wrap" AcceptsReturn="True"
-                         VerticalAlignment="Center"/>
-            </Grid>
-        </DataTemplate>
-    </Page.Resources>
+    <!-- No DataTemplate needed for GridView ListView -->
 
     <Grid>
         <Grid.RowDefinitions>
@@ -93,39 +32,124 @@
               Margin="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
-                <Button Content="Clear" Command="{Binding ClearTargetsCommand}" Margin="{StaticResource MediumLeftRightMargin}"/>
-                <Button Content="Import" Command="{Binding ImportTargetsCommand}" Margin="{StaticResource MediumLeftRightMargin}"/>
-                <Button Content="Export" Command="{Binding ExportTargetsCommand}" Margin="{StaticResource MediumLeftRightMargin}"/>
-                <TextBlock Text="Target Radius:" VerticalAlignment="Center"/>
-                <TextBox Text="{Binding MapSettings.TargetRadius}" InputScope="Number"/>
-                <i:Interaction.Triggers>
-                    <i:EventTrigger EventName="LostFocus">
-                        <i:InvokeCommandAction Command="{Binding SaveTargetsCommand}"/>
-                    </i:EventTrigger>
-                </i:Interaction.Triggers>
-            </StackPanel>
-            <ListView ItemsSource="{Binding MapSettings.TargetList}"
-                      SelectedItem="{Binding SelectedTarget}" 
-                      Style="{StaticResource MahApps.Styles.ListBox}"
-                      Grid.Row="1"
-                      IsSynchronizedWithCurrentItem="True"
-                      BorderBrush="{StaticResource MahApps.Brushes.Accent3}"
-                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                      BorderThickness="2">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="LostFocus">
+                    <i:InvokeCommandAction Command="{Binding SaveTargetsCommand}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+            <DockPanel Background="{StaticResource MahApps.Brushes.Accent3}">
+                <Button Content="Clear" Command="{Binding ClearTargetsCommand}" Margin="{StaticResource MediumLeftRightMargin}" 
+                        Style="{StaticResource MahApps.Styles.Button.Chromeless}" FontSize="20"/>
+                <Separator Style="{StaticResource MahApps.Styles.Separator.StatusBar}"/>
+                <Button Content="Import" Command="{Binding ImportTargetsCommand}" Margin="{StaticResource MediumLeftRightMargin}" 
+                        Style="{StaticResource MahApps.Styles.Button.Chromeless}" FontSize="20"/>
+                <Separator Style="{StaticResource MahApps.Styles.Separator.StatusBar}"/>
+                <Button Content="Export" Command="{Binding ExportTargetsCommand}" Margin="{StaticResource MediumLeftRightMargin}" 
+                        Style="{StaticResource MahApps.Styles.Button.Chromeless}" FontSize="20"/>
+                <Grid Margin="5" DockPanel.Dock="Right">
+                    <ToggleButton x:Name="SetingsBtn" Content="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="20" Style="{StaticResource MahApps.Styles.Button.Chromeless}"/>
+                    <Popup PlacementTarget="{Binding ElementName=SetingsBtn}" Placement="Left" HorizontalOffset="-5" VerticalOffset="20" IsOpen="{Binding ElementName=SetingsBtn, Path=IsChecked}"
+                           Margin="10" StaysOpen="False" AllowsTransparency="False" OverridesDefaultStyle="True">
+                        <Border BorderBrush="{StaticResource MahApps.Brushes.Accent2}" BorderThickness="3" Margin="0">
+                            <StackPanel Background="{StaticResource MahApps.Brushes.Gray10}">
+                                <DockPanel Margin="4">
+                                    <TextBox DockPanel.Dock="Right" MinWidth="30" HorizontalContentAlignment="Center" Text="{Binding MapSettings.TargetSettings.TargetRadius}" InputScope="Number"/>
+                                    <TextBlock DockPanel.Dock="Left" Text="Target Radius:" VerticalAlignment="Center" Margin="{StaticResource SmallRightMargin}"/>
+                                </DockPanel>
+                                <DockPanel Margin="4">
+                                    <mah:ColorPicker DockPanel.Dock="Right" SelectedColor="{Binding MapSettings.TargetSettings.TargetColor}" Width="50"/>
+                                    <TextBlock DockPanel.Dock="Left" Text="Target Color:" VerticalAlignment="Center" Margin="{StaticResource SmallRightMargin}"/>
+                                </DockPanel>
+                                <DockPanel Margin="4">
+                                    <mah:ColorPicker DockPanel.Dock="Right" SelectedColor="{Binding MapSettings.TargetSettings.SelectedTargetColor}" Width="50"/>
+                                    <TextBlock DockPanel.Dock="Left" Text="Selected Target Color:" VerticalAlignment="Center" Margin="{StaticResource SmallRightMargin}"/>
+                                </DockPanel>
+                                <DockPanel Margin="4">
+                                    <TextBlock DockPanel.Dock="Left" Text="Target Opacity:" VerticalAlignment="Center" 
+                                               Margin="{StaticResource SmallRightMargin}"/>
+                                    <TextBlock DockPanel.Dock="Right" Text="{Binding MapSettings.TargetSettings.TargetOpacity, StringFormat=P0}"
+                                               Width="30" VerticalAlignment="Center" HorizontalAlignment="Stretch" 
+                                               Margin="{StaticResource SmallLeftMargin}"/>
+                                    <Slider DockPanel.Dock="Right" Value="{Binding MapSettings.TargetSettings.TargetOpacity}" Width="100" 
+                                            Minimum="0" Maximum="1" Style="{StaticResource MahApps.Styles.Slider.Win10}" 
+                                            TickPlacement="BottomRight" TickFrequency="0.1" LargeChange="0.1" SmallChange="0.1" 
+                                            IsSnapToTickEnabled="True"/>
+                                </DockPanel>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </Grid>
+                <Grid/>
+            </DockPanel>
+            <ListView x:Name="TargetListView" ItemsSource="{Binding MapSettings.TargetList}"
+                          SelectedItem="{Binding SelectedTarget}" 
+                          Style="{StaticResource MahApps.Styles.ListView}"
+                          Grid.Row="1"
+                          IsSynchronizedWithCurrentItem="True"
+                          BorderBrush="{StaticResource MahApps.Brushes.Accent3}"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          ScrollViewer.VerticalScrollBarVisibility="Visible"
+                          ScrollViewer.CanContentScroll="True"
+                          BorderThickness="2">
+                <ListView.View>
+                    <GridView AllowsColumnReorder="False" ColumnHeaderContainerStyle="{StaticResource MahApps.Styles.GridViewColumnHeader}">
+                        <GridViewColumn Header="ID" DisplayMemberBinding="{Binding Id}" Width="30">
+                            <GridViewColumn.HeaderContainerStyle>
+                                <Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource MahApps.Styles.GridViewColumnHeader}">
+                                    <EventSetter Event="Click" Handler="GridViewColumnHeader_Click"/>
+                                </Style>
+                            </GridViewColumn.HeaderContainerStyle>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Name" Width="150">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  BorderThickness="0" Margin="0,1"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="X" Width="100">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding X, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat=F2}" BorderThickness="0"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Y" Width="100">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Y, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat=F2}" BorderThickness="0"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Lat" DisplayMemberBinding="{Binding Lat, StringFormat=F8}"  Width="100"/>
+                        <GridViewColumn Header="Lon" DisplayMemberBinding="{Binding Lon, StringFormat=F8}"  Width="100"/>
+                        <GridViewColumn Header="Notes" Width="200">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderThickness="0" AcceptsReturn="True" TextWrapping="Wrap"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Remove" Command="{Binding RemoveTargetCommand}" />
+                    </ContextMenu>
+                </ListView.ContextMenu>
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="LostFocus">
                         <i:InvokeCommandAction Command="{Binding RecalculateCommand}" PassEventArgsToCommand="True"/>
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </ListView>
-            <DockPanel Grid.Row="2" LastChildFill="False">
+            <DockPanel Grid.Row="2" LastChildFill="True">
                 <Button Command="{Binding RemoveTargetCommand}"
                         Style="{StaticResource MahApps.Styles.Button.Reveal}"
+                        ToolTip="Remove selected target"
                         VerticalAlignment="Center"
                         Width="24">
                     <Label FontFamily="RNav" Content="&#xE70D;" 
@@ -135,12 +159,17 @@
                 </Button>
                 <Button DockPanel.Dock="Right" Command="{Binding AddTargetCommand}"
                         Style="{StaticResource MahApps.Styles.Button.Reveal}"
+                        ToolTip="Add a new target"
                         Padding="0"
                         Height="24" Width="32">
                     <Label FontFamily="RNav" Content="&#xE713;" 
                            Foreground="{DynamicResource MahApps.Brushes.AccentBase}"
                            Padding="0" FontSize="16" FontWeight="Light"/>
                 </Button>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="Count: "/>
+                    <TextBlock Text="{Binding MapSettings.TargetList.Count}"/>
+                </StackPanel>
             </DockPanel>
         </Grid>
     </Grid>

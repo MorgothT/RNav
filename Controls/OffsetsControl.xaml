@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="Mapper_v1.Controls.OffsetsControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Mapper_v1.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Expander Header="Offsets" IsExpanded="False">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="X - Forward (m)" Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" Margin="{StaticResource XSmallRightMargin}"/>
+                <TextBox Text="{Binding Path=Forward}" Grid.Column="1" Grid.Row="0" HorizontalContentAlignment="Right" Width="40" HorizontalAlignment="Right" IsEnabled="False"/>
+                <TextBlock Text="Y - Starboard (m)" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" Margin="{StaticResource XSmallRightMargin}"/>
+                <TextBox Text="{Binding Path=Starboard}" Grid.Column="1" Grid.Row="1" HorizontalContentAlignment="Right" Width="40" HorizontalAlignment="Right" IsEnabled="False"/>
+                <TextBlock Text="Z - Up (m)" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" Margin="{StaticResource XSmallRightMargin}"/>
+                <TextBox Text="{Binding Path=Up}" Grid.Column="1" Grid.Row="2" HorizontalContentAlignment="Right" Width="40" HorizontalAlignment="Right" IsEnabled="False"/>
+                <GridSplitter Grid.Column="2" Grid.RowSpan="3" Width="2" Background="{StaticResource MahApps.Brushes.Accent3}"/>
+                <TextBlock Text="Roll - Port up (deg) " Grid.Column="3" Grid.Row="0" VerticalAlignment="Center" Margin="{StaticResource XSmallRightMargin}"/>
+                <TextBox Text="{Binding Path=Roll}" Grid.Column="4" Grid.Row="0" HorizontalContentAlignment="Right" Width="40" HorizontalAlignment="Right" IsEnabled="False"/>
+                <TextBlock Text="Pitch - Bow up (deg)" Grid.Column="3" Grid.Row="1" VerticalAlignment="Center" Margin="{StaticResource XSmallRightMargin}"/>
+                <TextBox Text="{Binding Path=Pitch}" Grid.Column="4" Grid.Row="1" HorizontalContentAlignment="Right" Width="40" HorizontalAlignment="Right" IsEnabled="False"/>
+                <TextBlock Text="Yaw - Clockwise (deg)" Grid.Column="3" Grid.Row="2" VerticalAlignment="Center" Margin="{StaticResource XSmallRightMargin}"/>
+                <TextBox Text="{Binding Path=Yaw}" Grid.Column="4" Grid.Row="2" HorizontalContentAlignment="Right" Width="40" HorizontalAlignment="Right"/>
+                <GridSplitter Grid.Column="5" Grid.RowSpan="3" Width="2" Background="{StaticResource MahApps.Brushes.Accent3}"/>
+                <TextBlock Text="Latency (ms)" Grid.Column="6" Grid.Row="2" VerticalAlignment="Center" Margin="{StaticResource XXSmallRightMargin}"/>
+                <TextBox Text="{Binding Path=Latency}" Grid.Column="7" Grid.Row="2" HorizontalContentAlignment="Right" Width="50" HorizontalAlignment="Right" IsEnabled="False"/>
+            </Grid>
+        </Expander>
+    </Grid>
+</UserControl>

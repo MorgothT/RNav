@@ -85,7 +85,7 @@
                 <Grid/>
             </DockPanel>
             <ListView x:Name="TargetListView" ItemsSource="{Binding MapSettings.TargetList}"
-                          SelectedItem="{Binding SelectedTarget}" 
+                          SelectedItem="{Binding SelectedTarget}" SelectionMode="Single"
                           Style="{StaticResource MahApps.Styles.ListView}"
                           Grid.Row="1"
                           IsSynchronizedWithCurrentItem="True"

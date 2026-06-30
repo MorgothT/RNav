@@ -33,58 +33,58 @@
                <RowDefinition Height="auto"/>  
                <RowDefinition Height="auto"/>  
                <RowDefinition Height="auto"/>  
-               <RowDefinition Height="auto"/>  
+               <RowDefinition Height="auto"/>
+               <RowDefinition Height="auto"/>
                <RowDefinition Height="*"/>
                <RowDefinition Height="auto"/>
-            </Grid.RowDefinitions>  
+           </Grid.RowDefinitions>  
            <TextBlock Text="{Binding DeviceType}" Style="{StaticResource ListTitleStyle}" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="auto"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Vertical" >
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Name:" Margin="0,3"/>
-                        <TextBox Text="{Binding DeviceName}" Margin="5,0" Style="{DynamicResource ConnectionInput}"/>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Connection Type:" Margin="0,3"/>
-                        <ComboBox ItemsSource="{help:Enum core:ConnectionType}" SelectedItem="{Binding PortConfig.Type}" Margin="5,0" VerticalAlignment="Center"/>
-                    </StackPanel>
-                    <local:SerialPortSettingsControl DataContext="{Binding PortConfig}">
-                        <local:SerialPortSettingsControl.Style>
-                            <Style TargetType="local:SerialPortSettingsControl">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Type}" Value="{x:Static core:ConnectionType.Serial}">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </local:SerialPortSettingsControl.Style>
-                    </local:SerialPortSettingsControl>
-                    <local:NetworkSettingsControl DataContext="{Binding PortConfig}">
-                        <local:NetworkSettingsControl.Style>
-                            <Style TargetType="local:NetworkSettingsControl">
-                                <Setter Property="Visibility" Value="Collapsed"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Type}" Value="{x:Static core:ConnectionType.UDP}">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Type}" Value="{x:Static core:ConnectionType.TCP}">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </local:NetworkSettingsControl.Style>
-                    </local:NetworkSettingsControl>
-                    <!-- For debug only 
-               <TextBlock Text="{Binding PortConfig.PortName}"/>  
-               -->
-                </StackPanel>
-            </Grid>
+		   <Grid Grid.Row="1">
+			   <Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="auto"/>
+			   </Grid.ColumnDefinitions>
+			   <StackPanel Orientation="Vertical" >
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Text="Name:" Margin="0,3"/>
+						<TextBox Text="{Binding DeviceName}" Margin="5,0" Style="{DynamicResource ConnectionInput}"/>
+					</StackPanel>
+					<StackPanel Orientation="Horizontal">
+						<TextBlock Text="Connection Type:" Margin="0,3"/>
+						<ComboBox ItemsSource="{help:Enum core:ConnectionType}" SelectedItem="{Binding PortConfig.Type}" Margin="5,0" VerticalAlignment="Center"/>
+					</StackPanel>
+					<local:SerialPortSettingsControl DataContext="{Binding PortConfig}">
+						<local:SerialPortSettingsControl.Style>
+							<Style TargetType="local:SerialPortSettingsControl">
+								<Setter Property="Visibility" Value="Collapsed"/>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding Type}" Value="{x:Static core:ConnectionType.Serial}">
+										<Setter Property="Visibility" Value="Visible"/>
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</local:SerialPortSettingsControl.Style>
+					</local:SerialPortSettingsControl>
+					<local:NetworkSettingsControl DataContext="{Binding PortConfig}">
+						<local:NetworkSettingsControl.Style>
+							<Style TargetType="local:NetworkSettingsControl">
+								<Setter Property="Visibility" Value="Collapsed"/>
+								<Style.Triggers>
+									<DataTrigger Binding="{Binding Type}" Value="{x:Static core:ConnectionType.UDP}">
+										<Setter Property="Visibility" Value="Visible"/>
+									</DataTrigger>
+									<DataTrigger Binding="{Binding Type}" Value="{x:Static core:ConnectionType.TCP}">
+										<Setter Property="Visibility" Value="Visible"/>
+									</DataTrigger>
+								</Style.Triggers>
+							</Style>
+						</local:NetworkSettingsControl.Style>
+					</local:NetworkSettingsControl>
+					<!-- For debug only 
+			   <TextBlock Text="{Binding PortConfig.PortName}"/>  
+			   -->
+				</StackPanel>
+			</Grid>
             <!-- IMPROVE: Move ui to NMEA specific user control -->
             <Grid Grid.Row="5">  
                <Grid.ColumnDefinitions>  
@@ -128,7 +128,7 @@
                    </Grid>  
                </GroupBox>
             </Grid>
-            
+            <local:OffsetsControl Grid.Row="6" DataContext="{Binding Offsets}"/>
         </Grid>  
    </Border>  
 </UserControl>

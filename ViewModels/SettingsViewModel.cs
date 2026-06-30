@@ -120,7 +120,6 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     [RelayCommand]
     private void AddProjection()
     {
-        //TODO: fix Projection adding window position - DONE
         // Create the dialog window and its ViewModel
         var dialogViewModel = new ShellDialogViewModel();
         var dialogWindow = new ShellDialogWindow(dialogViewModel)

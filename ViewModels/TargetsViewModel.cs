@@ -10,7 +10,7 @@ using System.Text.Json;
 using System.Windows;
 
 namespace Mapper_v1.ViewModels;
-// TODO: Add ability to export to other formats (XYZ) - DONE
+
 public partial class TargetsViewModel : ObservableObject
 {
     #region Fields
@@ -161,7 +161,7 @@ public partial class TargetsViewModel : ObservableObject
     private void RemoveTarget()
     {
         MapSettings.TargetList.Remove(SelectedTarget);
-        MapSettings.SaveMapSettings();
+        SaveTargets();
         clearTargetsCommand.NotifyCanExecuteChanged();
         exportTargetsCommand.NotifyCanExecuteChanged();
     }

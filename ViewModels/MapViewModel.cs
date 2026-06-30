@@ -393,6 +393,8 @@ public partial class MapViewModel : ObservableObject, INavigationAware
 
     public void OnNavigatedTo(object parameter)
     {
+        //MapSettings = MapSettings.GetMapSettings();
+        //MobileSettings = new MobileSettings();
     }
     public void OnNavigatedFrom()
     {

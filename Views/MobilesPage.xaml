@@ -146,7 +146,7 @@
             <StackPanel Orientation="Vertical" Grid.Column="2">
                 <controls:MobileSettingsControl DataContext="{Binding Path=SelectedMobile, Mode=TwoWay}"/>
                 <controls:DeviceSettings DataContext="{Binding Path=SelectedDevice, Mode=TwoWay}"/>
-                <!--TODO: Test window for ports - DONE -->
+                <!-- TODO: Offset window/tab/panel -->
                 <Button Content="Test Connection" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" 
                         Margin="0,10" Padding="10,5" 
                         Command="{Binding TestDeviceCommand}" 

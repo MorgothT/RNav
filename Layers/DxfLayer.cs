@@ -325,7 +325,6 @@ namespace Mapper_v1.Layers
 
         private IFeature CreateFeatureFromPoly2D(EntityObject feature)
         {
-            // TODO: implament IsClosed logic - DONE
             Polyline2D poly = feature as Polyline2D;
             Coordinate[] points = (from Polyline2DVertex vertex in poly.Vertexes
                                    select ToCoord(vertex.Position)).ToArray();

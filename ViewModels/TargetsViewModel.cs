@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapper_v1.Contracts.Services;
 using Mapper_v1.Helpers;
 using Mapper_v1.Models;
 using Mapsui;
@@ -23,15 +24,24 @@ public partial class TargetsViewModel : ObservableObject
     [NotifyCanExecuteChangedFor(nameof(RemoveTargetCommand))]
     private Target selectedTarget;
 
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(ExportTargetsCommand), nameof(ClearTargetsCommand))]
-    private MapSettings mapSettings = new MapSettings().GetMapSettings();
+    //[ObservableProperty]
+    //[NotifyCanExecuteChangedFor(nameof(ExportTargetsCommand), nameof(ClearTargetsCommand))]
+    public MapSettings MapSettings => _configService.MapConfig;
 
+    //private MapSettings mapSettings = new MapSettings().GetMapSettings();
+
+    private readonly IConfigService _configService;
     #endregion
 
     #region Constractor
-    public TargetsViewModel()
+    public TargetsViewModel(IConfigService configService)
     {   
+        _configService = configService;
+        MapSettings.PropertyChanged += (s, e) =>
+        {
+            ExportTargetsCommand.NotifyCanExecuteChanged();
+            ClearTargetsCommand.NotifyCanExecuteChanged();
+        };
     }
     #endregion
 
@@ -182,7 +192,8 @@ public partial class TargetsViewModel : ObservableObject
     [RelayCommand]
     private void SaveTargets()
     {
-        MapSettings.SaveMapSettings();
+        _configService.SaveMapSettingsAsync();
+        //MapSettings.SaveMapSettings();
     }
 
     #endregion
@@ -200,7 +211,8 @@ public partial class TargetsViewModel : ObservableObject
         //wgsPoint.ToWgs($"EPSG:{MapSettings.CurrentProjection.Split(':')[1]}");
         Target target = Target.CreateTarget(point, id, point.ToWgs($"EPSG:{MapSettings.CurrentProjection.Split(':')[1]}"));
         MapSettings.TargetList.Add(target);
-        MapSettings.SaveMapSettings();
+        //MapSettings.SaveMapSettings();
+        _configService.SaveMapSettingsAsync();
         return target;
     }
 

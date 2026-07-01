@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapper_v1.Contracts.Services;
 using Mapper_v1.Contracts.ViewModels;
 using Mapper_v1.Core;
 using Mapper_v1.Core.Contracts;
@@ -29,10 +30,12 @@ public partial class MobilesViewModel : ObservableObject, INavigationAware
     //[NotifyCanExecuteChangedFor(nameof(RemoveMobileCommand), nameof(AddDeviceCommand), nameof(RemoveDeviceCommand))]
     //private DeviceType selectedDeviceType;
 
-    private MobileSettings mobileSettings = new();
-
-    public MobilesViewModel()
+    //private MobileSettings mobileSettings = new();
+    private MobileSettings mobileSettings => _configService.MobileConfig;
+    private readonly IConfigService _configService;
+    public MobilesViewModel(IConfigService configService)
     {
+        _configService = configService;
         //Load From Settings
         LoadFromSettings();
         if (Mobiles is null)
@@ -73,7 +76,8 @@ public partial class MobilesViewModel : ObservableObject, INavigationAware
     }
     private void SaveToSettings()
     {
-        mobileSettings.SaveSettings(Mobiles);
+        //mobileSettings.SaveSettings(Mobiles);
+        _configService.SaveMobileSettingsAsync();
     }
     #endregion
 
@@ -148,7 +152,7 @@ public partial class MobilesViewModel : ObservableObject, INavigationAware
     }
 
     [RelayCommand]
-    private void LoadFromFile()
+    private async Task LoadFromFile()
     {
         var ofd = new Microsoft.Win32.OpenFileDialog
         {
@@ -159,7 +163,8 @@ public partial class MobilesViewModel : ObservableObject, INavigationAware
         var result = ofd.ShowDialog();
         if (result.Value == true)
         {
-            Mobiles = mobileSettings.LoadMobilesFromFile(ofd.FileName);
+            //Mobiles = mobileSettings.LoadMobilesFromFile(ofd.FileName);
+            await _configService.LoadMobilesFromFileAsync(ofd.FileName);
         }
     }
 

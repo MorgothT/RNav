@@ -22,6 +22,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
 {
     //private readonly ConfigService _configService;
     private readonly AppConfig _appConfig;
+    private readonly IConfigService _configService;
     private readonly IThemeSelectorService _themeSelectorService;
     private readonly ISystemService _systemService;
     private readonly IApplicationInfoService _applicationInfoService;
@@ -44,9 +45,10 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     public ICommand PrivacyStatementCommand => _privacyStatementCommand ?? (_privacyStatementCommand = new RelayCommand(OnPrivacyStatement));
 
 
-    [ObservableProperty]
-    //private MapSettings mapSettings;
-    private MapSettings mapSettings = new MapSettings().GetMapSettings();
+    //[ObservableProperty]
+    ////private MapSettings mapSettings;
+    //private MapSettings mapSettings = new MapSettings().GetMapSettings();
+    public MapSettings MapSettings => _configService.MapConfig;
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(UpdateCommand))]
     private bool isUpdateRunning = false;
@@ -54,8 +56,8 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
     [RelayCommand]
     private void SaveSettings()
     {
-        
-        MapSettings.SaveMapSettings();
+        _configService.SaveMapSettingsAsync();
+        //MapSettings.SaveMapSettings();
         //CommSettings.SaveSettings();
     }
 
@@ -104,7 +106,7 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
         }
     }
     [RelayCommand]
-    private void ImportSettings()
+    private async Task ImportSettings()
     {
         var ofd = new OpenFileDialog()
         {
@@ -113,7 +115,8 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
         };
         if (ofd.ShowDialog() == true)
         {
-            MapSettings = new MapSettings().GetMapSettings(ofd.FileName);
+            await _configService.LoadMapSettingsFromFileAsync(ofd.FileName);
+            //MapSettings = new MapSettings().GetMapSettings(ofd.FileName);
             //_configService.LoadMapConfig(ofd.FileName);
         }
     }
@@ -145,19 +148,21 @@ public partial class SettingsViewModel : ObservableObject, INavigationAware
         {
             ProjectProjections.AddProjection(projectionViewModel.ProjectionWkt);
             MapSettings.ProjectionList = ProjectProjections.GetProjections();
-            MapSettings.SaveMapSettings();
+            _configService.SaveMapSettingsAsync();
+            //MapSettings.SaveMapSettings();
         }
     }
     public SettingsViewModel(IOptions<AppConfig> appConfig,
                              IThemeSelectorService themeSelectorService,
                              ISystemService systemService,
-                             IApplicationInfoService applicationInfoService) //,ConfigService configService)
+                             IApplicationInfoService applicationInfoService,
+                             IConfigService configService)
     {
         _appConfig = appConfig.Value;
         _themeSelectorService = themeSelectorService;
         _systemService = systemService;
         _applicationInfoService = applicationInfoService;
-        //_configService = configService;
+        _configService = configService;
         //MapSettings = _configService.MapConfig;
     }
     private static async Task UpdateMyApp()

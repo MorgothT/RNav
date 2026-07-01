@@ -68,31 +68,33 @@ public partial class MapSettings : ObservableObject
     {
 
     }
-    public MapSettings GetMapSettings(string path = null)
-    {
-        path ??= defaulName;
-        try
-        {
-            if (!File.Exists(path))
-            {
-                MapSettings settings = new MapSettings().InitializeDefaults();
-                settings.SaveMapSettings();
-                return settings;
-            }
-            var json = File.ReadAllText(path);
-            MapSettings current = JsonSerializer.Deserialize<MapSettings>(json,jsonSerializerOptions);
-            // Overrides projections from projection.cfg
-            current.ProjectionList = ProjectProjections.GetProjections();
-            return current;
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Error loading settings from {path} - {ex.Message}");
-            MapSettings defaultSettings = InitializeDefaults();
-            defaultSettings.SaveMapSettings();
-            return defaultSettings;
-        }
-    }
+    //public MapSettings GetMapSettings(string path)
+    //{
+    //    //REDO: move loading MapSettings from file to the config service
+    //    //path ??= defaulName;
+    //    try
+    //    {
+    //        if (!File.Exists(path))
+    //        {
+    //            throw new FileNotFoundException("File does not exist", path);
+    //            //    MapSettings settings = new MapSettings().InitializeDefaults();
+    //            //    settings.SaveMapSettings();
+    //            //    return settings;
+    //        }
+    //        var json = File.ReadAllText(path);
+    //        MapSettings current = JsonSerializer.Deserialize<MapSettings>(json, jsonSerializerOptions);
+    //        // Overrides projections from projection.cfg
+    //        current.ProjectionList = ProjectProjections.GetProjections();
+    //        return current;
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        MessageBox.Show($"Error loading settings from {path} - {ex.Message}");
+    //        MapSettings defaultSettings = InitializeDefaults();
+    //        defaultSettings.SaveMapSettings();
+    //        return defaultSettings;
+    //    }
+    //}
 
     private MapSettings InitializeDefaults()
     {
@@ -124,7 +126,8 @@ public partial class MapSettings : ObservableObject
         };
         return defaultSettings;
     }
-    public bool SaveMapSettings(string path = null)
+    //public bool SaveMapSettings(string path = null)
+    public bool SaveMapSettings(string path)
     {
         if(path == null)
         {

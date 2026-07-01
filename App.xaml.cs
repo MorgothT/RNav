@@ -35,7 +35,6 @@ public partial class App : Application
     private async void OnStartup(object sender, StartupEventArgs e)
     {
         var appLocation = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-
         // For more information about .NET generic host see  https://docs.microsoft.com/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-3.0
         _host = Host.CreateDefaultBuilder(e.Args)
                 .ConfigureAppConfiguration(c =>
@@ -69,7 +68,7 @@ public partial class App : Application
         services.AddSingleton<INavigationService, NavigationService>();
 
         // Settings
-        //services.AddSingleton<IConfigService, ConfigService>();
+        services.AddSingleton<IConfigService, ConfigService>();
         //services.AddSingleton<MapSettings>();
 
         // Views and ViewModels

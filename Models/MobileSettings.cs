@@ -16,19 +16,19 @@ public partial class MobileSettings : ObservableObject
 
     public MobileSettings()
     {
-        Mobiles = LoadMobilesFromFile();
-        if (Mobiles is null || Mobiles.Count == 0)
-        {
-            Mobiles = [DefaultMobile()];
-            SaveSettings();
-        }
-        //Mobiles = [DefaultMobile()];
+        //Mobiles = LoadMobilesFromFile();
+        //if (Mobiles is null || Mobiles.Count == 0)
+        //{
+        //    Mobiles = [DefaultMobile()];
+        //    SaveSettings();
+        //}
+        ////Mobiles = [DefaultMobile()];
     }
 
     public ObservableCollection<Mobile> LoadMobilesFromFile(string userSelectedPath = null)
     {
         string folderPath = FileService.GetApplicationFolder();
-        string filename = "Mobiles.json";
+        string filename = "Mobiles.ini";
         if (userSelectedPath != null)
         {
             folderPath = Path.GetDirectoryName(userSelectedPath);

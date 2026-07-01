@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ControlzEx.Standard;
 using Mapper_v1.Contracts.Services;
 using Mapper_v1.Contracts.ViewModels;
 using Mapper_v1.Core;
@@ -22,11 +23,12 @@ namespace Mapper_v1.ViewModels;
 public partial class MapViewModel : ObservableObject, INavigationAware
 {
     public WktProjections Projection = new WktProjections();
-
-    [ObservableProperty]
-    private MapSettings mapSettings = new MapSettings().GetMapSettings();
-    [ObservableProperty]
-    private MobileSettings mobileSettings = new();
+    public MapSettings MapSettings => _configService.MapConfig;
+    //[ObservableProperty]
+    //private MapSettings mapSettings = new MapSettings().GetMapSettings();
+    public MobileSettings MobileSettings => _configService.MobileConfig;
+    //[ObservableProperty]
+    //private MobileSettings mobileSettings = new();
     [ObservableProperty]
     private Dictionary<string, object> data = new();
     [ObservableProperty]
@@ -40,22 +42,27 @@ public partial class MapViewModel : ObservableObject, INavigationAware
     [ObservableProperty]
     private ObservableCollection<DataViewItem> dataViewItems = new();
 
-    private PropertyChangedEventHandler MobileDataChanged;
+    private PropertyChangedEventHandler mobileDataChanged;
+    
 
     private string ProjectCRS;
     private Target currentTarget;
 
     public event Action<Guid> PositionChanged;
     public event Action<Guid> HeadingChanged;
+    public event Action MobilesReady;
 
-    //private IConfigService _configService;
-    public MapViewModel()
+    // 1. Maintain a strong typed dictionary reference to handlers per Mobile ID 
+    // to cleanly find and remove them when unbinding the view.
+    private readonly Dictionary<Guid, PropertyChangedEventHandler> _propertyHandlers = new();
+
+    private readonly IConfigService _configService;
+    public MapViewModel(IConfigService configService)
     {
-        //_configService = configService;
-        InitMobiles();
-        InitDataView();
-        //InitDataView_Old();
-        InitProjection();
+        _configService = configService;
+
+        // FIX: Load Mobiles from settings so that they are available when the view is initialized
+        Mobiles = MobileSettings.Mobiles;
     }
     
     private void InitProjection()
@@ -82,6 +89,56 @@ public partial class MapViewModel : ObservableObject, INavigationAware
         // Load the data view items from the settings
         LoadDataViewItems();
     }
+    private async Task InitMobilesAsync()
+    {
+        try
+        {
+            Mobiles = MobileSettings.Mobiles;
+            // there must be at least 1 mobile
+            if (Mobiles.Count < 1) throw new Exception("There must be at least 1 mobile !");
+            // there must be only 1 primery
+            if (Mobiles.Count(m => m.IsPrimery) > 1)
+            {
+                // remove primery from all 
+                foreach (var mobile in Mobiles)
+                {
+                    mobile.IsPrimery = false;
+                }
+            }
+            if (Mobiles.Count(m => m.IsPrimery) == 0)
+            {
+                // make the 1st primery
+                Mobiles.First().IsPrimery = true;
+            }
+            // INIT Mobiles devices
+            foreach (var mobile in Mobiles)
+            {
+                mobile.StatusChanged += StatusUpdated;
+                await mobile.InitDevicesAsync();
+                // Binds perfectly now because the signatures match Action<Guid, string>
+                // Unique per-mobile lambda reference cached in dictionary for safe detachment later
+                PropertyChangedEventHandler handler = (sender, e) =>
+                {
+                    if (e.PropertyName == nameof(Position))
+                    {
+                        OnMobilePositionChanged(mobile.Id, mobile.Data.Position);
+                    }
+                    else if (e.PropertyName == nameof(Motion))
+                    {
+                        OnMobileHeadingChanged(mobile.Id, mobile.Data.Motion.Heading);
+                    }
+                    UpdateDataView(mobile.Id);
+                };
+                _propertyHandlers[mobile.Id] = handler;
+                mobile.Data.PropertyChanged += handler;
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Error: {ex.Message}");
+        }
+        MobilesReady?.Invoke();
+    }
     private void InitMobiles()
     {
         try
@@ -107,33 +164,56 @@ public partial class MapViewModel : ObservableObject, INavigationAware
             // INIT Mobiles devices
             foreach (var mobile in Mobiles)
             {
+                mobile.StatusChanged += StatusUpdated;
+
                 mobile.InitDevices();
-                mobile.StatusChanged += (id, status) =>
+                // Binds perfectly now because the signatures match Action<Guid, string>
+
+                // Unique per-mobile lambda reference cached in dictionary for safe detachment later
+                PropertyChangedEventHandler handler = (sender, e) =>
                 {
-                    Trace.WriteLine($"Mobile {mobile.Name} - Status: {status}");
-                };
-                MobileDataChanged = (sender, e) =>
-                {
-                    // Handle property changes in the mobile's data
                     if (e.PropertyName == nameof(Position))
                     {
                         OnMobilePositionChanged(mobile.Id, mobile.Data.Position);
-                        // Notify UI about position change
                     }
                     else if (e.PropertyName == nameof(Motion))
                     {
                         OnMobileHeadingChanged(mobile.Id, mobile.Data.Motion.Heading);
                     }
-                    // Update the data view for this mobile
                     UpdateDataView(mobile.Id);
                 };
-                mobile.Data.PropertyChanged += MobileDataChanged;
+
+                _propertyHandlers[mobile.Id] = handler;
+                mobile.Data.PropertyChanged += handler;
+                
+                //StatusUpdated;
+                //mobileDataChanged = (sender, e) =>
+                //{
+                //    // Handle property changes in the mobile's data
+                //    if (e.PropertyName == nameof(Position))
+                //    {
+                //        OnMobilePositionChanged(mobile.Id, mobile.Data.Position);
+                //        // Notify UI about position change
+                //    }
+                //    else if (e.PropertyName == nameof(Motion))
+                //    {
+                //        OnMobileHeadingChanged(mobile.Id, mobile.Data.Motion.Heading);
+                //    }
+                //    // Update the data view for this mobile
+                //    UpdateDataView(mobile.Id);
+                //};
+                //mobile.Data.PropertyChanged += mobileDataChanged;
             }
         }
         catch (Exception ex)
         {
             MessageBox.Show($"Error: {ex.Message}");
         }
+    }
+
+    private void StatusUpdated(Guid id, string status)
+    {
+        Trace.WriteLine($"Mobile {Mobiles.First(m => m.Id == id).Name} - Status: {status}");
     }
 
     private void UpdateDataView(Guid id)
@@ -389,20 +469,43 @@ public partial class MapViewModel : ObservableObject, INavigationAware
         //}
         SaveDataViewItems();
     }
+
+    [RelayCommand]
+    public async Task SaveMapSettingsAsync()
+    {
+        await _configService.SaveMapSettingsAsync();
+    }
     #endregion
 
     public void OnNavigatedTo(object parameter)
     {
+        //InitMobiles();
+        _ = InitMobilesAsync();
+        InitDataView();
+        InitProjection();
         //MapSettings = MapSettings.GetMapSettings();
         //MobileSettings = new MobileSettings();
     }
     public void OnNavigatedFrom()
     {
-        MapSettings.SaveMapSettings();
+        _ = _configService.SaveMapSettingsAsync();
+        //MapSettings.SaveMapSettings();
         try
         {
             foreach (var mobile in Mobiles)
             {
+                // Detach Action<Guid, string> pointer using matching signature
+                mobile.StatusChanged -= StatusUpdated;
+
+                // Detach PropertyChanged handlers safely using stored delegate targets
+                if (_propertyHandlers.TryGetValue(mobile.Id, out var handler))
+                {
+                    if (mobile.Data != null)
+                    {
+                        mobile.Data.PropertyChanged -= handler;
+                    }
+                    _propertyHandlers.Remove(mobile.Id);
+                }
                 mobile.Dispose();
             }
         }

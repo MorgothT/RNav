@@ -63,6 +63,13 @@ public static class GeoMath
         ProjectionDefaults.Projection.Project(fromCRS, "EPSG:4326", p);
         return p;
     }
-    
-    
+    public static double NormalizeDegrees(this double degrees)
+    {
+        return (degrees % 360 + 360) % 360;
+    }
+    public static float NormalizeDegrees(this float degrees)
+    {
+        return (degrees % 360 + 360) % 360;
+    }
+
 }

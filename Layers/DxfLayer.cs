@@ -27,7 +27,7 @@ namespace Mapper_v1.Layers
         //private static readonly ColorConvertor colorConvertor = new();
         public string CRS { get; set; }
 
-        public DxfLayer(ChartItem chart)
+        public DxfLayer(ChartItem chart,PointSettings pointSettings)
         {
             //_map = map ?? throw new ArgumentNullException("Map shouldn't be null");
             _path = Path.Exists(chart.Path) ? chart.Path : throw new ArgumentException("Path does not exist");
@@ -35,7 +35,7 @@ namespace Mapper_v1.Layers
             Style = null;// GetVectorStyle(chart);
             vectorStyle = GetVectorStyle(chart);
             labelStyle = GetLabelStyle(chart);
-            pointStyle = GetPointStyle();
+            pointStyle = GetPointStyle(pointSettings);
             //_styles = (StyleCollection)Style;
 
             // dxf checks
@@ -60,9 +60,9 @@ namespace Mapper_v1.Layers
             
         }
 
-        private PointStyle GetPointStyle()
+        private PointStyle GetPointStyle(PointSettings settings)
         {
-            PointSettings settings = new MapSettings().GetMapSettings().PointSettings;
+            //PointSettings settings = new MapSettings().GetMapSettings().PointSettings;
             PointStyle pointStyle = new PointStyle()
             {
                 Color = settings.Color.ToMapsuiColor(),//colorConvertor.WMColorToMapsui(settings.Color),

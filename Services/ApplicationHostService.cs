@@ -46,6 +46,12 @@ public class ApplicationHostService : IHostedService
 
     private async Task InitializeAsync()
     {
+        var configService = _serviceProvider.GetService(typeof(IConfigService)) as IConfigService;
+        if (configService != null)
+        {
+            // Load configurations into memory before anything else renders
+            await configService.InitializeAsync();
+        }
         if (!_isInitialized)
         {
             _persistAndRestoreService.RestoreData();

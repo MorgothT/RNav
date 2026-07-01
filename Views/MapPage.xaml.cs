@@ -43,7 +43,8 @@ namespace Mapper_v1.Views;
 
 public partial class MapPage : Page
 {
-    public List<BoatShapeLayer> MobileLayers = [];
+    //public List<BoatShapeLayer> MobileLayers = [];
+    public Dictionary<Guid, BoatShapeLayer> MobileLayers = new();
     public MemoryLayer BoatTrailLayer;
 
     //private MapSettings mapSettings = new MapSettings().GetMapSettings();
@@ -83,7 +84,7 @@ public partial class MapPage : Page
 
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
         vm = viewModel;
-        
+        vm.MobilesReady += () => Dispatcher.Invoke(InitMapLayers);
         SelectedTargetChanged += OnSelectedTargetChanged;
         InitDataDisplay();
         InitMapControl();
@@ -141,7 +142,7 @@ public partial class MapPage : Page
         try
         {
             SetCRS();
-            InitMapLayers();
+            //InitMapLayers();
         }
         catch (Exception)
         {
@@ -190,28 +191,29 @@ public partial class MapPage : Page
     private void InitMapLayers()
     {
         // Special layers
-        foreach (var mobile in vm.Mobiles) {
+        foreach (var mobile in vm.Mobiles) 
+        {
             MobileShapeSettings shapeSettings = mobile.MobileShapeSettings;
             var shape = new BoatShape(shapeSettings.ShapePath,shapeSettings.ShapeFill, shapeSettings.ShapeOutline);
             if (mobile.IsPrimery)
             {
-                MobileLayers.Insert(0, new BoatShapeLayer(MapControl.Map, shape, mobile.Id)
+                MobileLayers[mobile.Id] = new BoatShapeLayer(MapControl.Map, shape, mobile.Id)
                 {
                     CalloutText = mobile.Name,
                     Enabled = true,
                     IsCentered = ToggleTracking.IsChecked.Value,
                     Name = mobile.Name
-                });
+                };
             }
             else
             {
-                MobileLayers.Add(new BoatShapeLayer(MapControl.Map, shape, mobile.Id)
+                MobileLayers[mobile.Id] = new BoatShapeLayer(MapControl.Map, shape, mobile.Id)
                 {
                     CalloutText = mobile.Name,
                     Enabled = true,
                     IsCentered = false,
                     Name = mobile.Name
-                });
+                };
             }
         }
         BoatTrailLayer = new MemoryLayer()
@@ -223,7 +225,7 @@ public partial class MapPage : Page
             {
                 Fill = null,
                 Outline = null,
-                Line = { Color = MobileLayers[0].BoatShape.OutlineColor.ToMapsuiColor() }
+                Line = { Color = MobileLayers[vm.Mobiles[0].Id].BoatShape.OutlineColor.ToMapsuiColor() }
             }
         };
         measurementLayer = new WritableLayer()
@@ -273,7 +275,10 @@ public partial class MapPage : Page
             MapControl.Map.Layers.Add(MyTargets);
         }
         MapControl.Map.Layers.Add(BoatTrailLayer);
-        MobileLayers.ForEach(layer => { MapControl.Map.Layers.Add(layer); });
+        foreach (var layer in MobileLayers.Values)
+        {
+            MapControl.Map.Layers.Add(layer);
+        }
         MapControl.Map.Layers.Add(measurementLayer);
         //TODO: UI to move charts order and enable layers
     }
@@ -329,7 +334,8 @@ public partial class MapPage : Page
         {
             MyTrail = new();
             vm.MapSettings.LastTrail = MyTrail;
-            vm.MapSettings.SaveMapSettings();
+            //vm.MapSettings.SaveMapSettings();
+            vm.SaveMapSettingsCommand.Execute(null);
         }
     }
     private void SaveMapControlState()
@@ -429,23 +435,61 @@ public partial class MapPage : Page
     }
     private void UpdateMobilePosition(Guid mobileId)
     {
-        var position = vm.Mobiles.Where(m => m.Id == mobileId).Single().Data.Position;
-        MPoint point = new MPoint(position.Longitude,position.Latitude);
-        ProjectionDefaults.Projection.Project("EPSG:4326", MapControl.Map.CRS, point);
-        var layer = MobileLayers.Where(m => m.MobileId == mobileId).Single();
-        layer.UpdateMyLocation(point);
-        layer.DataHasChanged();
-        if (MapControl.Map.Extent?.Intersects(point.MRect) == false && layer.IsCentered)
+        try
         {
-            MapControl.Map.Navigator.OverridePanBounds = MapControl.Map.Extent.Join(point.MRect.Grow(1));
-            MapControl.Map.Navigator.CenterOn(point);
+            var position = vm.Mobiles.Single(m => m.Id == mobileId).Data.Position;
+            MPoint point = new MPoint(position.Longitude, position.Latitude);
+            ProjectionDefaults.Projection.Project("EPSG:4326", MapControl.Map.CRS, point);
+            
+            //var layer = MobileLayers.SingleOrDefault(m => m.MobileId == mobileId);
+            var layer = MobileLayers.GetValueOrDefault(mobileId);
+            if (layer is null)
+            {
+                var mobile = vm.Mobiles.SingleOrDefault(m => m.Id == mobileId);
+                if (mobile is not  null)
+                    layer = MobileLayers.FirstOrDefault(l => string.Equals(l.Value.Name,mobile.Name, StringComparison.OrdinalIgnoreCase)).Value;
+            }
+            if (layer is null)
+            {
+                Debug.WriteLine($"Error: No layer found for mobile id: {mobileId}");
+                return;
+            }
+            layer.UpdateMyLocation(point);
+            layer.DataHasChanged();
+            if (MapControl.Map.Extent?.Intersects(point.MRect) == false && layer.IsCentered)
+            {
+                MapControl.Map.Navigator.OverridePanBounds = MapControl.Map.Extent.Join(point.MRect.Grow(1));
+                MapControl.Map.Navigator.CenterOn(point);
+            }
+        }
+        catch (Exception)
+        {
+            Debug.WriteLine($"Error updating position for mobile id: {mobileId} ");
+            return;
         }
     }
     private void UpdateMobileDirection(Guid mobileId)
     {
         double mapRotation = Properties.MapControl.Default.Rotation;
-        var layer = MobileLayers.Where(m => m.MobileId == mobileId).Single();
-        var mobile = vm.Mobiles.Where(m => m.Id == mobileId).Single();
+        var layer = MobileLayers.GetValueOrDefault(mobileId);
+        var mobile = vm.Mobiles.SingleOrDefault(m => m.Id == mobileId);
+        if (layer is null)
+        {
+            if (mobile is not null)
+            {
+                layer = MobileLayers.FirstOrDefault(l => string.Equals(l.Value.Name, mobile.Name, StringComparison.OrdinalIgnoreCase)).Value;
+            }
+            else
+            {
+                Debug.WriteLine($"Error: No layer & mobile found for mobile id: {mobileId}");
+            }
+            if (layer is null)
+            {
+                Debug.WriteLine($"Error: No layer found for mobile id: {mobileId}");
+                return;
+            }
+        }
+
         double heading = mobile.Data.Motion.Heading; // Default to 0 if heading is null
 
         if (ToggleNoseUp.IsChecked.Value)
@@ -543,7 +587,7 @@ public partial class MapPage : Page
     }
     private ILayer CreateDxfLayer(ChartItem chart)
     {
-        var layer = new DxfLayer(chart)
+        var layer = new DxfLayer(chart,vm.MapSettings.PointSettings)
         {
             Opacity = chart.Opacity,
             Enabled = chart.Enabled,
@@ -655,7 +699,8 @@ public partial class MapPage : Page
     private void StartMeasurement(MPoint point) // Map CRS -> Project Crs
     {
         ToggleTracking.IsChecked = false;
-        MobileLayers.First().IsCentered = false;
+        // Un center all mobile layers when starting measurement to prevent auto panning while measuring
+        MobileLayers.Values.ToList().ForEach(l => l.IsCentered = false);
         //MapControl.Map.Navigator.PanLock = true;
         //measureStart = MapControl.Map.Navigator.Viewport.ScreenToWorld(point);
         ProjectionDefaults.Projection.Project(MapControl.Map.CRS, ProjectCRS, point);
@@ -677,14 +722,16 @@ public partial class MapPage : Page
         {
             SelectedTargetId = -1;
             SelectedTarget = null;
-            vm.MapSettings.SaveMapSettings();
+            //vm.MapSettings.SaveMapSettings();
+            vm.SaveMapSettingsCommand.Execute(null);
         }
         foreach (Target target in vm.MapSettings.TargetList)
         {
             if (target.Id == (int)pointFeature["Id"])
             {
                 vm.MapSettings.TargetList.Remove(target);
-                vm.MapSettings.SaveMapSettings();
+                //vm.MapSettings.SaveMapSettings();
+                vm.SaveMapSettingsCommand.Execute(null);
                 return;
             }
         }
@@ -739,7 +786,8 @@ public partial class MapPage : Page
         ProjectionDefaults.Projection.Project(ProjectCRS, "EPSG:4326", wgs);
         Target target = Target.CreateTarget(point, id, wgs);
         vm.MapSettings.TargetList.Add(target);
-        vm.MapSettings.SaveMapSettings();
+        //vm.MapSettings.SaveMapSettings();
+        vm.SaveMapSettingsCommand.Execute(null);
         var feature = Target.CreateTargetFeature(target, vm.MapSettings.TargetSettings.TargetRadius, vm.MapSettings.DegreeFormat);
         ProjectionDefaults.Projection.Project(ProjectCRS, MapControl.Map.CRS, feature);
         MyTargets?.Features.Add(feature);
@@ -831,7 +879,8 @@ public partial class MapPage : Page
                 }
             }
             vm.MapSettings.SelectedTargetId = SelectedTargetId;
-            vm.MapSettings.SaveMapSettings();
+            //vm.MapSettings.SaveMapSettings();
+            vm.SaveMapSettingsCommand.Execute(null);
             MapControl.Refresh();
         }
     }
@@ -867,7 +916,8 @@ public partial class MapPage : Page
     #region MapControls
     private void ToggleTracking_Click(object sender, RoutedEventArgs e)
     {
-        MobileLayers.First().IsCentered = ToggleTracking.IsChecked.Value;
+        // toggle tracking for the primary mobile
+        MobileLayers.First().Value.IsCentered = ToggleTracking.IsChecked.Value;
         SaveMapControlState();
     }
     private void ToggleNoseUp_Unchecked(object sender, RoutedEventArgs e)
@@ -931,10 +981,10 @@ public partial class MapPage : Page
     }
     //TODO: Move to context menu on map?
     //TODO: move button placement
-    // Add target at the current boat location
+    // Add target at the primery boat current location
     private void AddTarget_Click(object sender, RoutedEventArgs e)
     {
-        AddNewTarget(MobileLayers.First().MyLocation, true);
+        AddNewTarget(MobileLayers.First().Value.MyLocation, true);
     }
     #endregion
 

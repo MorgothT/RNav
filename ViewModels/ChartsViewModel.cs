@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapper_v1.Contracts.Services;
 using Mapper_v1.Models;
 using Microsoft.Win32;
 
@@ -8,22 +9,26 @@ namespace Mapper_v1.ViewModels;
 public partial class ChartsViewModel : ObservableObject
 {
 
-    [ObservableProperty]
-    private MapSettings mapSettings = new MapSettings().GetMapSettings();
+    //[ObservableProperty]
+    //private MapSettings mapSettings = new MapSettings().GetMapSettings();
+    public MapSettings MapSettings => _configService.MapConfig;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(MoveDownCommand), nameof(MoveUpCommand),
         nameof(MoveTopCommand), nameof(MoveButtomCommand), nameof(RemoveChartCommand), nameof(ExportChartsCommand))]
     private ChartItem selectedChart;
-
-    public ChartsViewModel()
+    private readonly IConfigService _configService;
+    
+    public ChartsViewModel(IConfigService configService)
     {
+        _configService = configService;
     }
 
     [RelayCommand]
     private void SaveCharts()
     {
-        MapSettings.SaveMapSettings();
+        //MapSettings.SaveMapSettings();
+        _configService.SaveMapSettingsAsync();
     }
     [RelayCommand]
     private void AddChart()
